@@ -1,6 +1,6 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.repositories;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
@@ -34,7 +34,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<JpaUserEntity> findByName(String name) {
+    public List<JpaUserEntity> findByName(String name) {
         return this.jpaUserRepository.findByName(name);
     }
 
