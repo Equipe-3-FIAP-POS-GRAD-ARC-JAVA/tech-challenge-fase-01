@@ -1,0 +1,16 @@
+package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.repositories;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
+
+public interface JpaUserRepository extends JpaRepository<JpaUserEntity, String> {
+
+    @Query("SELECT u FROM JpaUserEntity u WHERE u.name LIKE CONCAT('%',:name,'%')")
+    public Optional<JpaUserEntity> findByName(@Param("name") String name);
+
+}
