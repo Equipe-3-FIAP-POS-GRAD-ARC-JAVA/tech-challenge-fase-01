@@ -2,11 +2,13 @@ package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.repositor
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRepository;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -40,8 +42,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void delete(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        this.jpaUserRepository.findById(id)
+            .ifPresentOrElse(u -> {
+                var domain = u.toUserDomain().deactivate();
+                this.jpaUserRepository.save(JpaUserEntity.of(domain));
+            }, 
+            () -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found."));
     }
 
 }

@@ -56,8 +56,7 @@ public class UserService implements UserUseCases {
 
     @Override
     public void delete(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        this.userRepository.delete(id);
     }
 
 }

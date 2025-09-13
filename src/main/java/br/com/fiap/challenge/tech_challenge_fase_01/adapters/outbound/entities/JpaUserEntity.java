@@ -52,6 +52,20 @@ public class JpaUserEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
+    public static JpaUserEntity of(User user) {
+        return new JpaUserEntity(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getLogin(),
+            user.getPassword(),
+            user.getCreatedAt(),
+            user.getUpdatedAt(),
+            user.getRole(),
+            user.isActive()
+        );
+    }
+
     public User toUserDomain() {
         return User.with(this.id, this.name, this.email, this.login, this.password, this.createdAt, this.updatedAt, this.role, this.isActive);
     }

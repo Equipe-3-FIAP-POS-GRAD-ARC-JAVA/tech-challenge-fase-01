@@ -30,9 +30,13 @@ public class User {
         this.isActive = isActive;
     }
 
-    public static User create(String id, String name, String email, String login, String password) {
+    public static User createClient(String id, String name, String email, String login, String password) {
         LocalDateTime now = LocalDateTime.now();
         return new User(id, name, email, login, password, now, now, RolesEnum.CLIENT, true);
+    }
+
+    public static User with(String id, String name, String email, String login, String password, LocalDateTime createdAt, LocalDateTime updatedAt, RolesEnum role, boolean isActive) {
+        return new User(id, name, email, login, password, createdAt, updatedAt, role, isActive);
     }
 
     public User update(String name, String email, String login, boolean isActive) {
