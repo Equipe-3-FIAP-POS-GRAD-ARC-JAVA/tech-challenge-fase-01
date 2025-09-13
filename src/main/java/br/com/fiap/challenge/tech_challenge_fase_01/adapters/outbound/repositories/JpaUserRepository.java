@@ -10,7 +10,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.J
 
 public interface JpaUserRepository extends JpaRepository<JpaUserEntity, String> {
 
-    @Query("SELECT u FROM JpaUserEntity u WHERE u.name LIKE CONCAT('%',:name,'%')")
+    @Query("SELECT u FROM JpaUserEntity u WHERE u.name LIKE CONCAT('%',:name,'%') AND u.isActive = true")
     public List<JpaUserEntity> findByName(@Param("name") String name);
 
 }
