@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.usecases.UserUseCases;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRepository;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserResponseDTO;
@@ -22,19 +21,19 @@ public class UserService implements UserUseCases {
     private final UserRepository userRepository;
 
     @Override
-    public User create(UserRequestDTO request) {
+    public UserResponseDTO create(UserRequestDTO request) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'create'");
     }
 
     @Override
-    public User update(String id, UserRequestDTO request) {
+    public UserResponseDTO update(String id, UserRequestDTO request) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'update'");
     }
 
     @Override
-    public User updatePassword(String id, String password) {
+    public UserResponseDTO updatePassword(String id, String password) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updatePassword'");
     }
@@ -49,7 +48,7 @@ public class UserService implements UserUseCases {
 
         return user.stream()
                 .map(userEntity -> {
-                    var domain = User.create(userEntity.getId(), userEntity.getName(), userEntity.getEmail(), userEntity.getLogin(), userEntity.getPassword());
+                    var domain = userEntity.toUserDomain();
                     return UserResponseDTO.from(domain);
                 })
                 .toList();

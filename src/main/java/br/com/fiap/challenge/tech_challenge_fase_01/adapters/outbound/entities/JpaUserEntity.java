@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.RolesEnum;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,5 +51,9 @@ public class JpaUserEntity {
     private RolesEnum role;
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    public User toUserDomain() {
+        return User.with(this.id, this.name, this.email, this.login, this.password, this.createdAt, this.updatedAt, this.role, this.isActive);
+    }
 
 }
