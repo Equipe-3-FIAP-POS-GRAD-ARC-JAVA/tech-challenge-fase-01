@@ -55,7 +55,7 @@ public class User {
     
     public User updatePassword(String password) {
     	if (!this.isValidPassword(password)) {
-    		throw new IllegalArgumentException("Senha Inválida.");
+    		throw new IllegalArgumentException("A senha deve conter entre 8 e 20 caracteres, incluindo pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial.");
     	}
     	
     	this.password = password;
@@ -63,8 +63,8 @@ public class User {
     }
     
     private boolean isValidPassword(String password) {
-        String regex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$";
-        return Pattern.matches(regex, password);
+        String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$";
+        return Pattern.matches(regex, password.trim());
     }
 
     public User activate() {

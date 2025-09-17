@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRepository;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exception.NotFoundException;
@@ -31,13 +32,22 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public JpaUserEntity updatePassword(String id, String password) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updatePassword'");
+        return this.jpaUserRepository.findById(id)
+            .map(u -> {
+                var domain = u.toUserDomain().updatePassword(password);
+                return this.save(domain);
+            })
+            .orElseThrow(() -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found."));
     }
 
     @Override
     public List<JpaUserEntity> findByName(String name) {
-        return this.jpaUserRepository.findByName(name);
+        var user = this.jpaUserRepository.findByName(name);
+        if (user.isEmpty()) {
+            throw new NotFoundException(HttpStatus.NOT_FOUND, "User not found by name.");
+        }
+        
+        return user;
     }
 
     @Override
@@ -45,9 +55,13 @@ public class UserRepositoryImpl implements UserRepository {
         this.jpaUserRepository.findById(id)
             .ifPresentOrElse(u -> {
                 var domain = u.toUserDomain().deactivate();
-                this.jpaUserRepository.save(JpaUserEntity.of(domain));
+                this.save(domain);
             }, 
             () -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found."));
+    }
+
+    private JpaUserEntity save(User entity) {
+        return this.jpaUserRepository.save(JpaUserEntity.of(entity));
     }
 
 }
