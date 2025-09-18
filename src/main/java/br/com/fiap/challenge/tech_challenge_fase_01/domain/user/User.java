@@ -30,22 +30,21 @@ public class User {
         this.isActive = isActive;
     }
 
-    public static User createClient(String id, String name, String email, String login, String password) {
+    public static User createClient(String name, String email, String login, String password) {
         LocalDateTime now = LocalDateTime.now();
-        return new User(id, name, email, login, password, now, now, RolesEnum.CLIENT, true);
+        return new User(null, name, email, login, password, now, now, RolesEnum.CLIENT, true);
+    }
+
+    public static User createOwner(String name, String email, String login, String password) {
+        LocalDateTime now = LocalDateTime.now();
+        return new User(null, name, email, login, password, now, now, RolesEnum.OWNER, true);
     }
 
     public static User with(String id, String name, String email, String login, String password, LocalDateTime createdAt, LocalDateTime updatedAt, RolesEnum role, boolean isActive) {
         return new User(id, name, email, login, password, createdAt, updatedAt, role, isActive);
     }
 
-    public User update(String name, String email, String login, boolean isActive) {
-        if (isActive) {
-        	this.activate();
-        } else {
-        	this.deactivate();
-        }
-        
+    public User update(String name, String email, String login) {      
         this.name = name;
         this.email = email;
         this.login = login;

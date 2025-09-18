@@ -6,10 +6,11 @@ import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.J
 
 public interface UserRepository {
 
-    JpaUserEntity create(UserRequestDTO request);
-    JpaUserEntity update(String id, UserRequestDTO request);
+    JpaUserEntity createClient(UserCreateRequestDTO request);
+    JpaUserEntity update(String id, UserUpdateRequestDTO request);
     JpaUserEntity updatePassword(String id, String password);
     List<JpaUserEntity> findByName(String name);
     void delete(String id);
+    JpaUserEntity createOwner(UserCreateRequestDTO request);
 
 }

@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     id TEXT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    login VARCHAR(50) NOT NULL UNIQUE,
+    login VARCHAR(50) NOT NULL,
     password VARCHAR(100) NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,

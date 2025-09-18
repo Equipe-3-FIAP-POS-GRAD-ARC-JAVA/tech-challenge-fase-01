@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRepository;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserUpdateRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserCreateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -19,15 +20,23 @@ public class UserRepositoryImpl implements UserRepository {
     private final JpaUserRepository jpaUserRepository;
 
     @Override
-    public JpaUserEntity create(UserRequestDTO request) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'create'");
+    public JpaUserEntity createClient(UserCreateRequestDTO request) {
+        var domain = User.createClient(
+            request.name(), 
+            request.email(), 
+            request.login(), 
+            request.password());
+        return this.save(domain);
     }
 
     @Override
-    public JpaUserEntity update(String id, UserRequestDTO request) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    public JpaUserEntity update(String id, UserUpdateRequestDTO request) {
+        return this.jpaUserRepository.findById(id)
+            .map(u -> {
+                var domain = u.toUserDomain().update(request.name(), request.email(), request.login());
+                return this.save(domain);
+            })
+            .orElseThrow(() -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found."));
     }
 
     @Override
@@ -58,6 +67,12 @@ public class UserRepositoryImpl implements UserRepository {
                 this.save(domain);
             }, 
             () -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found."));
+    }
+
+    @Override
+    public JpaUserEntity createOwner(UserCreateRequestDTO request) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'create'");
     }
 
     private JpaUserEntity save(User entity) {
