@@ -56,5 +56,11 @@ public class UserController {
         this.userService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/owner")
+    public ResponseEntity<UserResponseDTO> createOwner(@RequestBody UserCreateRequestDTO dto) {
+        var user = this.userService.createOwner(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    }
     
 }

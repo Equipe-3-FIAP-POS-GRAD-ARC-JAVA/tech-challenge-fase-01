@@ -71,8 +71,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public JpaUserEntity createOwner(UserCreateRequestDTO request) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'create'");
+        var domain = User.createOwner(
+            request.name(), 
+            request.email(), 
+            request.login(), 
+            request.password());
+        return this.save(domain);
     }
 
     private JpaUserEntity save(User entity) {

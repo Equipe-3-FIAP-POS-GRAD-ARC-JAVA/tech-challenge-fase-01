@@ -60,8 +60,9 @@ public class UserService implements UserUseCases {
 
     @Override
     public UserResponseDTO createOwner(UserCreateRequestDTO request) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createOwner'");
+        log.info("Creating user OWNER with email: {}", request.email());
+        var userEntity = this.userRepository.createOwner(request);
+        return UserResponseDTO.from(userEntity.toUserDomain());
     }
 
 }
