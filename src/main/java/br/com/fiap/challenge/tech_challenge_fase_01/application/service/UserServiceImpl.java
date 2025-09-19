@@ -2,21 +2,22 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.service;
 
 import java.util.List;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.usecases.UserUseCases;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRepository;
+import br.com.fiap.challenge.tech_challenge_fase_01.ports.usecases.UserUseCases;
+import br.com.fiap.challenge.tech_challenge_fase_01.ports.repository.UserRepository;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserResponseDTO;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exception.NotFoundException;
+import br.com.fiap.challenge.tech_challenge_fase_01.shared.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService implements UserUseCases {
+public class UserServiceImpl implements UserUseCases {
 
     private final UserRepository userRepository;
 
@@ -57,6 +58,14 @@ public class UserService implements UserUseCases {
     @Override
     public void delete(String id) {
         this.userRepository.delete(id);
+    }
+
+    @Override
+    public User findAuthenticatedUserByUsername(String username) {
+
+        final User user = userRepository.findByLogin(username);
+
+        return UserMapper.INSTANCE.convertToAuthenticatedUserDto(user);
     }
 
 }

@@ -1,6 +1,6 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.configs;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.security.JwtAuthenticationFilter;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
