@@ -19,6 +19,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UpdatePasswordRe
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserCreateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserResponseDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserUpdateRequestDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -41,7 +42,7 @@ public class UserController {
     }    
 
     @PatchMapping
-    public ResponseEntity<UserResponseDTO> updatePassword(@RequestBody UpdatePasswordRequestDTO dto) {
+    public ResponseEntity<UserResponseDTO> updatePassword(@RequestBody @Valid UpdatePasswordRequestDTO dto) {
         var user = this.userService.updatePassword(dto.id(), dto.password());
         return ResponseEntity.ok(user);
     }
@@ -58,7 +59,7 @@ public class UserController {
     }
 
     @PostMapping("/owner")
-    public ResponseEntity<UserResponseDTO> createOwner(@RequestBody UserCreateRequestDTO dto) {
+    public ResponseEntity<UserResponseDTO> createOwner(@RequestBody @Valid UserCreateRequestDTO dto) {
         var user = this.userService.createOwner(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }

@@ -45,9 +45,9 @@ public class User {
     }
 
     public User update(String name, String email, String login) {      
-        this.name = name;
-        this.email = email;
-        this.login = login;
+        if (name != null && !name.trim().isEmpty()) this.name = name;
+        if (email != null && !email.trim().isEmpty()) this.email = email;
+        if (login != null && !login.trim().isEmpty()) this.login = login;
         this.updatedAt = LocalDateTime.now();
         return this;
     }

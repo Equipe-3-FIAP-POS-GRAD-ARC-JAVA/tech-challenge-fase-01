@@ -1,7 +1,10 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.domain.user;
 
+import jakarta.validation.constraints.Email;
+
 public record UserUpdateRequestDTO(
     String name,
+    @Email
     String email,
     String login
 ) {
