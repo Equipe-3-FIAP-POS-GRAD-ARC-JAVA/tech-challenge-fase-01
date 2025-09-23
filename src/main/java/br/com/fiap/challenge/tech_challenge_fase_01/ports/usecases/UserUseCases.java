@@ -1,18 +1,18 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.ports.usecases;
+package br.com.fiap.challenge.tech_challenge_fase_01.application.usecases;
 
 import java.util.List;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.security.dto.AuthenticatedUserDto;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserCreateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserResponseDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserUpdateRequestDTO;
 
 public interface UserUseCases {
     
-    UserResponseDTO create(UserRequestDTO request);
-    UserResponseDTO update(String id, UserRequestDTO request);
+    UserResponseDTO createClient(UserCreateRequestDTO request);
+    UserResponseDTO update(String id, UserUpdateRequestDTO request);
     UserResponseDTO updatePassword(String id, String password);
     List<UserResponseDTO> findByName(String name);
     void delete(String id);
-    AuthenticatedUserDto findAuthenticatedUserByUsername(String username);
+    UserResponseDTO createOwner(UserCreateRequestDTO request);
 
 }

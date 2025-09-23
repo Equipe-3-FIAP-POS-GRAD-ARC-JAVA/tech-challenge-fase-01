@@ -5,21 +5,27 @@ services:
       - 'POSTGRES_DB=restaurantapp'
       - 'POSTGRES_USER=postgres'
       - 'POSTGRES_PASSWORD=secret'
+    networks:
+      - app-network
     volumes:
       - db_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
   spring:
     build:
       context: .
       dockerfile: Dockerfile
+    user: "2000:2000"
     environment:
       - 'SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/restaurantapp'
       - 'SPRING_DATASOURCE_USERNAME=postgres'
       - 'SPRING_DATASOURCE_PASSWORD=secret'
     ports:
       - '8080:8080'
+    networks:
+      - app-network
     depends_on:
       - postgres
 volumes:
   db_data:
+networks:
+  app-network:
+    driver: bridge
