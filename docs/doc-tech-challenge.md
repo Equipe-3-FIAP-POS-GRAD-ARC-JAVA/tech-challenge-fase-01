@@ -13,18 +13,36 @@
  
 # 1. Introdução
    
-Descrição do problema
-[Insira um resumo sobre a proposta do sistema de gestão para os restaurantes, 
-conforme descrito no desafio.]
+## 1.1. Descrição do problema
 
-Objetivo do projeto
+Um grupo de restaurantes busca desenvolver um sistema de gestão unificado e compartilhado para reduzir os altos custos de soluções individuais. O objetivo é criar uma plataforma robusta que permita aos restaurantes gerenciar suas operações de forma eficiente e, ao mesmo tempo, ofereça aos clientes a possibilidade de consultar informações, fazer pedidos online e deixar avaliações.
+Devido a limitações orçamentárias, o projeto será entregue em fases, permitindo uma implementação gradual, com melhorias contínuas baseadas no feedback dos restaurantes e clientes.
 
-Desenvolver um backend robusto utilizando Spring Boot para gerenciar usuários e 
-atender aos requisitos definidos.
+
+## 1.2. Objetivo do projeto
+
+Desenvolver um backend completo e robusto utilizando Spring Boot e MySQL.
+O sistema deve permitir:
+- Cadastro, atualização e exclusão de usuários;
+- Troca de senha do usuário em endpoint separado;
+- Atualização das  demais informações do  usuário  em  endpoint  distinto do endpoint de senha;
+- Registro da data da última alteração;
+- Busca de usuários pelo nome;
+- Garantia de que o e-mail cadastrado seja único;
+- Validação  de  login  obrigatória,  por  meio  de  um serviço que  verifique se login e senha são válidos:
+
+- Implementações extras:
+    - Conter três niveis de acesso: Cliente, Restaurante e Administrador;
+    - Testes
+
+A  aplicação  deverá  ser  dockerizada,  utilizando  Docker  Compose  para orquestração junto com um banco de dados relacional (MySQL)
 
 # 2. Arquitetura do Sistema
 
 Descrição da Arquitetura
+
+// TODO
+Hexagonal
 
 [Explique brevemente a estrutura do sistema, como a separação de camadas 
 (Controller, Service, Repository), uso do Docker, banco de dados escolhido, etc.]
