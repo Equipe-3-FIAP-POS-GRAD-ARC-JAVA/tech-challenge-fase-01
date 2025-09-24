@@ -1,25 +1,29 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:17
     environment:
-      - 'POSTGRES_DB=restaurantapp'
-      - 'POSTGRES_USER=postgres'
-      - 'POSTGRES_PASSWORD=secret'
+      - POSTGRES_DB=restaurantapp
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"     # mude p/ "6543:5432" se 5432 já estiver usada
     networks:
       - app-network
     volumes:
       - db_data:/var/lib/postgresql/data
+    labels:
+      org.springframework.boot.service-connection: postgres
   spring:
     build:
       context: .
       dockerfile: Dockerfile
     user: "2000:2000"
     environment:
-      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/restaurantapp'
-      - 'SPRING_DATASOURCE_USERNAME=postgres'
-      - 'SPRING_DATASOURCE_PASSWORD=secret'
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/restaurantapp
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=secret
     ports:
-      - '8080:8080'
+      - "8080:8080"
     networks:
       - app-network
     depends_on:

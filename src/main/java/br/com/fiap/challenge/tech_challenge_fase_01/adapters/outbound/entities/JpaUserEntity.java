@@ -1,7 +1,14 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.RolesEnum;
-import jakarta.persistence.*;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.enumx.RolesEnum;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,9 +50,5 @@ public class JpaUserEntity {
     private List<RolesEnum> role;
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
-
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return List.of(new SimpleGrantedAuthority());
-//    }
 
 }

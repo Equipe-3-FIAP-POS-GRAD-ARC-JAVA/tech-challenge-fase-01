@@ -31,7 +31,7 @@ public class UserServiceMapperImpl implements UserServiceMapper {
 
     @Override
     public UserResponseDTO updatePassword(String id, UpdatePasswordRequestDTO updatePasswordRequestDTO) {
-        return userMapper.toResponse(userService.updatePassword(id, updatePasswordRequestDTO.password()));
+        return userMapper.toResponse(userService.updatePassword(id, updatePasswordRequestDTO.getPassword()));
     }
 
     @Override

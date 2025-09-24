@@ -1,16 +1,17 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.response;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public record UserResponseDTO(
-    String id,
-    String name,
-    String email,
-    String login
-) {
-
-    public static UserResponseDTO from(User user) {
-        return new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getLogin());
-    }
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+public class UserResponseDTO {
+    private String id;
+    private String name;
+    private String email;
+    private String login;
 }

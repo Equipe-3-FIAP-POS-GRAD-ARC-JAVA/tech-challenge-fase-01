@@ -39,7 +39,7 @@ public class UserController {
 
     @PatchMapping
     public ResponseEntity<UserResponseDTO> updatePassword(@RequestBody UpdatePasswordRequestDTO dto) {
-        return ResponseEntity.ok(userServiceMapper.updatePassword(dto.id(), dto));
+        return ResponseEntity.ok(userServiceMapper.updatePassword(dto.getId(), dto));
     }
 
     @GetMapping("/by-name")

@@ -1,9 +1,9 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.repositories;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.requests.UserCreateRequestDTO;
+
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.enumx.RolesEnum;
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.mappers.UserMapper;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.RolesEnum;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exceptions.NotFoundException;
 import br.com.fiap.challenge.tech_challenge_fase_01.ports.repository.UserRepository;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
