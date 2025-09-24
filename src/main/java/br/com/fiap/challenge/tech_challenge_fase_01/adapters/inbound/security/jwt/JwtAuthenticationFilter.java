@@ -1,6 +1,6 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.security.jwt;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.shared.constants.SecurityConstants;
+import br.com.fiap.challenge.tech_challenge_fase_01.configs.constants.SecurityConstants;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

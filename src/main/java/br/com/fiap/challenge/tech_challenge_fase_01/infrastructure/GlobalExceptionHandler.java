@@ -1,16 +1,17 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exceptions.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exception.NotFoundException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
+
 
 @ControllerAdvice
 public class GlobalExceptionHandler {

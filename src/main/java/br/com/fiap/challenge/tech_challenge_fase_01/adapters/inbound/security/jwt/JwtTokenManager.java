@@ -10,10 +10,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -23,11 +21,12 @@ public class JwtTokenManager {
 
     public String generateToken(User user) {
         final String username = user.getLogin();
-        final List<RolesEnum> userRoles = Objects.requireNonNullElse(user.getRole(), Collections.emptyList());
 
-        // Converte para ["ROLE_ADMIN", "ROLE_OWNER", ...]
+        // Evita problema de inferência de tipos
+        final List<RolesEnum> userRoles = (user.getRole() == null) ? List.of() : user.getRole();
+
+        // ["ROLE_ADMIN", "ROLE_DONO", ...]
         final String[] roleNames = userRoles.stream()
-                .filter(Objects::nonNull)
                 .map(r -> "ROLE_" + r.name())
                 .toArray(String[]::new);
 
@@ -35,7 +34,7 @@ public class JwtTokenManager {
         return JWT.create()
                 .withSubject(username)
                 .withIssuer(jwtProperties.getIssuer())
-                .withArrayClaim("roles", roleNames) // múltiplas roles
+                .withArrayClaim("roles", roleNames)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getExpirationMinute() * 60L * 1000L))
                 .sign(Algorithm.HMAC256(jwtProperties.getSecretKey().getBytes()));
@@ -52,9 +51,7 @@ public class JwtTokenManager {
 
     public boolean validateToken(String token, String authenticatedUsername) {
         final String usernameFromToken = getUsernameFromToken(token);
-        final boolean equalsUsername = usernameFromToken.equals(authenticatedUsername);
-        final boolean tokenExpired = isTokenExpired(token);
-        return equalsUsername && !tokenExpired;
+        return usernameFromToken.equals(authenticatedUsername) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

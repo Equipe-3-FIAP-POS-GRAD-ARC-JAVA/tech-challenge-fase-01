@@ -1,7 +1,11 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.controller;
 
-import java.util.List;
-
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.requests.UpdatePasswordRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.requests.UserCreateRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.requests.UserUpdateRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.response.UserResponseDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.ports.inbound.UserServiceMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,53 +18,45 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.service.UserService;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UpdatePasswordRequestDTO;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserCreateRequestDTO;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserResponseDTO;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.UserUpdateRequestDTO;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserServiceMapper userServiceMapper;
 
     @PostMapping
     public ResponseEntity<UserResponseDTO> createClient(@RequestBody UserCreateRequestDTO dto) {
-        var user = this.userService.createClient(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userServiceMapper.create(dto));
     }
 
     @PutMapping
     public ResponseEntity<UserResponseDTO> update(@RequestParam String id, @RequestBody UserUpdateRequestDTO dto) {
-        var user = this.userService.update(id, dto);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userServiceMapper.update(id, dto));
     }
 
     @PatchMapping
     public ResponseEntity<UserResponseDTO> updatePassword(@RequestBody UpdatePasswordRequestDTO dto) {
-        var user = this.userService.updatePassword(dto.id(), dto.password());
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userServiceMapper.updatePassword(dto.id(), dto));
     }
 
     @GetMapping("/by-name")
     public ResponseEntity<List<UserResponseDTO>> getUserByName(@RequestParam String name) {
-        return ResponseEntity.ok(this.userService.findByName(name));
+
+        return ResponseEntity.ok(userServiceMapper.getByName(name));
     }
 
     @DeleteMapping
     public ResponseEntity<Void> deleteUser(@RequestParam String id) {
-        this.userService.delete(id);
+        userServiceMapper.getByName(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/owner")
     public ResponseEntity<UserResponseDTO> createOwner(@RequestBody UserCreateRequestDTO dto) {
-        var user = this.userService.createOwner(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userServiceMapper.createOwner(dto));
     }
 
 }

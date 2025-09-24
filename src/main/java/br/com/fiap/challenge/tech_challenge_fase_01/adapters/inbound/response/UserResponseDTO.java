@@ -1,4 +1,6 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.domain.user;
+package br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.response;
+
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 
 public record UserResponseDTO(
     String id,

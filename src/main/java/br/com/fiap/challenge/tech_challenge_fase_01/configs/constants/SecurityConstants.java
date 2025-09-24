@@ -1,4 +1,4 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.shared.constants;
+package br.com.fiap.challenge.tech_challenge_fase_01.configs.constants;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

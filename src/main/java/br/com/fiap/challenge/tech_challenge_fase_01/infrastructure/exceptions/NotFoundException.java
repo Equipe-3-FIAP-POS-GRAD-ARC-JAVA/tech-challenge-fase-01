@@ -1,4 +1,4 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.shared.exceptions;
+package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exceptions;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.server.ResponseStatusException;

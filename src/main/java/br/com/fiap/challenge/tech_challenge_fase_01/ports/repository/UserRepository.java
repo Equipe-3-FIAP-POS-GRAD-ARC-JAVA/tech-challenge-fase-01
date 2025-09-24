@@ -1,16 +1,18 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.domain.user;
+package br.com.fiap.challenge.tech_challenge_fase_01.ports.repository;
+
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.requests.UserCreateRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 
 import java.util.List;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
-
 public interface UserRepository {
 
-    JpaUserEntity createClient(UserCreateRequestDTO request);
-    JpaUserEntity update(String id, UserUpdateRequestDTO request);
-    JpaUserEntity updatePassword(String id, String password);
-    List<JpaUserEntity> findByName(String name);
+    User createClient(User user);
+    User update(String id, User user);
+    User updatePassword(String id, String password);
+    List<User> findByName(String name);
     void delete(String id);
-    JpaUserEntity createOwner(UserCreateRequestDTO request);
+    User createOwner(User request);
+    User findByUsername(String username);
 
 }
