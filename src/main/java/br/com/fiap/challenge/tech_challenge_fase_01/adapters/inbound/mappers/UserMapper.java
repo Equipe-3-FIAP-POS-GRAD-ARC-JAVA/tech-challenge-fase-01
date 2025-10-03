@@ -5,15 +5,12 @@ import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.requests.Us
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.requests.UserUpdateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.response.UserResponseDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 
 @Mapper(componentModel = "spring", implementationName = "InboundUserMapperImpl")
 public interface UserMapper {
 
-    @BeanMapping(ignoreByDefault = true)
+//    @BeanMapping(ignoreByDefault = true)
 //    @Mappings({
 //            @Mapping(target = "id",    source = "id"),
 //            @Mapping(target = "name",  source = "name"),
@@ -22,7 +19,7 @@ public interface UserMapper {
 //    })
     UserResponseDTO toResponse(User user);
 
-    @BeanMapping(ignoreByDefault = true)
+//    @BeanMapping(ignoreByDefault = true)
 //    @Mappings({
 //            @Mapping(target = "name",     source = "name"),
 //            @Mapping(target = "email",    source = "email"),
@@ -31,7 +28,7 @@ public interface UserMapper {
 //    })
     User toDomainCreate(UserCreateRequestDTO dto);
 
-    @BeanMapping(ignoreByDefault = true)
+//    @BeanMapping(ignoreByDefault = true)
 //    @Mappings({
 //            @Mapping(target = "name",  source = "name"),
 //            @Mapping(target = "email", source = "email"),
@@ -39,7 +36,7 @@ public interface UserMapper {
 //    })
     User toDomainUpdate(UserUpdateRequestDTO dto);
 
-    @BeanMapping(ignoreByDefault = true)
+//    @BeanMapping(ignoreByDefault = true)
 //    @Mappings({
 //            @Mapping(target = "id",       source = "id"),
 //            @Mapping(target = "password", source = "password")

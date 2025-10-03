@@ -1,6 +1,7 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.service;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.response.UserResponseDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.RolesEnum;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import br.com.fiap.challenge.tech_challenge_fase_01.ports.repository.UserRepository;
 import br.com.fiap.challenge.tech_challenge_fase_01.ports.usecases.UserUseCases;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,6 +23,9 @@ public class UserServiceImpl implements UserUseCases {
     @Override
     public User createClient(User user) {
         log.info("Creating user CLIENT with email: {}", user.getEmail());
+        user.setCreatedAt(LocalDateTime.now());
+        user.setActive(true);
+        user.setRole(List.of(RolesEnum.CLIENT));
         return userRepository.createClient(user);
     }
 

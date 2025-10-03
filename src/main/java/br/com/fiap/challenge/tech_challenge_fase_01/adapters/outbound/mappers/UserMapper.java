@@ -2,16 +2,13 @@ package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.mappers;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 
 @Mapper(componentModel = "spring", implementationName = "OutboundUserMapperImpl")
 public interface UserMapper {
 
     // Domain -> Entity
-    @BeanMapping(ignoreByDefault = true)
+//    @BeanMapping(ignoreByDefault = true)
 //    @Mappings({
 //            @Mapping(target = "id",         source = "id"),
 //            @Mapping(target = "name",       source = "name"),
@@ -26,7 +23,7 @@ public interface UserMapper {
     JpaUserEntity toEntity(User source);
 
     // Entity -> Domain
-    @BeanMapping(ignoreByDefault = true)
+//    @BeanMapping(ignoreByDefault = true)
 //    @Mappings({
 //            @Mapping(target = "id",         source = "id"),
 //            @Mapping(target = "name",       source = "name"),

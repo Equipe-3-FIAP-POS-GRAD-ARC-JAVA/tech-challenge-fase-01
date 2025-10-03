@@ -24,7 +24,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User createClient(User user) {
-        return userMapper.toDomain(this.save(userMapper.toEntity(user)));
+        return userMapper.toDomain(jpaUserRepository.save(userMapper.toEntity(user)));
     }
 
     @Override
@@ -97,11 +97,6 @@ public class UserRepositoryImpl implements UserRepository {
                 .or(() -> jpaUserRepository.findByEmail(username))
                 .map(userMapper::toDomain)
                 .orElseThrow(() -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found: " + username));
-    }
-
-
-    private JpaUserEntity save(JpaUserEntity jpaUserEntity) {
-        return this.jpaUserRepository.save(jpaUserEntity);
     }
 
 }
