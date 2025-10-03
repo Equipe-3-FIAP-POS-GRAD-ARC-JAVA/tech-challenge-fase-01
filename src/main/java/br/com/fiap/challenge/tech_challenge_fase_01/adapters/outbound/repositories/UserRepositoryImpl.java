@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User update(String id, User user) {
-        return this.jpaUserRepository.findById(id)
+        return this.jpaUserRepository.findById(UUID.fromString(id))
                 .map(entity -> {
                     entity.setName(user.getName());
                     entity.setEmail(user.getEmail());
@@ -42,7 +43,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User updatePassword(String id, String password) {
-        return this.jpaUserRepository.findById(id)
+        return this.jpaUserRepository.findById(UUID.fromString(id))
                 .map(entity -> {
                     entity.setPassword(password);
                     JpaUserEntity saved = this.jpaUserRepository.save(entity);
@@ -64,7 +65,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void delete(String id) {
-        JpaUserEntity entity = this.jpaUserRepository.findById(id)
+        JpaUserEntity entity = this.jpaUserRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found."));
 
         entity.setActive(false);
@@ -92,11 +93,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User findByUsername(String username) {
-        return jpaUserRepository.findByLogin(username)
-                .or(() -> jpaUserRepository.findByEmail(username))
+    public User findByUsername(String login) {
+        return jpaUserRepository.findByLogin(login)
                 .map(userMapper::toDomain)
-                .orElseThrow(() -> new NotFoundException(HttpStatus.NOT_FOUND, "User not found: " + username));
+                .orElseThrow(() ->
+                        new NotFoundException(HttpStatus.NOT_FOUND, "User not found by login: " + login)
+                );
     }
 
 }

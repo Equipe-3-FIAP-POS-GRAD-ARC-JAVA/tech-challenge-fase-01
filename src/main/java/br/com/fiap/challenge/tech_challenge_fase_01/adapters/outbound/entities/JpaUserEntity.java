@@ -18,6 +18,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -30,7 +31,7 @@ public class JpaUserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false)
-    private String id;
+    private UUID id;
     @Column(nullable = false, length = 100)
     private String name;
     @Column(unique = true, nullable = false)
