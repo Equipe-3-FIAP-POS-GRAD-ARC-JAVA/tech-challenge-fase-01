@@ -23,7 +23,7 @@ public class User {
     private String password;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<RolesEnum> role;
+    private List<RolesEnum> roles;
     private boolean isActive;
 }
 

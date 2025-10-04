@@ -2,7 +2,7 @@ package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.repositor
 
 
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.JpaUserEntity;
-import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.enumx.RolesEnum;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.enumx.RolesEnumEntity;
 import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.mappers.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exceptions.NotFoundException;
@@ -86,7 +86,7 @@ public class UserRepositoryImpl implements UserRepository {
 
         entity.setCreatedAt(now);
         entity.setActive(true);
-        entity.setRoles(List.of(RolesEnum.OWNER));
+        entity.setRoles(List.of(RolesEnumEntity.OWNER));
 
         JpaUserEntity saved = this.jpaUserRepository.save(entity);
         return userMapper.toDomain(saved);

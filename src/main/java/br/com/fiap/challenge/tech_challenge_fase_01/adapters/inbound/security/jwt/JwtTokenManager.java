@@ -23,7 +23,7 @@ public class JwtTokenManager {
         final String username = user.getLogin();
 
         // Evita problema de inferência de tipos
-        final List<RolesEnum> userRoles = (user.getRole() == null) ? List.of() : user.getRole();
+        final List<RolesEnum> userRoles = (user.getRoles() == null) ? List.of() : user.getRoles();
 
         // ["ROLE_ADMIN", "ROLE_DONO", ...]
         final String[] roleNames = userRoles.stream()

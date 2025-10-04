@@ -1,6 +1,6 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.enumx.RolesEnum;
+import br.com.fiap.challenge.tech_challenge_fase_01.adapters.outbound.entities.enumx.RolesEnumEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -53,23 +53,23 @@ public class JpaUserEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @Column(name = "role", nullable = false)
-    private String role;
+    @Column(name = "roles", nullable = false)
+    private String roles;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
     @Transient
-    public List<RolesEnum> getRoles() {
-        if (role == null || role.isBlank()) return List.of();
-        return Arrays.stream(role.split(","))
+    public List<RolesEnumEntity> getRoles() {
+        if (roles == null || roles.isBlank()) return List.of();
+        return Arrays.stream(roles.split(","))
                 .map(String::trim)
-                .map(RolesEnum::valueOf)
+                .map(RolesEnumEntity::valueOf)
                 .toList();
     }
 
-    public void setRoles(List<RolesEnum> roles) {
-        this.role = String.join(",",
+    public void setRoles(List<RolesEnumEntity> roles) {
+        this.roles = String.join(",",
                 roles.stream().map(Enum::name).toList()
         );
     }

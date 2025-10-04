@@ -41,8 +41,8 @@ public class SecurityUserDetailsService implements UserDetailsService {
         }
 
         final Collection<? extends GrantedAuthority> authorities =
-                user.getRole() == null ? List.of() :
-                        user.getRole().stream()
+                user.getRoles() == null ? List.of() :
+                        user.getRoles().stream()
                                 .filter(Objects::nonNull)
                                 .map(r -> new SimpleGrantedAuthority("ROLE_" + r.name()))
                                 .toList();

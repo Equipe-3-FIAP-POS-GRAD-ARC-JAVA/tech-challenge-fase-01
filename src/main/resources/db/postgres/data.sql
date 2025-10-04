@@ -1,16 +1,16 @@
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+--INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles)
 --VALUES (gen_random_uuid(), 'Vinicius Padovam', 'vinicius@example.com', 'vpadovam', '123456', NOW(), NOW(), 'OWNER') ON CONFLICT (email) DO NOTHING;
 --
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+--INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles)
 --VALUES (gen_random_uuid(), 'Maria Silva', 'maria.silva@example.com', 'mariasilva', 'senha123', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
 --
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+--INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles)
 --VALUES (gen_random_uuid(), 'João Pereira', 'joao.pereira@example.com', 'joaop', 'abc123', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
 --
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+--INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles)
 --VALUES (gen_random_uuid(), 'Ana Souza', 'ana.souza@example.com', 'anasouza', 'qwerty', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
 --
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+--INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles)
 --VALUES (gen_random_uuid(), 'Carlos Oliveira', 'carlos.oliveira@example.com', 'carlosol', 'pass123', NOW(), NOW(), 'OWNER') ON CONFLICT (email) DO NOTHING;
 --
 --

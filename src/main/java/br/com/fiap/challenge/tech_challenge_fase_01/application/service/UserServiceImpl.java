@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserUseCases {
         log.info("Creating user CLIENT with email: {}", user.getEmail());
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
-        user.setRole(List.of(RolesEnum.CLIENT));
+        user.setRoles(List.of(RolesEnum.CLIENT));
         return userRepository.createClient(user);
     }
 
