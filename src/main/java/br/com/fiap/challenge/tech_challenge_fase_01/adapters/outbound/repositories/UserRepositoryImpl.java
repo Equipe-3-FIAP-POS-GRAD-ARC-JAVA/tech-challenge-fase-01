@@ -86,7 +86,7 @@ public class UserRepositoryImpl implements UserRepository {
 
         entity.setCreatedAt(now);
         entity.setActive(true);
-        entity.setRole(List.of(RolesEnum.OWNER));
+        entity.setRoles(List.of(RolesEnum.OWNER));
 
         JpaUserEntity saved = this.jpaUserRepository.save(entity);
         return userMapper.toDomain(saved);
