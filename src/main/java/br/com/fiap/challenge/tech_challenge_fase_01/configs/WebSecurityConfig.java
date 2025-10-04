@@ -33,7 +33,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                         .requestMatchers(
-                                "/login",
+                                "/api/v1/auth/login",
                                 "/api/health",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**"
