@@ -5,6 +5,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.Use
 
 public interface UserCreateOwnerPort {
 
-    public UserResponseDTOPorts createOwner(UserCreateRequestDTOPorts userCreateRequestDTO);
+    public UserResponseDTOPorts createOwner(
+            UserCreateRequestDTOPorts userCreateRequestDTO);
 
 }

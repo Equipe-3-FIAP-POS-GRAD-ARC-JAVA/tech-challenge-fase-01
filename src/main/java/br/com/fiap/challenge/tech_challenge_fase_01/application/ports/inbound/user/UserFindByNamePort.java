@@ -6,6 +6,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.Use
 
 public interface UserFindByNamePort {
 
-    public List<UserResponseDTOPorts> getByName(String name);
+    public List<UserResponseDTOPorts> findByName(
+            String name);
 
 }

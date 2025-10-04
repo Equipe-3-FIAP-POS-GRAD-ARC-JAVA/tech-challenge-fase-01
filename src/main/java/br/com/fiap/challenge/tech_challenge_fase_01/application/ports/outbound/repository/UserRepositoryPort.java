@@ -3,15 +3,24 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.
 import java.util.List;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserUpdateRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponseDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserCreateOwnerPort;
 
 public interface UserRepositoryPort {
 
-    UserDomain createClient(UserDomain user);
-    UserDomain update(String id, UserDomain user);
-    UserDomain updatePassword(String id, String password);
-    List<UserDomain> findByName(String name);
+    UserResponseDTOPorts createClient(UserDomain user);
+
+    UserResponseDTOPorts update(String id, UserUpdateRequestDTOPorts user);
+
+    UserResponseDTOPorts updatePassword(String id, String password);
+
+    List<UserResponseDTOPorts> findByName(String name);
+
     void delete(String id);
-    UserDomain createOwner(UserDomain request);
-    UserDomain findByUsername(String username);
+
+    UserResponseDTOPorts createOwner(UserCreateOwnerPort request);
+
+    UserResponseDTOPorts findByUsername(String username);
 
 }

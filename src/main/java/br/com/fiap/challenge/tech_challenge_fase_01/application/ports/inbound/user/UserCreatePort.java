@@ -4,6 +4,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.Use
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponseDTOPorts;
 
 public interface UserCreatePort {
-    public UserResponseDTOPorts create(UserCreateRequestDTOPorts userCreateRequestDTO);
+    public UserResponseDTOPorts create(
+            UserCreateRequestDTOPorts userCreateRequestDTO);
 
 }
