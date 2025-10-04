@@ -2,22 +2,25 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound;
 
 import java.util.List;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.model.user.UserModel;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UpdatePasswordRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserUpdateRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponseDTOPorts;
 
 public interface UserServicePort {
 
-    public UserModel create(UserModel userCreateRequestDTO);
+    public UserResponseDTOPorts create(UserCreateRequestDTOPorts userCreateRequestDTO);
 
-    public UserModel update(String id, UserModel userUpdateRequestDTO);
+    public UserResponseDTOPorts update(String id, UserUpdateRequestDTOPorts userUpdateRequestDTO);
 
-    public UserModel updatePassword(String id, UserModel updatePasswordRequestDTO);
+    public UserResponseDTOPorts updatePassword(String id, UpdatePasswordRequestDTOPorts updatePasswordRequestDTO);
 
-    public List<UserModel> getByName(String name);
+    public List<UserResponseDTOPorts> getByName(String name);
 
     public void delete(String id);
 
-    public UserModel createOwner(UserModel userCreateRequestDTO);
+    public UserResponseDTOPorts createOwner(UserCreateRequestDTOPorts userCreateRequestDTO);
 
-    public UserModel findAuthenticatedUserByUsername(String username);
+    public UserResponseDTOPorts findAuthenticatedUserByUsername(String username);
 
 }

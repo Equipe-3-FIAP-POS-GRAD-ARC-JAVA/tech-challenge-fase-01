@@ -1,9 +1,10 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.model.user.UserModel;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.LoginRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponseDTOPorts;
 
 public interface AuthServicePort {
-    UserModel login(UserModel request);
+    UserResponseDTOPorts login(LoginRequestDTOPorts request);
 
-    UserModel findAuthenticatedUserByUsername(String username);
+    UserResponseDTOPorts findAuthenticatedUserByUsername(String username);
 }

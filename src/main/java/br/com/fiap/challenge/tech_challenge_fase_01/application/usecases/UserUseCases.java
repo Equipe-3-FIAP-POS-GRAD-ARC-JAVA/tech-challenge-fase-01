@@ -2,31 +2,34 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.usecases;
 
 import java.util.List;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.model.user.UserModel;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UpdatePasswordRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserUpdateRequestDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponseDTOPorts;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.UserServicePort;
 
 public class UserUseCases implements UserServicePort {
-   
+
     @Override
-    public UserModel create(UserModel userCreateRequestDTO) {
+    public UserResponseDTOPorts create(UserCreateRequestDTOPorts userCreateRequestDTO) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public UserModel update(String id, UserModel userUpdateRequestDTO) {
+    public UserResponseDTOPorts update(String id, UserUpdateRequestDTOPorts userUpdateRequestDTO) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public UserModel updatePassword(String id, UserModel updatePasswordRequestDTO) {
+    public UserResponseDTOPorts updatePassword(String id, UpdatePasswordRequestDTOPorts updatePasswordRequestDTO) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<UserModel> getByName(String name) {
+    public List<UserResponseDTOPorts> getByName(String name) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -38,14 +41,15 @@ public class UserUseCases implements UserServicePort {
     }
 
     @Override
-    public UserModel createOwner(UserModel userCreateRequestDTO) {
+    public UserResponseDTOPorts createOwner(UserCreateRequestDTOPorts userCreateRequestDTO) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public UserModel findAuthenticatedUserByUsername(String username) {
+    public UserResponseDTOPorts findAuthenticatedUserByUsername(String username) {
         // TODO Auto-generated method stub
         return null;
     }
+
 }

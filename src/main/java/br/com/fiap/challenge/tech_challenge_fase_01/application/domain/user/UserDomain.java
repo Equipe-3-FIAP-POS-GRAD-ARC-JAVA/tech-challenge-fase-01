@@ -1,4 +1,4 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.application.model.user;
+package br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserModel {
+public class UserDomain {
 
     private String id;
     private String name;
