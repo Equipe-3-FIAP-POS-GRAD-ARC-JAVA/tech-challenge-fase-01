@@ -12,7 +12,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.User
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaUserEntity;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.enumx.RolesEnum;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.mappers.UserMapper;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.mappers.UserEntityMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +22,7 @@ public class UserRepositoryImpl implements UserRepositoryPort {
 
     private final JpaUserRepository jpaUserRepository;
 
-    private final UserMapper userMapper;
+    private final UserEntityMapper userMapper;
 
     @Override
     public UserDomain save(UserDomain user) {
