@@ -1,9 +1,9 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.user;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.service.UserDomainService;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserAlreadyExistsException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserCreateOwnerPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
@@ -13,25 +13,26 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.r
  * 
  * Responsabilidades:
  * - Orquestrar a criação do usuário
- * - Validar se usuário já existe (regra de aplicação)
+ * - Delegar validações para o Domain Service
  * - Delegar criação para o Domain (que contém as regras de negócio)
  */
 public class CreateOwnerUseCase implements UserCreateOwnerPort {
 
     private final UserRepositoryPort userRepository;
+    private final UserDomainService userDomainService;
 
-    public CreateOwnerUseCase(UserRepositoryPort userRepository) {
+    public CreateOwnerUseCase(UserRepositoryPort userRepository, UserDomainService userDomainService) {
         this.userRepository = userRepository;
+        this.userDomainService = userDomainService;
     }
 
     @Override
     public UserResponse createOwner(UserCreateRequest userCreateRequest) {
 
-        if (userRepository.existsByUsername(userCreateRequest.login())) {
-            throw new UserAlreadyExistsException(
-                    "Já existe um usuário com o login: " + userCreateRequest.login());
-        }
+        // Domain Service valida regras de negócio que envolvem o repositório
+        userDomainService.ensureUsernameIsUnique(userCreateRequest.login());
 
+        // Domain cria e valida a entidade
         var user = UserDomain.createOwner(
                 userCreateRequest.name(),
                 userCreateRequest.email(),
