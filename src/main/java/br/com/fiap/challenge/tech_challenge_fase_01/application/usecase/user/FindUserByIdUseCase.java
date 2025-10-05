@@ -2,6 +2,7 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.user;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNotFoundException;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserFindByIdPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 
@@ -19,6 +20,6 @@ public class FindUserByIdUseCase implements UserFindByIdPort {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado com ID: " + id));
 
-        return UserResponse.fromDomain(user);
+        return UserMapper.toResponse(user);
     }
 }
