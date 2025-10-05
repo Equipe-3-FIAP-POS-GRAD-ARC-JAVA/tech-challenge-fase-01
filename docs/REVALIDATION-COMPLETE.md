@@ -22,10 +22,11 @@
 
 | Documento | Status | Descrição |
 |-----------|--------|-----------|
+| **API-DOCUMENTATION.md** | ✅ NOVO | Documentação completa da API REST (33KB) |
 | **PROJECT-VALIDATION-REPORT.md** | ✅ NOVO | Relatório completo de validação (31KB) |
-| **DOCS-INDEX.md** | ✅ NOVO | Índice organizado de toda documentação |
+| **DOCS-INDEX.md** | ✅ NOVO | Índice organizado de toda documentação (atualizado) |
 | **ARCHITECTURE-DIAGRAM.md** | ✅ ATUALIZADO | Diagrama com métricas atualizadas |
-| **README.md** | ✅ ATUALIZADO | Informações de status e links |
+| **README.md** | ✅ ATUALIZADO | Informações de status e links (atualizado) |
 | **VALIDATION-SUMMARY.md** | ✅ VALIDADO | Mantido e validado |
 | **SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md** | ✅ VALIDADO | Análise já estava correta |
 | **IMPLEMENTATION-COMPLETE.md** | ✅ VALIDADO | Checklist validado |
@@ -34,7 +35,7 @@
 | **RFC-7807-EXCEPTION-HANDLING.md** | ✅ VALIDADO | Especificação validada |
 | **SOLID-HEXAGONAL-VALIDATION-REPORT.md** | ✅ VALIDADO | Relatório validado |
 
-**Total**: 11 documentos (2 novos, 2 atualizados, 7 validados)
+**Total**: 12 documentos (3 novos, 3 atualizados, 6 validados)
 
 ### 3. ✅ Métricas Coletadas
 
@@ -114,8 +115,9 @@
 
 ### Para Desenvolvedores
 1. Comece pelo **README.md**
-2. Leia **ARCHITECTURE-DIAGRAM.md**
-3. Consulte **INFRASTRUCTURE-LAYER.md** para implementar
+2. Leia **API-DOCUMENTATION.md** (todos os endpoints)
+3. Veja **ARCHITECTURE-DIAGRAM.md**
+4. Consulte **INFRASTRUCTURE-LAYER.md** para implementar
 
 ### Para Arquitetos
 1. Veja **PROJECT-VALIDATION-REPORT.md** (completo)
@@ -128,9 +130,10 @@
 3. **DOCS-INDEX.md** - Visão geral
 
 ### Para QA
-1. **INFRASTRUCTURE-LAYER.md** - Endpoints e contratos
+1. **API-DOCUMENTATION.md** - Todos os endpoints e exemplos
 2. **RFC-7807-EXCEPTION-HANDLING.md** - Respostas esperadas
-3. **PROJECT-VALIDATION-REPORT.md** - Casos de teste
+3. **INFRASTRUCTURE-LAYER.md** - Contratos da API
+4. **PROJECT-VALIDATION-REPORT.md** - Casos de teste
 
 ---
 

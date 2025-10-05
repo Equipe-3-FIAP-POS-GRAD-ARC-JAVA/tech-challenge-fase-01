@@ -34,6 +34,7 @@
 
 | Documento | Descrição | Atualizado | Link |
 |-----------|-----------|------------|------|
+| **API-DOCUMENTATION.md** | ⭐ Documentação completa da API REST (NOVO) | 04/10/2025 | [Abrir](API-DOCUMENTATION.md) |
 | **RFC-7807-EXCEPTION-HANDLING.md** | Tratamento de exceções RFC 7807 | 04/10/2025 | [Abrir](RFC-7807-EXCEPTION-HANDLING.md) |
 
 ---
@@ -41,9 +42,10 @@
 ## 🎯 Documentos por Público
 
 ### Para Desenvolvedores
-1. **ARCHITECTURE-DIAGRAM.md** - Entenda a estrutura geral
-2. **INFRASTRUCTURE-LAYER.md** - Como implementar novos adapters
-3. **RFC-7807-EXCEPTION-HANDLING.md** - Como tratar exceções
+1. **API-DOCUMENTATION.md** - ⭐ Documentação completa da API
+2. **ARCHITECTURE-DIAGRAM.md** - Entenda a estrutura geral
+3. **INFRASTRUCTURE-LAYER.md** - Como implementar novos adapters
+4. **RFC-7807-EXCEPTION-HANDLING.md** - Como tratar exceções
 
 ### Para Arquitetos
 1. **PROJECT-VALIDATION-REPORT.md** - Validação completa do projeto
@@ -56,9 +58,10 @@
 3. **PROJECT-VALIDATION-REPORT.md** - Scorecard e métricas
 
 ### Para QA/Testes
-1. **INFRASTRUCTURE-LAYER.md** - Endpoints e contratos
+1. **API-DOCUMENTATION.md** - ⭐ Todos os endpoints e exemplos
 2. **RFC-7807-EXCEPTION-HANDLING.md** - Respostas de erro esperadas
-3. **PROJECT-VALIDATION-REPORT.md** - Cobertura e gaps
+3. **INFRASTRUCTURE-LAYER.md** - Endpoints e contratos
+4. **PROJECT-VALIDATION-REPORT.md** - Cobertura e gaps
 
 ---
 
@@ -66,7 +69,7 @@
 
 | Métrica | Valor |
 |---------|-------|
-| **Total de Documentos** | 9 arquivos |
+| **Total de Documentos** | 10 arquivos |
 | **Cobertura** | 100% |
 | **Última Validação** | 04/10/2025 |
 | **Total de Arquivos Java** | 73 |
@@ -81,13 +84,15 @@
 ```
 1. README.md (raiz do projeto)
    ↓
-2. ARCHITECTURE-DIAGRAM.md
+2. API-DOCUMENTATION.md ⭐
    ↓
-3. INFRASTRUCTURE-LAYER.md
+3. ARCHITECTURE-DIAGRAM.md
    ↓
-4. RFC-7807-EXCEPTION-HANDLING.md
+4. INFRASTRUCTURE-LAYER.md
    ↓
-5. IMPLEMENTATION-COMPLETE.md
+5. RFC-7807-EXCEPTION-HANDLING.md
+   ↓
+6. IMPLEMENTATION-COMPLETE.md
 ```
 
 ### Para Auditoria Arquitetural
@@ -131,11 +136,12 @@
 
 ### Por Tópico
 
+- **API/Endpoints**: API-DOCUMENTATION.md ⭐
 - **Arquitetura Hexagonal**: ARCHITECTURE-DIAGRAM.md, SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md
 - **SOLID**: SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md, PROJECT-VALIDATION-REPORT.md
-- **Segurança/JWT**: INFRASTRUCTURE-LAYER.md, PROJECT-VALIDATION-REPORT.md
-- **Exceções**: RFC-7807-EXCEPTION-HANDLING.md
-- **Endpoints**: INFRASTRUCTURE-LAYER.md, IMPLEMENTATION-COMPLETE.md
+- **Segurança/JWT**: API-DOCUMENTATION.md, INFRASTRUCTURE-LAYER.md, PROJECT-VALIDATION-REPORT.md
+- **Exceções**: RFC-7807-EXCEPTION-HANDLING.md, API-DOCUMENTATION.md
+- **Endpoints**: API-DOCUMENTATION.md ⭐, INFRASTRUCTURE-LAYER.md, IMPLEMENTATION-COMPLETE.md
 - **Use Cases**: INFRASTRUCTURE-IMPLEMENTATION-SUMMARY.md, ARCHITECTURE-DIAGRAM.md
 - **Validação**: PROJECT-VALIDATION-REPORT.md, VALIDATION-SUMMARY.md
 
@@ -154,6 +160,7 @@
 
 | Documento | Completude | Última Revisão | Status |
 |-----------|-----------|----------------|--------|
+| API-DOCUMENTATION.md | 100% | 04/10/2025 | ✅ Novo |
 | PROJECT-VALIDATION-REPORT.md | 100% | 04/10/2025 | ✅ Atualizado |
 | VALIDATION-SUMMARY.md | 100% | 04/10/2025 | ✅ Atualizado |
 | ARCHITECTURE-DIAGRAM.md | 100% | 04/10/2025 | ✅ Atualizado |
@@ -170,9 +177,11 @@
 
 ### Documentos Planejados
 - [ ] TESTING-GUIDE.md - Guia de testes
-- [ ] API-DOCUMENTATION.md - Documentação da API (Swagger)
+- [x] API-DOCUMENTATION.md - Documentação da API (REST) ✅
+- [ ] SWAGGER-SETUP.md - Configuração do Swagger/OpenAPI
 - [ ] DEPLOYMENT-GUIDE.md - Guia de deploy
 - [ ] CONTRIBUTING.md - Guia de contribuição
+- [ ] POSTMAN-COLLECTION.md - Collection Postman
 
 ### Melhorias Planejadas
 - [ ] Adicionar diagramas de sequência

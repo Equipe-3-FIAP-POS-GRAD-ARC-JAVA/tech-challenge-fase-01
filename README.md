@@ -62,16 +62,17 @@ Este projeto segue os princípios de:
 ## 📚 Documentação
 
 ### Documentos Principais
-- 📊 **[Relatório de Validação Completo](docs/PROJECT-VALIDATION-REPORT.md)** - ⭐ Recomendado
-- 🏗️ **[Diagrama de Arquitetura](docs/ARCHITECTURE-DIAGRAM.md)**
-- 📖 **[Índice de Documentação](docs/DOCS-INDEX.md)**
-- ✅ **[Resumo de Validação](docs/VALIDATION-SUMMARY.md)**
+- � **[Documentação da API](docs/API-DOCUMENTATION.md)** - ⭐ Endpoints, schemas e exemplos
+- �📊 **[Relatório de Validação Completo](docs/PROJECT-VALIDATION-REPORT.md)** - Análise arquitetural
+- 🏗️ **[Diagrama de Arquitetura](docs/ARCHITECTURE-DIAGRAM.md)** - Estrutura do projeto
+- 📖 **[Índice de Documentação](docs/DOCS-INDEX.md)** - Navegação completa
+- ✅ **[Resumo de Validação](docs/VALIDATION-SUMMARY.md)** - Status do projeto
 
 ### Documentos Técnicos
-- 🛠️ **[Implementação Completa](docs/IMPLEMENTATION-COMPLETE.md)**
-- 🏛️ **[Análise SOLID e Hexagonal](docs/SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md)**
-- 🔧 **[Exception Handling RFC 7807](docs/RFC-7807-EXCEPTION-HANDLING.md)**
-- 📋 **[Camada de Infraestrutura](docs/INFRASTRUCTURE-LAYER.md)**
+- 🛠️ **[Implementação Completa](docs/IMPLEMENTATION-COMPLETE.md)** - Checklist
+- 🏛️ **[Análise SOLID e Hexagonal](docs/SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md)** - Princípios aplicados
+- 🔧 **[Exception Handling RFC 7807](docs/RFC-7807-EXCEPTION-HANDLING.md)** - Tratamento de erros
+- 📋 **[Camada de Infraestrutura](docs/INFRASTRUCTURE-LAYER.md)** - Detalhes técnicos
 
 ## Getting Started
 
