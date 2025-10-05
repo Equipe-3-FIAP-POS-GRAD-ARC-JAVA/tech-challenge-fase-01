@@ -7,6 +7,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.Use
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserCreateOwnerPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
 
 /**
  * Use Case para criação de usuário proprietário.
@@ -14,16 +15,22 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.r
  * Responsabilidades:
  * - Orquestrar a criação do usuário
  * - Delegar validações para o Domain Service
+ * - Criptografar senha antes de passar para o Domain
  * - Delegar criação para o Domain (que contém as regras de negócio)
  */
 public class CreateOwnerUseCase implements UserCreateOwnerPort {
 
     private final UserRepositoryPort userRepository;
     private final UserDomainService userDomainService;
+    private final PasswordEncoderPort passwordEncoder;
 
-    public CreateOwnerUseCase(UserRepositoryPort userRepository, UserDomainService userDomainService) {
+    public CreateOwnerUseCase(
+            UserRepositoryPort userRepository,
+            UserDomainService userDomainService,
+            PasswordEncoderPort passwordEncoder) {
         this.userRepository = userRepository;
         this.userDomainService = userDomainService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -32,13 +39,15 @@ public class CreateOwnerUseCase implements UserCreateOwnerPort {
         // Domain Service valida regras de negócio que envolvem o repositório
         userDomainService.ensureUsernameIsUnique(userCreateRequest.login());
 
+        // Criptografa a senha antes de criar o domínio
+        String encryptedPassword = passwordEncoder.encode(userCreateRequest.password());
+
         // Domain cria e valida a entidade
         var user = UserDomain.createOwner(
                 userCreateRequest.name(),
                 userCreateRequest.email(),
                 userCreateRequest.login(),
-                userCreateRequest.password() // TODO: Criptografar senha antes de passar
-        );
+                encryptedPassword);
 
         var savedUser = userRepository.save(user);
 

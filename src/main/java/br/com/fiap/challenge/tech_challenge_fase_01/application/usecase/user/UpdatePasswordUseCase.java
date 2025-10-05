@@ -6,6 +6,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNo
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserUpdatePasswordPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
 
 /**
  * Use Case para atualização de senha do usuário.
@@ -13,14 +14,17 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.r
  * Responsabilidades:
  * - Orquestrar a alteração de senha
  * - Buscar usuário existente
+ * - Criptografar nova senha
  * - Delegar alteração para o método de comportamento do Domain
  */
 public class UpdatePasswordUseCase implements UserUpdatePasswordPort {
 
     private final UserRepositoryPort userRepository;
+    private final PasswordEncoderPort passwordEncoder;
 
-    public UpdatePasswordUseCase(UserRepositoryPort userRepository) {
+    public UpdatePasswordUseCase(UserRepositoryPort userRepository, PasswordEncoderPort passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -29,7 +33,10 @@ public class UpdatePasswordUseCase implements UserUpdatePasswordPort {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado com ID: " + id));
 
-        user.changePassword(updatePasswordRequest.password()); // TODO: Criptografar senha antes
+        // Criptografa a nova senha
+        String encryptedPassword = passwordEncoder.encode(updatePasswordRequest.password());
+
+        user.changePassword(encryptedPassword);
 
         var updatedUser = userRepository.save(user);
 
