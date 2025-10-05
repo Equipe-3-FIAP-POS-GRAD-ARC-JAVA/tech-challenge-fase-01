@@ -1,5 +1,7 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.user;
 
+import java.util.UUID;
+
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserDeletePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 
@@ -12,7 +14,7 @@ public class DeleteUserUseCase implements UserDeletePort {
     }
 
     @Override
-    public void delete(String id) {
+    public void delete(UUID id) {
         userRepository.delete(id);
     }
 }

@@ -1,8 +1,9 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user;
 
+import java.util.UUID;
+
 public interface UserDeletePort {
 
-    public void delete(
-            String id);
+    void delete(UUID id);
 
 }

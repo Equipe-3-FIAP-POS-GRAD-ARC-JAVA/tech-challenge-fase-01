@@ -1,6 +1,7 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.service.user;
 
 import java.util.List;
+import java.util.UUID;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UpdatePasswordRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequest;
@@ -71,17 +72,17 @@ public class UserService implements
     }
 
     @Override
-    public void delete(String id) {
+    public void delete(UUID id) {
         deleteUserUseCase.delete(id);
     }
 
     @Override
-    public UserResponse update(String id, UserUpdateRequest userUpdateRequest) {
+    public UserResponse update(UUID id, UserUpdateRequest userUpdateRequest) {
         return updateUserUseCase.update(id, userUpdateRequest);
     }
 
     @Override
-    public UserResponse updatePassword(String id, UpdatePasswordRequest updatePasswordRequest) {
+    public UserResponse updatePassword(UUID id, UpdatePasswordRequest updatePasswordRequest) {
         return updatePasswordUseCase.updatePassword(id, updatePasswordRequest);
     }
 
@@ -91,7 +92,7 @@ public class UserService implements
     }
 
     @Override
-    public UserResponse findById(String id) {
+    public UserResponse findById(UUID id) {
         return findByIdUseCase.findById(id);
     }
 

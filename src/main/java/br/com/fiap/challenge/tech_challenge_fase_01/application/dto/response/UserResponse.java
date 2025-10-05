@@ -1,5 +1,7 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response;
 
+import java.util.UUID;
+
 /**
  * DTO para resposta de usuário.
  * 
@@ -8,5 +10,5 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response;
  * 
  * Usado na camada de aplicação (ports inbound).
  */
-public record UserResponse(String id, String name, String email, String login) {
+public record UserResponse(UUID id, String name, String email, String login) {
 }

@@ -3,6 +3,7 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.BusinessRuleException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.InvalidFieldException;
@@ -27,22 +28,20 @@ import lombok.Getter;
 @Builder
 public class UserDomain {
 
-    // Constantes de validação mantidas para senha (não é Value Object ainda)
     private static final int PASSWORD_MIN_LENGTH = 6;
     private static final int PASSWORD_MAX_LENGTH = 100;
 
-    private String id;
-    private PersonName name; // Value Object
-    private Email email; // Value Object
-    private Username login; // Value Object
-    private String password; // Mantido como String (será criptografado)
+    private UUID id;
+    private PersonName name;
+    private Email email;
+    private Username login;
+    private String password;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<RolesEnum> role;
     private boolean isActive;
 
-    // Construtor privado para forçar uso dos factory methods
-    private UserDomain(String id, PersonName name, Email email, Username login,
+    private UserDomain(UUID id, PersonName name, Email email, Username login,
             String password, LocalDateTime createdAt, LocalDateTime updatedAt,
             List<RolesEnum> role, boolean isActive) {
         this.id = id;
@@ -57,6 +56,17 @@ public class UserDomain {
     }
 
     // Getters convenientes que retornam String (compatibilidade)
+
+    /**
+     * Retorna o ID como String.
+     */
+    public String getIdAsString() {
+        return id != null ? id.toString() : null;
+    }
+
+    public UUID getId() {
+        return id != null ? id : null;
+    }
 
     /**
      * Retorna o nome como String.

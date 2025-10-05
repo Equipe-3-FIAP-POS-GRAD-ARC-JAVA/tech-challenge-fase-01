@@ -2,6 +2,7 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
 
@@ -28,10 +29,10 @@ public interface UserRepositoryPort {
     /**
      * Busca um usuário por ID.
      * 
-     * @param id ID do usuário
+     * @param id ID do usuário (UUID)
      * @return Optional contendo o usuário se encontrado
      */
-    Optional<UserDomain> findById(String id);
+    Optional<UserDomain> findById(UUID id);
 
     /**
      * Busca usuários por nome (pode retornar vários resultados).
@@ -52,9 +53,9 @@ public interface UserRepositoryPort {
     /**
      * Remove um usuário.
      * 
-     * @param id ID do usuário a ser removido
+     * @param id ID do usuário a ser removido (UUID)
      */
-    void delete(String id);
+    void delete(UUID id);
 
     /**
      * Verifica se existe um usuário com o username informado.
