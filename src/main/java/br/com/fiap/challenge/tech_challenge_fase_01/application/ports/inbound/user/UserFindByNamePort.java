@@ -2,11 +2,10 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.u
 
 import java.util.List;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponseDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
 
 public interface UserFindByNamePort {
 
-    public List<UserResponseDTOPorts> findByName(
-            String name);
+    List<UserResponse> findByName(String name);
 
 }

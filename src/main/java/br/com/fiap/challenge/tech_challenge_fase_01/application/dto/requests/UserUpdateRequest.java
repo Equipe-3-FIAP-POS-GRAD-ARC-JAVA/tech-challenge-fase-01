@@ -2,17 +2,20 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
 
+/**
+ * DTO para requisição de atualização de usuário.
+ * Usado na camada de aplicação (ports inbound).
+ */
 public record UserUpdateRequest(
-                String id,
                 String name,
                 String email,
                 String login) {
 
-        public UserDomain toDomain(UserUpdateRequest userCreateRequest) {
+        public UserDomain toDomain() {
                 return UserDomain.builder()
-                                .name(userCreateRequest.name())
-                                .email(userCreateRequest.email())
-                                .login(userCreateRequest.login())
+                                .name(this.name)
+                                .email(this.email)
+                                .login(this.login)
                                 .build();
         }
 

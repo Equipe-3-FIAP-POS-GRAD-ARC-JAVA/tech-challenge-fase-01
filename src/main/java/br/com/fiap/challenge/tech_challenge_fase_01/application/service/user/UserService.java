@@ -2,10 +2,10 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.service.user;
 
 import java.util.List;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UpdatePasswordRequestDTOPorts;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequestDTOPorts;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserUpdateRequestDTOPorts;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponseDTOPorts;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UpdatePasswordRequest;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequest;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserUpdateRequest;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserCreateOwnerPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserCreatePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserDeletePort;
@@ -61,13 +61,13 @@ public class UserService implements
     }
 
     @Override
-    public UserResponseDTOPorts create(UserCreateRequestDTOPorts userCreateRequestDTO) {
-        return createUserUseCase.create(userCreateRequestDTO);
+    public UserResponse create(UserCreateRequest userCreateRequest) {
+        return createUserUseCase.create(userCreateRequest);
     }
 
     @Override
-    public UserResponseDTOPorts createOwner(UserCreateRequestDTOPorts userCreateRequestDTO) {
-        return createOwnerUseCase.createOwner(userCreateRequestDTO);
+    public UserResponse createOwner(UserCreateRequest userCreateRequest) {
+        return createOwnerUseCase.createOwner(userCreateRequest);
     }
 
     @Override
@@ -76,22 +76,22 @@ public class UserService implements
     }
 
     @Override
-    public UserResponseDTOPorts update(String id, UserUpdateRequestDTOPorts userUpdateRequestDTO) {
-        return updateUserUseCase.update(id, userUpdateRequestDTO);
+    public UserResponse update(String id, UserUpdateRequest userUpdateRequest) {
+        return updateUserUseCase.update(id, userUpdateRequest);
     }
 
     @Override
-    public UserResponseDTOPorts updatePassword(String id, UpdatePasswordRequestDTOPorts updatePasswordRequestDTO) {
-        return updatePasswordUseCase.updatePassword(id, updatePasswordRequestDTO);
+    public UserResponse updatePassword(String id, UpdatePasswordRequest updatePasswordRequest) {
+        return updatePasswordUseCase.updatePassword(id, updatePasswordRequest);
     }
 
     @Override
-    public List<UserResponseDTOPorts> findByName(String name) {
+    public List<UserResponse> findByName(String name) {
         return findByNameUseCase.findByName(name);
     }
 
     @Override
-    public UserResponseDTOPorts findById(String id) {
+    public UserResponse findById(String id) {
         return findByIdUseCase.findById(id);
     }
 
