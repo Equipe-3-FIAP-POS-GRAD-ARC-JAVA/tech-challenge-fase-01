@@ -6,6 +6,9 @@ import java.util.Objects;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.BusinessRuleException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.InvalidFieldException;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Email;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.PersonName;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Username;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,34 +21,28 @@ import lombok.Getter;
  * - Valida seu próprio estado
  * - Fornece métodos de fábrica para criação
  * - Protege invariantes do domínio
+ * - Usa Value Objects para conceitos do domínio (Email, Username, PersonName)
  */
 @Getter
 @Builder
 public class UserDomain {
 
-    private static final int NAME_MIN_LENGTH = 2;
-    private static final int NAME_MAX_LENGTH = 100;
-    private static final int LOGIN_MIN_LENGTH = 3;
-    private static final int LOGIN_MAX_LENGTH = 50;
+    // Constantes de validação mantidas para senha (não é Value Object ainda)
     private static final int PASSWORD_MIN_LENGTH = 6;
     private static final int PASSWORD_MAX_LENGTH = 100;
-    private static final int EMAIL_MAX_LENGTH = 255;
 
-    private static final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-    private static final String LOGIN_PATTERN = "^[a-zA-Z0-9._-]+$";
-    private static final String NAME_PATTERN = "^[a-zA-ZÀ-ÿ\\s.'-]+$"; // Aceita letras, espaços, acentos, ponto,
-                                                                       // apóstrofo e hífen
     private String id;
-    private String name;
-    private String email;
-    private String login;
-    private String password;
+    private PersonName name; // Value Object
+    private Email email; // Value Object
+    private Username login; // Value Object
+    private String password; // Mantido como String (será criptografado)
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<RolesEnum> role;
     private boolean isActive;
 
-    private UserDomain(String id, String name, String email, String login,
+    // Construtor privado para forçar uso dos factory methods
+    private UserDomain(String id, PersonName name, Email email, Username login,
             String password, LocalDateTime createdAt, LocalDateTime updatedAt,
             List<RolesEnum> role, boolean isActive) {
         this.id = id;
@@ -59,16 +56,63 @@ public class UserDomain {
         this.isActive = isActive;
     }
 
+    // Getters convenientes que retornam String (compatibilidade)
+
+    /**
+     * Retorna o nome como String.
+     */
+    public String getName() {
+        return name != null ? name.getValue() : null;
+    }
+
+    /**
+     * Retorna o email como String.
+     */
+    public String getEmail() {
+        return email != null ? email.getValue() : null;
+    }
+
+    /**
+     * Retorna o login como String.
+     */
+    public String getLogin() {
+        return login != null ? login.getValue() : null;
+    }
+
+    // Getters dos Value Objects (para uso interno do domínio)
+
+    /**
+     * Retorna o Value Object PersonName.
+     */
+    public PersonName getPersonName() {
+        return name;
+    }
+
+    /**
+     * Retorna o Value Object Email.
+     */
+    public Email getEmailObject() {
+        return email;
+    }
+
+    /**
+     * Retorna o Value Object Username.
+     */
+    public Username getUsernameObject() {
+        return login;
+    }
+
+    /**
+     * Cria um novo usuário cliente.
+     * Aplica as regras de negócio para criação de cliente.
+     */
     public static UserDomain createClient(String name, String email, String login, String password) {
-        validateRequiredFields(name, email, login, password);
-        validateEmail(email);
-        validateLogin(login);
         validatePassword(password);
 
         return UserDomain.builder()
-                .name(name.trim())
-                .email(email.trim().toLowerCase())
-                .login(login.trim().toLowerCase())
+                .name(PersonName.of(name))
+                .email(Email.of(email))
+                .login(Username.of(login))
                 .password(password) // Senha já deve vir criptografada
                 .createdAt(LocalDateTime.now())
                 .isActive(true)
@@ -76,16 +120,17 @@ public class UserDomain {
                 .build();
     }
 
+    /**
+     * Cria um novo usuário proprietário (owner).
+     * Aplica as regras de negócio para criação de proprietário.
+     */
     public static UserDomain createOwner(String name, String email, String login, String password) {
-        validateRequiredFields(name, email, login, password);
-        validateEmail(email);
-        validateLogin(login);
         validatePassword(password);
 
         return UserDomain.builder()
-                .name(name.trim())
-                .email(email.trim().toLowerCase())
-                .login(login.trim().toLowerCase())
+                .name(PersonName.of(name))
+                .email(Email.of(email))
+                .login(Username.of(login))
                 .password(password) // Senha já deve vir criptografada
                 .createdAt(LocalDateTime.now())
                 .isActive(true)
@@ -93,16 +138,21 @@ public class UserDomain {
                 .build();
     }
 
+    /**
+     * Atualiza as informações básicas do usuário.
+     * Valida os novos dados antes de aplicar.
+     * 
+     * Regra de negócio: Usuário inativo não pode ter suas informações atualizadas.
+     */
     public void updateInfo(String name, String email, String login) {
         if (!this.isActive) {
             throw new BusinessRuleException("Não é possível atualizar informações de usuário inativo");
         }
 
-        validateRequiredFieldsForUpdate(name, email, login);
-
-        this.name = name.trim();
-        this.email = email.trim().toLowerCase();
-        this.login = login.trim().toLowerCase();
+        // Value Objects fazem validação automaticamente
+        this.name = PersonName.of(name);
+        this.email = Email.of(email);
+        this.login = Username.of(login);
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -175,117 +225,14 @@ public class UserDomain {
 
     // Métodos de Validação (Invariantes do Domínio)
 
-    private static void validateRequiredFields(String name, String email, String login, String password) {
-        validateName(name);
-        validateEmail(email);
-        validateLogin(login);
-        validatePassword(password);
-    }
-
-    private static void validateRequiredFieldsForUpdate(String name, String email, String login) {
-        validateName(name);
-        validateEmail(email);
-        validateLogin(login);
-    }
-
     /**
-     * Valida o nome do usuário.
+     * Validações de name, email e login foram movidas para os Value Objects:
+     * - PersonName.of(name)
+     * - Email.of(email)
+     * - Username.of(login)
      * 
-     * Regras de negócio:
-     * - Não pode ser nulo ou vazio
-     * - Deve ter entre 2 e 100 caracteres
-     * - Deve conter apenas letras, espaços, acentos e caracteres especiais
-     * permitidos (. ' -)
+     * Apenas a validação de senha permanece aqui pois não é Value Object.
      */
-    private static void validateName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new InvalidFieldException("name", "Nome é obrigatório");
-        }
-
-        String trimmedName = name.trim();
-
-        if (trimmedName.length() < NAME_MIN_LENGTH) {
-            throw new InvalidFieldException("name",
-                    String.format("Nome deve ter no mínimo %d caracteres", NAME_MIN_LENGTH));
-        }
-
-        if (trimmedName.length() > NAME_MAX_LENGTH) {
-            throw new InvalidFieldException("name",
-                    String.format("Nome deve ter no máximo %d caracteres", NAME_MAX_LENGTH));
-        }
-
-        if (!trimmedName.matches(NAME_PATTERN)) {
-            throw new InvalidFieldException("name",
-                    "Nome deve conter apenas letras, espaços e caracteres especiais permitidos (. ' -)");
-        }
-    }
-
-    /**
-     * Valida o email do usuário.
-     * 
-     * Regras de negócio:
-     * - Não pode ser nulo ou vazio
-     * - Deve ter formato válido de email
-     * - Deve ter no máximo 255 caracteres
-     */
-    private static void validateEmail(String email) {
-        if (email == null || email.isBlank()) {
-            throw new InvalidFieldException("email", "Email é obrigatório");
-        }
-
-        String trimmedEmail = email.trim();
-
-        if (trimmedEmail.length() > EMAIL_MAX_LENGTH) {
-            throw new InvalidFieldException("email",
-                    String.format("Email deve ter no máximo %d caracteres", EMAIL_MAX_LENGTH));
-        }
-
-        if (!trimmedEmail.matches(EMAIL_PATTERN)) {
-            throw new InvalidFieldException("email", "Email inválido. Use o formato: usuario@dominio.com");
-        }
-    }
-
-    /**
-     * Valida o login do usuário.
-     * 
-     * Regras de negócio:
-     * - Não pode ser nulo ou vazio
-     * - Deve ter entre 3 e 50 caracteres
-     * - Deve conter apenas letras, números e caracteres especiais permitidos (. _
-     * -)
-     * - Não pode começar ou terminar com caracteres especiais
-     */
-    private static void validateLogin(String login) {
-        if (login == null || login.isBlank()) {
-            throw new InvalidFieldException("login", "Login é obrigatório");
-        }
-
-        String trimmedLogin = login.trim();
-
-        if (trimmedLogin.length() < LOGIN_MIN_LENGTH) {
-            throw new InvalidFieldException("login",
-                    String.format("Login deve ter no mínimo %d caracteres", LOGIN_MIN_LENGTH));
-        }
-
-        if (trimmedLogin.length() > LOGIN_MAX_LENGTH) {
-            throw new InvalidFieldException("login",
-                    String.format("Login deve ter no máximo %d caracteres", LOGIN_MAX_LENGTH));
-        }
-
-        if (!trimmedLogin.matches(LOGIN_PATTERN)) {
-            throw new InvalidFieldException("login",
-                    "Login deve conter apenas letras, números e caracteres especiais (. _ -)");
-        }
-
-        // Valida que não começa ou termina com caracteres especiais
-        char firstChar = trimmedLogin.charAt(0);
-        char lastChar = trimmedLogin.charAt(trimmedLogin.length() - 1);
-
-        if (!Character.isLetterOrDigit(firstChar) || !Character.isLetterOrDigit(lastChar)) {
-            throw new InvalidFieldException("login",
-                    "Login deve começar e terminar com letra ou número");
-        }
-    }
 
     /**
      * Valida a senha do usuário.
@@ -293,6 +240,7 @@ public class UserDomain {
      * Regras de negócio:
      * - Não pode ser nula ou vazia
      * - Deve ter entre 6 e 100 caracteres
+     * - Deve conter pelo menos uma letra E um número
      * 
      * Nota: A senha deve chegar já criptografada nos Use Cases.
      * Esta validação é para a senha em texto plano antes da criptografia.
