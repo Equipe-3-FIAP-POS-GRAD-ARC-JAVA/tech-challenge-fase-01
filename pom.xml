@@ -73,11 +73,11 @@
 		</dependency>
 
 		<!-- MapStruct API -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- Binding Lombok + MapStruct (fundamental p/ evitar "Type X has no properties") -->
 		<dependency>
@@ -137,11 +137,11 @@
 					<release>${java.version}</release>
 					<annotationProcessorPaths>
 						<!-- MapStruct Processor -->
-						<path>
+						<!-- <path>
 							<groupId>org.mapstruct</groupId>
 							<artifactId>mapstruct-processor</artifactId>
 							<version>${mapstruct.version}</version>
-						</path>
+						</path> -->
 						<!-- Lombok -->
 						<path>
 							<groupId>org.projectlombok</groupId>
@@ -149,11 +149,11 @@
 							<version>${lombok.version}</version>
 						</path>
 						<!-- Binding Lombok + MapStruct -->
-						<path>
+						<!-- <path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok-mapstruct-binding</artifactId>
 							<version>${lombok.mapstruct.binding.version}</version>
-						</path>
+						</path> -->
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
