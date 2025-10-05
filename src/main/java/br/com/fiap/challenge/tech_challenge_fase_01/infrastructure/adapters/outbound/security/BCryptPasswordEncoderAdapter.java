@@ -1,27 +1,39 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.security;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
+import lombok.RequiredArgsConstructor;
 
+/**
+ * Adapter Outbound que implementa o port de codificação de senhas.
+ * 
+ * Responsabilidade (SOLID - SRP):
+ * - Adaptar o PasswordEncoder do Spring Security para o port da aplicação
+ * - Delegar operações de hash de senha
+ * 
+ * Arquitetura Hexagonal:
+ * - Adapter Outbound (driven adapter)
+ * - Implementa PasswordEncoderPort (port outbound)
+ * - Usa PasswordEncoder do Spring Security
+ * - Mantém a camada de aplicação independente de Spring Security
+ * 
+ * OCP: Se precisar trocar BCrypt por outro algoritmo (Argon2, etc),
+ * basta trocar o bean no SecurityBeansConfig, sem alterar este adapter.
+ */
 @Component
+@RequiredArgsConstructor
 public class BCryptPasswordEncoderAdapter implements PasswordEncoderPort {
 
-    private final BCryptPasswordEncoder encoder;
-
-    public BCryptPasswordEncoderAdapter() {
-        // Fator de custo 12 (2^12 rounds)
-        // Balanceamento entre segurança e performance
-        this.encoder = new BCryptPasswordEncoder(12);
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public String encode(String rawPassword) {
         if (rawPassword == null || rawPassword.isBlank()) {
             throw new IllegalArgumentException("Senha não pode ser nula ou vazia");
         }
-        return encoder.encode(rawPassword);
+        return passwordEncoder.encode(rawPassword);
     }
 
     @Override
@@ -29,6 +41,6 @@ public class BCryptPasswordEncoderAdapter implements PasswordEncoderPort {
         if (rawPassword == null || encodedPassword == null) {
             return false;
         }
-        return encoder.matches(rawPassword, encodedPassword);
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }
