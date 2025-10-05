@@ -1,6 +1,7 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.user;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserFindByNamePort;
@@ -16,6 +17,11 @@ public class FindUserByNameUseCase implements UserFindByNamePort {
 
     @Override
     public List<UserResponse> findByName(String name) {
-        return this.userRepository.findByName(name);
+
+        var users = userRepository.findByName(name);
+
+        return users.stream()
+                .map(UserResponse::fromDomain)
+                .collect(Collectors.toList());
     }
 }

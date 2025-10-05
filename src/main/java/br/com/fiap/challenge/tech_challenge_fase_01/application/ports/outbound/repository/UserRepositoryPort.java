@@ -1,29 +1,67 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserCreateOwnerPort;
 
+/**
+ * Port Outbound para operações de persistência de usuário.
+ * 
+ * Seguindo a Arquitetura Hexagonal, esta interface:
+ * - Trabalha APENAS com objetos de domínio (UserDomain)
+ * - NÃO conhece DTOs (que são artefatos da camada de infraestrutura)
+ * - Define o contrato para adaptadores de persistência
+ * 
+ * A conversão Domain <-> DTO deve ser feita na camada de infraestrutura.
+ */
 public interface UserRepositoryPort {
 
-    UserResponse createClient(UserDomain user);
+    /**
+     * Salva um novo usuário ou atualiza um existente.
+     * 
+     * @param user Objeto de domínio do usuário
+     * @return Usuário persistido
+     */
+    UserDomain save(UserDomain user);
 
-    UserResponse update(String id, UserDomain user);
+    /**
+     * Busca um usuário por ID.
+     * 
+     * @param id ID do usuário
+     * @return Optional contendo o usuário se encontrado
+     */
+    Optional<UserDomain> findById(String id);
 
-    UserResponse updatePassword(String id, String password);
+    /**
+     * Busca usuários por nome (pode retornar vários resultados).
+     * 
+     * @param name Nome ou parte do nome do usuário
+     * @return Lista de usuários encontrados
+     */
+    List<UserDomain> findByName(String name);
 
-    List<UserResponse> findByName(String name);
+    /**
+     * Busca um usuário por username/login.
+     * 
+     * @param username Username do usuário
+     * @return Optional contendo o usuário se encontrado
+     */
+    Optional<UserDomain> findByUsername(String username);
 
-    UserResponse findById(String id);
-
-    UserDomain findByIdtoDomain(String id);
-
+    /**
+     * Remove um usuário.
+     * 
+     * @param id ID do usuário a ser removido
+     */
     void delete(String id);
 
-    UserResponse createOwner(UserCreateOwnerPort request);
-
-    UserResponse findByUsername(String username);
+    /**
+     * Verifica se existe um usuário com o username informado.
+     * 
+     * @param username Username a verificar
+     * @return true se existe, false caso contrário
+     */
+    boolean existsByUsername(String username);
 
 }
