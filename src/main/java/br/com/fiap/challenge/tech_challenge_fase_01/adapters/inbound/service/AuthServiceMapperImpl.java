@@ -35,16 +35,12 @@ public class AuthServiceMapperImpl implements AuthServiceMapper {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             return jwtTokenService.getLoginResponse(request.login());
         } catch (AuthenticationException ex) {
-            // lance sua exceção de domínio mapeada para 401
             throw new UnauthorizedException("Credenciais inválidas.");
         }
     }
 
     @Override
     public User findAuthenticatedUserByUsername(String username) {
-        // se a intenção é “pegar o logado”, prefira usar o SecurityContext:
-        // var principal = SecurityContextHolder.getContext().getAuthentication().getName();
-        // return userService.findByUsername(principal);
         return userService.findByUsername(username);
     }
 }

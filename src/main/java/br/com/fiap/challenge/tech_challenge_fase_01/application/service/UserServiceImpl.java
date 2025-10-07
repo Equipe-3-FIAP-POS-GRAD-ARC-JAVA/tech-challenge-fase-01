@@ -7,6 +7,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.ports.repository.UserReposit
 import br.com.fiap.challenge.tech_challenge_fase_01.ports.usecases.UserUseCases;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,9 +21,12 @@ public class UserServiceImpl implements UserUseCases {
 
     private final UserRepository userRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public User createClient(User user) {
         log.info("Creating user CLIENT with email: {}", user.getEmail());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setRoles(List.of(RolesEnum.CLIENT));

@@ -1,73 +1,86 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.adapters.inbound.security.jwt;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.RolesEnum;
-import br.com.fiap.challenge.tech_challenge_fase_01.domain.user.User;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 @Component
-@RequiredArgsConstructor
 public class JwtTokenManager {
 
-    private final JwtProperties jwtProperties;
+    @Value("${security.jwt.secret}")
+    private String secretKeyRaw;
 
-    public String generateToken(User user) {
-        final String username = user.getLogin();
+    @Value("${security.jwt.expiration-ms:86400000}") // 24h
+    private long jwtExpirationMs;
 
-        // Evita problema de inferência de tipos
-        final List<RolesEnum> userRoles = (user.getRoles() == null) ? List.of() : user.getRoles();
+    private SecretKey signingKey;
 
-        // ["ROLE_ADMIN", "ROLE_DONO", ...]
-        final String[] roleNames = userRoles.stream()
-                .map(r -> "ROLE_" + r.name())
-                .toArray(String[]::new);
-
-        //@formatter:off
-        return JWT.create()
-                .withSubject(username)
-                .withIssuer(jwtProperties.getIssuer())
-                .withArrayClaim("roles", roleNames)
-                .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getExpirationMinute() * 60L * 1000L))
-                .sign(Algorithm.HMAC256(jwtProperties.getSecretKey().getBytes()));
-        //@formatter:on
+    @PostConstruct
+    void initKey() {
+        // Para HS256 o segredo precisa ter >= 256 bits (32 bytes).
+        // Use Base64 ou uma string longa. Aqui usamos UTF-8 direto:
+        this.signingKey = Keys.hmacShaKeyFor(secretKeyRaw.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String getUsernameFromToken(String token) {
-        return getDecodedJWT(token).getSubject();
+    private SecretKey getSigningKey() {
+        return this.signingKey;
     }
 
-    public List<String> getRolesFromToken(String token) {
-        return getDecodedJWT(token).getClaim("roles").asList(String.class);
+    // Gera token
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + jwtExpirationMs);
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(userDetails.getUsername())
+                .issuedAt(now)
+                .expiration(exp)
+                .signWith(getSigningKey(), Jwts.SIG.HS256) // API 0.12.x
+                .compact();
     }
 
-    public boolean validateToken(String token, String authenticatedUsername) {
-        final String usernameFromToken = getUsernameFromToken(token);
-        return usernameFromToken.equals(authenticatedUsername) && !isTokenExpired(token);
+    // Extrai o login/email (subject)
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    // Valida o token
+    public boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
-        final Date expirationDateFromToken = getExpirationDateFromToken(token);
-        return expirationDateFromToken.before(new Date());
+        return extractExpiration(token).before(new Date());
     }
 
-    private Date getExpirationDateFromToken(String token) {
-        return getDecodedJWT(token).getExpiresAt();
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 
-    private DecodedJWT getDecodedJWT(String token) {
-        final Algorithm alg = Algorithm.HMAC256(jwtProperties.getSecretKey().getBytes());
-        final JWTVerifier jwtVerifier = JWT.require(alg)
-                .withIssuer(jwtProperties.getIssuer())
-                .build();
-        return jwtVerifier.verify(token);
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())   // API 0.12.x
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
