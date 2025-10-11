@@ -1,31 +1,42 @@
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
---VALUES (gen_random_uuid(), 'Vinicius Padovam', 'vinicius@example.com', 'vpadovam', '123456', NOW(), NOW(), 'OWNER') ON CONFLICT (email) DO NOTHING;
---
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
---VALUES (gen_random_uuid(), 'Maria Silva', 'maria.silva@example.com', 'mariasilva', 'senha123', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
---
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
---VALUES (gen_random_uuid(), 'João Pereira', 'joao.pereira@example.com', 'joaop', 'abc123', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
---
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
---VALUES (gen_random_uuid(), 'Ana Souza', 'ana.souza@example.com', 'anasouza', 'qwerty', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
---
---INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
---VALUES (gen_random_uuid(), 'Carlos Oliveira', 'carlos.oliveira@example.com', 'carlosol', 'pass123', NOW(), NOW(), 'OWNER') ON CONFLICT (email) DO NOTHING;
---
---
----- ADDRESSES (referenciam os usuários já criados)
---INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
---VALUES (gen_random_uuid(), (SELECT id FROM "users" WHERE login = 'vpadovam'), 'Rua das Palmeiras', '123', 'São Paulo', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
---
---INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
---VALUES (gen_random_uuid(), (SELECT id FROM "users" WHERE login = 'mariasilva'), 'Av. Paulista', '1000', 'São Paulo', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
---
---INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
---VALUES (gen_random_uuid(), (SELECT id FROM "users" WHERE login = 'joaop'), 'Rua XV de Novembro', '200', 'Curitiba', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
---
---INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
---VALUES (gen_random_uuid(), (SELECT id FROM "users" WHERE login = 'anasouza'), 'Av. Atlântica', '500', 'Rio de Janeiro', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
---
---INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
---VALUES (gen_random_uuid(), (SELECT id FROM "users" WHERE login = 'carlosol'), 'Rua das Flores', '45B', 'Belo Horizonte', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
+-- Fixed UUIDs for users
+-- vpadovam: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+-- mariasilva: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12
+-- joaop: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13
+-- anasouza: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14
+-- carlosol: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15
+-- joao.silva2: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
+
+INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Vinicius Padovam', 'vinicius@example.com', 'vpadovam', '$2a$10$5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5u', NOW(), NOW(), 'OWNER') ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Maria Silva', 'maria.silva@example.com', 'mariasilva', '$2a$10$5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5u', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'João Pereira', 'joao.pereira@example.com', 'joaop', '$2a$10$5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5u', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Ana Souza', 'ana.souza@example.com', 'anasouza', '$2a$10$5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5u', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'Carlos Oliveira', 'carlos.oliveira@example.com', 'carlosol', '$2a$10$5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5u', NOW(), NOW(), 'OWNER') ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, role)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'Joao Silva', 'joao.silva2@example.com', 'joao.silva2', '$2a$12$LQv3c1yqBWVHxkd0LQ1lqe.A5Jx9LC9lgIdSwCYs2YYs1UVwVJe/C', NOW(), NOW(), 'CLIENT') ON CONFLICT (email) DO NOTHING;
+
+
+-- ADDRESSES (referenciam os usuários já criados)
+INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
+VALUES (gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Rua das Palmeiras', '123', 'São Paulo', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
+VALUES (gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Av. Paulista', '1000', 'São Paulo', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
+VALUES (gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Rua XV de Novembro', '200', 'Curitiba', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
+VALUES (gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Av. Atlântica', '500', 'Rio de Janeiro', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)
+VALUES (gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'Rua das Flores', '45B', 'Belo Horizonte', NOW(), NOW()) ON CONFLICT (id) DO NOTHING;
