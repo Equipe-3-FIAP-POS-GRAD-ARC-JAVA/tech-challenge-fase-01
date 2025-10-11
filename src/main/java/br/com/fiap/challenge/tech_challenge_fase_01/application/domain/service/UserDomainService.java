@@ -64,7 +64,7 @@ public class UserDomainService {
      * @throws UserAlreadyExistsException se o email já existe
      */
     public void ensureEmailIsUnique(Email email) {
-        userRepository.findByUsername(email.getValue()).ifPresent(user -> {
+        userRepository.findByEmail(email.getValue()).ifPresent(user -> {
             throw new UserAlreadyExistsException(
                     "Já existe um usuário com o email: " + email.getValue());
         });

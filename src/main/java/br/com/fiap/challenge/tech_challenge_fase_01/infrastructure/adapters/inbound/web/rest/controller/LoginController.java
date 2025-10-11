@@ -28,28 +28,22 @@ import lombok.RequiredArgsConstructor;
  * - Depende apenas de abstrações (ports)
  */
 @RestController
-@RequiredArgsConstructor
-@RequestMapping("/login")
+@RequiredArgsConstructor 
+@RequestMapping("/api/v1/auth")
 public class LoginController {
-
+    
     private final AuthPort authPort;
     private final AuthWebMapper authWebMapper;
 
-    /**
-     * Endpoint de login.
-     * Público (permitAll no SecurityConfig).
-     * 
-     * @param loginRequest Credenciais do usuário
-     * @return Token JWT se autenticação bem-sucedida
-     */
-    @PostMapping
+    @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.LoginRequest appRequest = authWebMapper
-                .toApplicationLoginRequest(loginRequest);
-
-        br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.LoginResponse appResponse = authPort
-                .login(appRequest);
-
+        // 1. Converte DTO Web → DTO Application
+        var appRequest = authWebMapper.toApplicationLoginRequest(loginRequest);
+        
+        // 2. Chama Use Case através do Port
+        var appResponse = authPort.login(appRequest);
+        
+        // 3. Converte DTO Application → DTO Web  
         return ResponseEntity.ok(authWebMapper.toWebLoginResponse(appResponse));
     }
 }

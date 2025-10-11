@@ -48,7 +48,7 @@ public class JpaUserEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "roles", nullable = false)
     private List<RolesEnum> role;
     @Column(name = "is_active", nullable = false)
     private boolean isActive;

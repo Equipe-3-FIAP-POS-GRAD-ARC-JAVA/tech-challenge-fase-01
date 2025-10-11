@@ -41,20 +41,6 @@ public class UserDomain {
     private List<RolesEnum> role;
     private boolean isActive;
 
-    private UserDomain(UUID id, PersonName name, Email email, Username login,
-            String password, LocalDateTime createdAt, LocalDateTime updatedAt,
-            List<RolesEnum> role, boolean isActive) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.login = login;
-        this.password = password;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.role = role;
-        this.isActive = isActive;
-    }
-
     // Getters convenientes que retornam String (compatibilidade)
 
     /**
@@ -283,16 +269,6 @@ public class UserDomain {
             throw new InvalidFieldException("password",
                     "Senha deve conter pelo menos um número");
         }
-    }
-
-    // Métodos auxiliares para Lombok Builder
-
-    /**
-     * Classe Builder customizada para garantir validações.
-     */
-    public static class UserDomainBuilder {
-        // Lombok gera automaticamente os métodos do builder
-        // Podemos adicionar métodos customizados aqui se necessário
     }
 
     // Sobrescrita de equals e hashCode baseado em ID (Entity pattern)

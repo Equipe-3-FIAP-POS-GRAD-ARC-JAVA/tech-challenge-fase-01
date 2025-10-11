@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -32,7 +33,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNo
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final String BASE_PROBLEM_TYPE = "https://api.fiap.com.br/problems";
+    private static final String BASE_PROBLEM_TYPE = "/problems";
 
     // ═══════════════════════════════════════════════════════════════
     // EXCEÇÕES DE DOMÍNIO - Domain Layer
@@ -50,15 +51,16 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(InvalidFieldException.class)
     public ProblemDetail handleInvalidFieldException(InvalidFieldException ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-
-        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/invalid-field"));
-        problemDetail.setTitle("Campo Inválido");
-        problemDetail.setInstance(getRequestUri(request));
-        problemDetail.setProperty("timestamp", getTimestamp());
-        problemDetail.setProperty("errorType", "VALIDATION_ERROR");
+        ProblemDetail problemDetail = createBaseProblemDetail(
+                HttpStatus.BAD_REQUEST, 
+                ex.getMessage(), 
+                "/invalid-field", 
+                "Campo Inválido", 
+                "VALIDATION_ERROR", 
+                request
+        );
+        
         problemDetail.setProperty("fieldName", ex.getFieldName());
-
         return problemDetail;
     }
 
@@ -74,16 +76,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BusinessRuleException.class)
     public ProblemDetail handleBusinessRuleException(BusinessRuleException ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
-
-        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/business-rule-violation"));
-        problemDetail.setTitle("Regra de Negócio Violada");
-        problemDetail.setInstance(getRequestUri(request));
-        problemDetail.setProperty("timestamp", getTimestamp());
-        problemDetail.setProperty("errorType", "BUSINESS_RULE_VIOLATION");
-
-        return problemDetail;
+        return createBaseProblemDetail(
+                HttpStatus.UNPROCESSABLE_ENTITY, 
+                ex.getMessage(), 
+                "/business-rule-violation", 
+                "Regra de Negócio Violada", 
+                "BUSINESS_RULE_VIOLATION", 
+                request
+        );
     }
 
     /**
@@ -95,15 +95,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DomainValidationException.class)
     public ProblemDetail handleDomainValidationException(DomainValidationException ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-
-        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/validation-error"));
-        problemDetail.setTitle("Erro de Validação");
-        problemDetail.setInstance(getRequestUri(request));
-        problemDetail.setProperty("timestamp", getTimestamp());
-        problemDetail.setProperty("errorType", "DOMAIN_VALIDATION_ERROR");
-
-        return problemDetail;
+        return createBaseProblemDetail(
+                HttpStatus.BAD_REQUEST, 
+                ex.getMessage(), 
+                "/domain-validation", 
+                "Validação de Domínio", 
+                "DOMAIN_VALIDATION_ERROR", 
+                request
+        );
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -116,15 +115,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(UserNotFoundException.class)
     public ProblemDetail handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-
-        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/not-found"));
-        problemDetail.setTitle("Usuário Não Encontrado");
-        problemDetail.setInstance(getRequestUri(request));
-        problemDetail.setProperty("timestamp", getTimestamp());
-        problemDetail.setProperty("errorType", "RESOURCE_NOT_FOUND");
-
-        return problemDetail;
+        return createBaseProblemDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                "/not-found",
+                "Usuário Não Encontrado",
+                "RESOURCE_NOT_FOUND",
+                request
+        );
     }
 
     /**
@@ -211,6 +209,33 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Trata exceções do sistema JPA (incluindo PSQLException).
+     * HTTP 500 - Internal Server Error
+     * 
+     * Captura erros de baixo nível do JPA/Hibernate, incluindo PSQLException
+     * como "No results were returned by the query" que podem ocorrer
+     * durante validações de existência de usuários.
+     */
+    @ExceptionHandler(JpaSystemException.class)
+    public ProblemDetail handleJpaSystemException(JpaSystemException ex, WebRequest request) {
+        // Log do erro real para debug
+        System.err.println("JpaSystemException caught: " + ex.getMessage());
+        System.err.println("Cause: " + ex.getCause());
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocorreu um erro interno. Por favor, tente novamente mais tarde.");
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/internal-server-error"));
+        problemDetail.setTitle("Erro Interno do Servidor");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "JPA_SYSTEM_ERROR");
+
+        return problemDetail;
+    }
+
+    /**
      * Trata exceções genéricas não capturadas.
      * HTTP 500 - Internal Server Error
      * 
@@ -242,6 +267,34 @@ public class GlobalExceptionHandler {
     // MÉTODOS AUXILIARES - RFC 7807
     // ═══════════════════════════════════════════════════════════════
 
+    // ═══════════════════════════════════════════════════════════════
+    // MÉTODOS UTILITÁRIOS - DRY Principle
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Factory method para criar ProblemDetail base.
+     * Elimina duplicação de código e padroniza estrutura RFC 7807.
+     * Aplica DRY (Don't Repeat Yourself).
+     */
+    private ProblemDetail createBaseProblemDetail(
+            HttpStatus status,
+            String detail,
+            String typeSubpath,
+            String title,
+            String errorType,
+            WebRequest request) {
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, detail);
+        
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + typeSubpath));
+        problemDetail.setTitle(title);
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty(TIMESTAMP_PROPERTY, getTimestamp());
+        problemDetail.setProperty(ERROR_TYPE_PROPERTY, errorType);
+        
+        return problemDetail;
+    }
+
     /**
      * Extrai o caminho da requisição (URI).
      * Usado para preencher o campo 'instance' do RFC 7807.
@@ -259,4 +312,8 @@ public class GlobalExceptionHandler {
         return ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
+
+    // Constantes para evitar duplicação de strings
+    private static final String TIMESTAMP_PROPERTY = "timestamp";
+    private static final String ERROR_TYPE_PROPERTY = "errorType";
 }

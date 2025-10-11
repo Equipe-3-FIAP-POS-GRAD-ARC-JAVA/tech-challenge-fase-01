@@ -65,4 +65,12 @@ public interface UserRepositoryPort {
      */
     boolean existsByUsername(String username);
 
+    /**
+     * Busca um usuário por email.
+     * 
+     * @param email Email do usuário
+     * @return Optional contendo o usuário se encontrado
+     */
+    Optional<UserDomain> findByEmail(String email);
+
 }

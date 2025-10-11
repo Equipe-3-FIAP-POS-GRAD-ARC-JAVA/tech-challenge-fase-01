@@ -19,27 +19,17 @@ import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbo
 @Component
 public class AuthWebMapper {
 
-    /**
-     * Converte requisição de login da web para aplicação.
-     */
     public br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.LoginRequest 
             toApplicationLoginRequest(LoginRequest webDto) {
-        if (webDto == null) {
-            return null;
-        }
+        // Normaliza login para lowercase
+        String normalizedLogin = webDto.login().trim().toLowerCase();
         return new br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.LoginRequest(
-                webDto.login(),
-                webDto.password());
+            normalizedLogin,
+            webDto.password());
     }
 
-    /**
-     * Converte resposta de login da aplicação para web.
-     */
     public LoginResponse toWebLoginResponse(
             br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.LoginResponse appResponse) {
-        if (appResponse == null) {
-            return null;
-        }
         return new LoginResponse(appResponse.token());
     }
 }

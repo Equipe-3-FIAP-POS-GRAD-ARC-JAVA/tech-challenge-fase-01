@@ -2,6 +2,7 @@ package br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.user;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.service.UserDomainService;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Email;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
@@ -38,6 +39,7 @@ public class CreateOwnerUseCase implements UserCreateOwnerPort {
 
         // Domain Service valida regras de negócio que envolvem o repositório
         userDomainService.ensureUsernameIsUnique(userCreateRequest.login());
+        userDomainService.ensureEmailIsUnique(Email.of(userCreateRequest.email()));
 
         // Criptografa a senha antes de criar o domínio
         String encryptedPassword = passwordEncoder.encode(userCreateRequest.password());

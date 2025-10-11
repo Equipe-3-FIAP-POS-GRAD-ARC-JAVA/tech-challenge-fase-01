@@ -3,15 +3,15 @@ package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inb
 import java.util.Date;
 import java.util.List;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Component;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.RolesEnum;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -27,27 +27,29 @@ public class JwtTokenManager {
         final List<RolesEnum> userRoles = (user.getRole() == null) ? List.of() : user.getRole();
 
         // ["ROLE_ADMIN", "ROLE_DONO", ...]
-        final String[] roleNames = userRoles.stream()
+        final List<String> roleNames = userRoles.stream()
                 .map(r -> "ROLE_" + r.name())
-                .toArray(String[]::new);
+                .toList();
 
-        // @formatter:off
-        return JWT.create()
-                .withSubject(username)
-                .withIssuer(jwtProperties.getIssuer())
-                .withArrayClaim("roles", roleNames)
-                .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getExpirationMinute() * 60L * 1000L))
-                .sign(Algorithm.HMAC256(jwtProperties.getSecretKey().getBytes()));
-        // @formatter:on
+        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
+
+        return Jwts.builder()
+                .subject(username)
+                .issuer(jwtProperties.getIssuer())
+                .claim("roles", roleNames)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpirationMinute() * 60L * 1000L))
+                .signWith(key)
+                .compact();
     }
 
     public String getUsernameFromToken(String token) {
-        return getDecodedJWT(token).getSubject();
+        return getClaimsFromToken(token).getSubject();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
-        return getDecodedJWT(token).getClaim("roles").asList(String.class);
+        return getClaimsFromToken(token).get("roles", List.class);
     }
 
     public boolean validateToken(String token, String authenticatedUsername) {
@@ -61,14 +63,15 @@ public class JwtTokenManager {
     }
 
     private Date getExpirationDateFromToken(String token) {
-        return getDecodedJWT(token).getExpiresAt();
+        return getClaimsFromToken(token).getExpiration();
     }
 
-    private DecodedJWT getDecodedJWT(String token) {
-        final Algorithm alg = Algorithm.HMAC256(jwtProperties.getSecretKey().getBytes());
-        final JWTVerifier jwtVerifier = JWT.require(alg)
-                .withIssuer(jwtProperties.getIssuer())
-                .build();
-        return jwtVerifier.verify(token);
+    private Claims getClaimsFromToken(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

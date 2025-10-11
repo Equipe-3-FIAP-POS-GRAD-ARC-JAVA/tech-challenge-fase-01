@@ -24,11 +24,18 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.s
  * - Não conhece detalhes de infraestrutura (JWT, Spring Security, etc)
  */
 public class AuthUseCases implements AuthPort {
-
+    
     private final UserRepositoryPort userRepository;
-    private final PasswordEncoderPort passwordEncoder;
+    private final PasswordEncoderPort passwordEncoder; 
     private final JwtTokenPort jwtTokenPort;
 
+    /**
+     * Construtor para injeção de dependências.
+     * 
+     * @param userRepository Port para acesso aos dados de usuário
+     * @param passwordEncoder Port para validação de senhas
+     * @param jwtTokenPort Port para geração de tokens JWT
+     */
     public AuthUseCases(
             UserRepositoryPort userRepository,
             PasswordEncoderPort passwordEncoder,
@@ -40,16 +47,20 @@ public class AuthUseCases implements AuthPort {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        // 1. Buscar usuário por username
-        UserDomain user = userRepository.findByUsername(request.login())
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado: " + request.login()));
+        // 1. Buscar usuário por username ou email (case-insensitive)
+        String normalizedLogin = request.login().trim().toLowerCase();
+        var userByUsername = userRepository.findByUsername(normalizedLogin);
+        var userByEmail = userRepository.findByEmail(normalizedLogin);
+
+        UserDomain user = userByUsername.or(() -> userByEmail)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
 
         // 2. Verificar se usuário está ativo
         if (!user.isActive()) {
             throw new UserNotFoundException("Usuário inativo");
         }
 
-        // 3. Validar senha
+        // 3. Validar senha usando BCrypt
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new UserNotFoundException("Credenciais inválidas");
         }
