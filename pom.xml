@@ -97,19 +97,13 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
 			<version>0.12.5</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
 			<version>0.12.5</version>
-			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.auth0</groupId>
-			<artifactId>java-jwt</artifactId>
-			<version>4.5.0</version>
-		</dependency>
+
 
 		<!-- Testes -->
 		<dependency>
@@ -117,14 +111,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- spring-security-test (habilite quando precisar) -->
-		<!--
-        <dependency>
-          <groupId>org.springframework.security</groupId>
-          <artifactId>spring-security-test</artifactId>
-          <scope>test</scope>
-        </dependency>
-        -->
+
+		<!-- H2 Database for testing -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -149,11 +142,6 @@
 							<version>${lombok.version}</version>
 						</path>
 						<!-- Binding Lombok + MapStruct -->
-						<!-- <path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok-mapstruct-binding</artifactId>
-							<version>${lombok.mapstruct.binding.version}</version>
-						</path> -->
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
