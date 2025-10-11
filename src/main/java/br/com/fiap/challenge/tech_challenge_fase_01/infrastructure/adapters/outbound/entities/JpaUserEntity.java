@@ -39,7 +39,7 @@ public class JpaUserEntity {
     private String email;
     @Column(nullable = false, length = 100)
     private String login;
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String password;
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp

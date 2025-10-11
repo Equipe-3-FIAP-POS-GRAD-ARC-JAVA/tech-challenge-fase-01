@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     password VARCHAR(100) NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    roles TEXT NOT NULL,
+    roles VARCHAR(255)[] NOT NULL,
     is_active BOOLEAN DEFAULT TRUE
 );
 

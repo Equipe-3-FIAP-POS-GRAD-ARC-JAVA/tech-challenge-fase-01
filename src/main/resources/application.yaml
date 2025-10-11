@@ -9,27 +9,21 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # Automatically create/update schema
+      ddl-auto: create-drop  # Recreate schema on startup
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/postgres/schema.sql
+      data-locations: classpath:db/postgres/data.sql
 
   main:
     allow-bean-definition-overriding: true
-
-  # JWT Configuration (remain separate)
-jwt:
-  issuer: tech-challenge-fase-01
-  secret-key: ${JWT_SECRET_KEY:e88672e7-8453-4299-8038-57c4f90cca98}
-  expiration-minute: ${JWT_EXPIRATION_MINUTE:60}
-
-# Security Configuration (new)
-security:
-  password:
-    algorithm: ${PASSWORD_ALGORITHM:bcrypt}
-    bcrypt-strength: ${BCRYPT_STRENGTH:12}
-    hide-user-not-found-exceptions: ${HIDE_USER_NOT_FOUND:false}
 
 # MVC Configuration
 # mvc:

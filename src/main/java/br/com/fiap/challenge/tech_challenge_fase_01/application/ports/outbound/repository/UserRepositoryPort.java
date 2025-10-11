@@ -43,12 +43,12 @@ public interface UserRepositoryPort {
     List<UserDomain> findByName(String name);
 
     /**
-     * Busca um usuário por username/login.
+     * Busca um usuário por login.
      * 
-     * @param username Username do usuário
+     * @param login Login do usuário
      * @return Optional contendo o usuário se encontrado
      */
-    Optional<UserDomain> findByUsername(String username);
+    Optional<UserDomain> findByLogin(String login);
 
     /**
      * Remove um usuário.
@@ -72,5 +72,7 @@ public interface UserRepositoryPort {
      * @return Optional contendo o usuário se encontrado
      */
     Optional<UserDomain> findByEmail(String email);
+
+    
 
 }

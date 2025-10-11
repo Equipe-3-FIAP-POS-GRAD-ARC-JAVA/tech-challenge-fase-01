@@ -6,8 +6,8 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.Log
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNotFoundException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.auth.AuthPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.JwtTokenPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.security.JwtUtil;
 
 /**
  * Use Case de Autenticação.
@@ -15,44 +15,43 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.s
  * Responsabilidades (SOLID - SRP):
  * - Validar credenciais do usuário
  * - Verificar se usuário está ativo
- * - Gerar token JWT através do port
+ * - Gerar token JWT
  * 
  * Arquitetura Hexagonal:
  * - Use Case da camada de aplicação (core)
  * - Implementa AuthPort (port inbound)
- * - Usa UserRepositoryPort, PasswordEncoderPort e JwtTokenPort (ports outbound)
- * - Não conhece detalhes de infraestrutura (JWT, Spring Security, etc)
+ * - Usa UserRepositoryPort e PasswordEncoderPort (ports outbound)
  */
 public class AuthUseCases implements AuthPort {
     
     private final UserRepositoryPort userRepository;
     private final PasswordEncoderPort passwordEncoder; 
-    private final JwtTokenPort jwtTokenPort;
+    private final JwtUtil jwtUtil;
 
     /**
      * Construtor para injeção de dependências.
      * 
      * @param userRepository Port para acesso aos dados de usuário
      * @param passwordEncoder Port para validação de senhas
-     * @param jwtTokenPort Port para geração de tokens JWT
+     * @param jwtUtil Utilitário para geração de tokens JWT
      */
     public AuthUseCases(
             UserRepositoryPort userRepository,
             PasswordEncoderPort passwordEncoder,
-            JwtTokenPort jwtTokenPort) {
+            JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtTokenPort = jwtTokenPort;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest login) {
         // 1. Buscar usuário por username ou email (case-insensitive)
-        String normalizedLogin = request.login().trim().toLowerCase();
-        var userByUsername = userRepository.findByUsername(normalizedLogin);
+        String normalizedLogin = login.login().trim().toLowerCase();
+        var userByLogin = userRepository.findByLogin(normalizedLogin);
         var userByEmail = userRepository.findByEmail(normalizedLogin);
 
-        UserDomain user = userByUsername.or(() -> userByEmail)
+        UserDomain user = userByLogin.or(() -> userByEmail)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
 
         // 2. Verificar se usuário está ativo
@@ -61,12 +60,12 @@ public class AuthUseCases implements AuthPort {
         }
 
         // 3. Validar senha usando BCrypt
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(login.password(), user.getPassword())) {
             throw new UserNotFoundException("Credenciais inválidas");
         }
 
         // 4. Gerar token JWT
-        String token = jwtTokenPort.generateToken(user);
+        String token = jwtUtil.generateToken(user.getLogin());
 
         return new LoginResponse(token);
     }

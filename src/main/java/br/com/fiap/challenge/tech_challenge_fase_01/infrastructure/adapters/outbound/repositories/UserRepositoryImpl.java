@@ -122,9 +122,9 @@ public class UserRepositoryImpl implements UserRepositoryPort {
     }
 
     @Override
-    public Optional<UserDomain> findByUsername(String login) {
-        log.info("🔍 UserRepositoryImpl.findByUsername() called with login: {}", login);
-        
+    public Optional<UserDomain> findByLogin(String login) {
+        log.info("🔍 UserRepositoryImpl.findByLogin() called with login: {}", login);
+
         Optional<UserDomain> result = executeWithExceptionHandling(
             () -> {
                 log.info("📦 Searching in JpaUserRepository for login: {}", login);
