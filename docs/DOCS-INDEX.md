@@ -1,21 +1,29 @@
 # 📚 Índice de Documentação - Tech Challenge Fase 01
 
-**Última Atualização**: 04/10/2025  
+**Última Atualização**: 11/10/2025  
 **Status do Projeto**: ✅ **APROVADO - 97/100**
 
 ---
 
 ## 📋 Documentos Disponíveis
 
-### 1. 📊 Relatórios de Validação
+### 1. 🏛️ **Arquitetura Hexagonal - Documentação Completa** ⭐ **NOVA**
 
 | Documento | Descrição | Atualizado | Link |
 |-----------|-----------|------------|------|
-| **PROJECT-VALIDATION-REPORT.md** | ⭐ Relatório completo de validação do projeto (NOVO) | 04/10/2025 | [Abrir](PROJECT-VALIDATION-REPORT.md) |
+| **HEXAGONAL-ARCHITECTURE-OVERVIEW.md** | ⭐ **Visão Geral Completa** da Arquitetura Hexagonal | 11/10/2025 | [Abrir](HEXAGONAL-ARCHITECTURE-OVERVIEW.md) |
+| **HEXAGONAL-ARCHITECTURE-APPLICATION-LAYER.md** | ⭐ **Application Layer** - Núcleo da Aplicação (Framework-Free) | 11/10/2025 | [Abrir](HEXAGONAL-ARCHITECTURE-APPLICATION-LAYER.md) |
+| **HEXAGONAL-ARCHITECTURE-INFRASTRUCTURE-LAYER.md** | ⭐ **Infrastructure Layer** - Adapters e Integrações | 11/10/2025 | [Abrir](HEXAGONAL-ARCHITECTURE-INFRASTRUCTURE-LAYER.md) |
+
+### 2. 📊 Relatórios de Validação
+
+| Documento | Descrição | Atualizado | Link |
+|-----------|-----------|------------|------|
+| **PROJECT-VALIDATION-REPORT.md** | ⭐ Relatório completo de validação do projeto | 04/10/2025 | [Abrir](PROJECT-VALIDATION-REPORT.md) |
 | **VALIDATION-SUMMARY.md** | Resumo executivo da validação | 04/10/2025 | [Abrir](VALIDATION-SUMMARY.md) |
 | **SOLID-HEXAGONAL-VALIDATION-REPORT.md** | Validação detalhada SOLID + Hexagonal | 04/10/2025 | [Abrir](SOLID-HEXAGONAL-VALIDATION-REPORT.md) |
 
-### 2. 🏗️ Arquitetura
+### 3. 🏗️ Arquitetura (Documentação Legada)
 
 | Documento | Descrição | Atualizado | Link |
 |-----------|-----------|------------|------|
@@ -42,15 +50,16 @@
 ## 🎯 Documentos por Público
 
 ### Para Desenvolvedores
-1. **API-DOCUMENTATION.md** - ⭐ Documentação completa da API
-2. **ARCHITECTURE-DIAGRAM.md** - Entenda a estrutura geral
-3. **INFRASTRUCTURE-LAYER.md** - Como implementar novos adapters
+1. **HEXAGONAL-ARCHITECTURE-APPLICATION-LAYER.md** - ⭐ **Núcleo da aplicação (NOVO)**
+2. **HEXAGONAL-ARCHITECTURE-INFRASTRUCTURE-LAYER.md** - ⭐ **Adapters e integrações (NOVO)**
+3. **API-DOCUMENTATION.md** - Documentação completa da API
 4. **RFC-7807-EXCEPTION-HANDLING.md** - Como tratar exceções
 
 ### Para Arquitetos
-1. **PROJECT-VALIDATION-REPORT.md** - Validação completa do projeto
-2. **SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md** - Análise arquitetural profunda
-3. **ARCHITECTURE-DIAGRAM.md** - Diagramas e fluxos
+1. **HEXAGONAL-ARCHITECTURE-OVERVIEW.md** - ⭐ **Visão completa Application vs Infrastructure (NOVO)**
+2. **PROJECT-VALIDATION-REPORT.md** - Validação completa do projeto
+3. **SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md** - Análise arquitetural profunda
+4. **ARCHITECTURE-DIAGRAM.md** - Diagramas e fluxos
 
 ### Para Líderes Técnicos
 1. **VALIDATION-SUMMARY.md** - Resumo executivo

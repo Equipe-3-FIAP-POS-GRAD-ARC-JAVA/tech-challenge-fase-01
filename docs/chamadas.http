@@ -1,0 +1,157 @@
+### =================================================================
+### TECH CHALLENGE FASE 01 - CHAMADAS REST API
+### Base URL: http://localhost:8080
+### =================================================================
+
+### VARIÁVEIS GLOBAIS
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### TOKEN JWT (obter através do login)
+@token = 
+
+### =================================================================
+### AUTENTICAÇÃO - Rotas PÚBLICAS (sem token necessário)
+### =================================================================
+
+### 1. LOGIN - Gerar token JWT
+### Rota: POST /api/v1/auth/login
+### Segurança: PÚBLICA
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "joao.silva",
+  "password": "senha123"
+}
+
+### 2. LOGIN - Teste com usuário vpadovam
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "vpadovam",
+  "password": "senha123"
+}
+
+### 3. LOGIN - Teste com usuário mariasilva
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "mariasilva",
+  "password": "senha123"
+}
+
+### =================================================================
+### USUÁRIOS - CRIAÇÃO DE CLIENTE (PÚBLICO)
+### =================================================================
+
+### 4. CRIAR USUÁRIO CLIENTE - Rota pública
+### Rota: POST /api/v1/users
+### Segurança: PÚBLICA (permitAll)
+POST {{baseUrl}}/api/v1/users
+Content-Type: {{contentType}}
+
+{
+  "name": "Novo Cliente",
+  "email": "novo.cliente@example.com",
+  "login": "novo.cliente",
+  "password": "senha123"
+}
+
+### =================================================================
+### USUÁRIOS - OPERAÇÕES AUTENTICADAS (Requer Token)
+### =================================================================
+
+### 5. BUSCAR USUÁRIO POR ID
+### Rota: GET /api/v1/users/{id}
+### Segurança: ADMIN ou OWNER
+### Substituir {USER_ID} por um UUID válido do banco
+GET {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+Authorization: Bearer {{token}}
+
+### 6. BUSCAR USUÁRIOS POR NOME
+### Rota: GET /api/v1/users/by-name?name={nome}
+### Segurança: ADMIN ou OWNER
+GET {{baseUrl}}/api/v1/users/by-name?name=João
+Authorization: Bearer {{token}}
+
+### 7. ATUALIZAR USUÁRIO
+### Rota: PUT /api/v1/users/{id}
+### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário)
+PUT {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Nome Atualizado",
+  "email": "email.atualizado@example.com",
+  "login": "login.atualizado"
+}
+
+### 8. ATUALIZAR SENHA DO USUÁRIO
+### Rota: PATCH /api/v1/users/{id}/password
+### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário)
+PATCH {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/password
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "senha123",
+  "newPassword": "novaSenha123"
+}
+
+### 9. CRIAR USUÁRIO OWNER (Apenas ADMIN)
+### Rota: POST /api/v1/users/owner
+### Segurança: Apenas ADMIN
+POST {{baseUrl}}/api/v1/users/owner
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Novo Owner",
+  "email": "novo.owner@example.com",
+  "login": "novo.owner",
+  "password": "senha123"
+}
+
+### 10. DELETAR USUÁRIO (Apenas ADMIN)
+### Rota: DELETE /api/v1/users/{id}
+### Segurança: Apenas ADMIN
+DELETE {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+Authorization: Bearer {{token}}
+
+### =================================================================
+### INSTRUÇÕES DE USO
+### =================================================================
+
+### FLUXO DE TESTE RECOMENDADO:
+### 1. Execute a chamada de LOGIN (item 1, 2 ou 3) para obter o token JWT
+### 2. Copie o token retornado e cole na variável @token no topo do arquivo
+### 3. Execute as demais chamadas que precisam de autenticação
+
+### USUÁRIOS DISPONÍVEIS NO BANCO:
+### - Login: vpadovam     | Role: OWNER  | Password: senha123
+### - Login: mariasilva   | Role: CLIENT | Password: senha123  
+### - Login: joaop        | Role: CLIENT | Password: senha123
+### - Login: anasouza     | Role: CLIENT | Password: senha123
+### - Login: carlosol     | Role: OWNER  | Password: senha123
+### - Login: joao.silva   | Role: CLIENT | Password: senha123
+
+### ROTAS PÚBLICAS (não precisam de token):
+### - POST /api/v1/auth/login
+### - POST /api/v1/users (criar cliente)
+
+### ROTAS AUTENTICADAS (precisam de token no header Authorization):
+### - GET /api/v1/users/{id} - ADMIN ou OWNER
+### - GET /api/v1/users/by-name - ADMIN ou OWNER  
+### - PUT /api/v1/users/{id} - ADMIN, OWNER ou CLIENT
+### - PATCH /api/v1/users/{id}/password - ADMIN, OWNER ou CLIENT
+### - POST /api/v1/users/owner - Apenas ADMIN
+### - DELETE /api/v1/users/{id} - Apenas ADMIN
+
+### OBSERVAÇÕES:
+### - Todos os hashes de senha no banco correspondem à senha: "senha123"
+### - Os UUIDs dos usuários estão fixos conforme data.sql
+### - Para testes com ADMIN, será necessário criar um usuário com role ADMIN no banco
