@@ -49,7 +49,7 @@ public class UserEntityMapper {
 
         // Converte roles do domínio para roles da entidade
         if (domain.getRole() != null) {
-            List<br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.enumx.RolesEnum> entityRoles = domain
+            List<RolesEnum> entityRoles = domain
                     .getRole().stream()
                     .map(this::toEntityRole)
                     .collect(Collectors.toList());
@@ -92,12 +92,12 @@ public class UserEntityMapper {
     /**
      * Converte role do domínio para role da entidade.
      */
-    private br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.enumx.RolesEnum toEntityRole(
+    private RolesEnum toEntityRole(
             RolesEnum domainRole) {
         if (domainRole == null) {
             return null;
         }
-        return br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.enumx.RolesEnum
+        return RolesEnum
                 .valueOf(domainRole.name());
     }
 
@@ -105,7 +105,7 @@ public class UserEntityMapper {
      * Converte role da entidade para role do domínio.
      */
     private RolesEnum toDomainRole(
-            br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.enumx.RolesEnum entityRole) {
+            RolesEnum entityRole) {
         if (entityRole == null) {
             return null;
         }
