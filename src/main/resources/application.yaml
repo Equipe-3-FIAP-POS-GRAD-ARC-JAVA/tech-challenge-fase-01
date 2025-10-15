@@ -9,7 +9,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop  # Recreate schema on startup
+      ddl-auto: update  # Recreate schema on startup
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
