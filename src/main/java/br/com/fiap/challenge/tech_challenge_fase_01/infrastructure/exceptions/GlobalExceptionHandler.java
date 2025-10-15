@@ -184,6 +184,22 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Trata exceções de acesso negado (autorização).
+     * HTTP 403 - Forbidden
+     */
+    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(org.springframework.security.authorization.AuthorizationDeniedException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.FORBIDDEN,
+                "Você não tem permissão para acessar este recurso.",
+                "/access-denied",
+                "Acesso Negado",
+                "ACCESS_DENIED",
+                request
+        );
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // EXCEÇÕES GENÉRICAS - Fallback
     // ═══════════════════════════════════════════════════════════════
