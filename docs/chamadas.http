@@ -126,7 +126,7 @@ Content-Type: {{contentType}}
 ### 10. DELETAR USUÁRIO (Apenas ADMIN)
 ### Rota: DELETE /api/v1/users/{id}
 ### Segurança: Apenas ADMIN
-DELETE {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17
+DELETE {{baseUrl}}/api/v1/users/{{user_id}}
 Authorization: Bearer {{token}}
 
 ### =================================================================
@@ -134,9 +134,15 @@ Authorization: Bearer {{token}}
 ### =================================================================
 
 ### FLUXO DE TESTE RECOMENDADO:
-### 1. Execute a chamada de LOGIN (item 1, 2 ou 3) para obter o token JWT
-### 2. Copie o token retornado e cole na variável @token no topo do arquivo
-### 3. Execute as demais chamadas que precisam de autenticação
+### 1. Execute "CRIAR USUÁRIO CLIENTE" (item 4) para criar um novo usuário
+### 2. Execute "LOGIN" (item 1) com as credenciais do usuário criado
+### 3. Copie o token retornado e cole na variável @token no topo do arquivo
+### 4. Copie o ID do usuário criado e cole na variável @user_id
+### 5. Execute as demais chamadas que precisam de autenticação
+
+### EXEMPLOS DE FLUXO COMPLETO:
+### A) Criar usuário → Login → Buscar por ID → Atualizar dados → Atualizar senha
+### B) Login (usuário existente) → Buscar por nome → Criar Owner (se ADMIN) → Deletar (se ADMIN)
 
 ### USUÁRIOS DISPONÍVEIS NO BANCO:
 ### - Login: vpadovam     | Role: OWNER  | Password: senha123
@@ -153,8 +159,8 @@ Authorization: Bearer {{token}}
 ### ROTAS AUTENTICADAS (precisam de token no header Authorization):
 ### - GET /api/v1/users/{id} - ADMIN ou OWNER
 ### - GET /api/v1/users/by-name - ADMIN ou OWNER  
-### - PUT /api/v1/users/{id} - ADMIN, OWNER ou CLIENT
-### - PATCH /api/v1/users/{id}/password - ADMIN, OWNER ou CLIENT
+### - PUT /api/v1/users/{id} - ADMIN, OWNER ou CLIENT (próprio usuário)
+### - PATCH /api/v1/users/password - ADMIN, OWNER ou CLIENT (próprio usuário)
 ### - POST /api/v1/users/owner - Apenas ADMIN
 ### - DELETE /api/v1/users/{id} - Apenas ADMIN
 
@@ -162,3 +168,16 @@ Authorization: Bearer {{token}}
 ### - Todos os hashes de senha no banco correspondem à senha: "senha123"
 ### - Os UUIDs dos usuários estão fixos conforme data.sql
 ### - Para testes com ADMIN, será necessário criar um usuário com role ADMIN no banco
+### - Use {{user_id}} para referenciar o ID do usuário criado nas chamadas subsequentes
+### - O token JWT é válido por um período limitado e deve ser renovado quando expirar
+
+### VARIÁVEIS DISPONÍVEIS:
+### - {{baseUrl}} = http://localhost:8080
+### - {{contentType}} = application/json  
+### - {{token}} = Token JWT obtido no login
+### - {{user_id}} = ID do usuário criado (para reutilização)
+
+### COLLECTION POSTMAN:
+### Este arquivo HTTP é baseado na collection "TechChallenge" do Postman
+### Todas as funcionalidades foram adaptadas para formato HTTP nativo do VS Code
+### Para usar no Postman, importe o JSON fornecido separadamente

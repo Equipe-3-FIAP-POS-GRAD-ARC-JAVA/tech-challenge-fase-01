@@ -23,10 +23,11 @@
 | **VALIDATION-SUMMARY.md** | Resumo executivo da validação | 04/10/2025 | [Abrir](VALIDATION-SUMMARY.md) |
 | **SOLID-HEXAGONAL-VALIDATION-REPORT.md** | Validação detalhada SOLID + Hexagonal | 04/10/2025 | [Abrir](SOLID-HEXAGONAL-VALIDATION-REPORT.md) |
 
-### 3. 🏗️ Arquitetura (Documentação Legada)
+### 3. 🏗️ Arquitetura e Estrutura
 
 | Documento | Descrição | Atualizado | Link |
 |-----------|-----------|------------|------|
+| **CURRENT-PROJECT-STRUCTURE.md** | ⭐ **Estrutura Atual Completa** - Mapeamento real dos arquivos | 15/10/2025 | [Abrir](CURRENT-PROJECT-STRUCTURE.md) |
 | **ARCHITECTURE-DIAGRAM.md** | Diagrama completo da arquitetura | 04/10/2025 | [Abrir](ARCHITECTURE-DIAGRAM.md) |
 | **SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md** | Análise arquitetural detalhada | 04/10/2025 | [Abrir](SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md) |
 
@@ -42,7 +43,9 @@
 
 | Documento | Descrição | Atualizado | Link |
 |-----------|-----------|------------|------|
-| **API-DOCUMENTATION.md** | ⭐ Documentação completa da API REST (NOVO) | 04/10/2025 | [Abrir](API-DOCUMENTATION.md) |
+| **API-DOCUMENTATION.md** | ⭐ Documentação completa da API REST | 04/10/2025 | [Abrir](API-DOCUMENTATION.md) |
+| **chamadas.http** | ⭐ Collection HTTP para VS Code - Testes da API | 15/10/2025 | [Abrir](chamadas.http) |
+| **postman-collection.json** | ⭐ Collection Postman para importação | 15/10/2025 | [Abrir](postman-collection.json) |
 | **RFC-7807-EXCEPTION-HANDLING.md** | Tratamento de exceções RFC 7807 | 04/10/2025 | [Abrir](RFC-7807-EXCEPTION-HANDLING.md) |
 
 ---
