@@ -17,8 +17,6 @@ public interface JpaUserRepository extends JpaRepository<JpaUserEntity, UUID> {
     @Query("SELECT u FROM JpaUserEntity u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%',:name,'%')) AND u.isActive = true")
     public List<JpaUserEntity> findByName(@Param("name") String name);
 
-    Optional<JpaUserEntity> findByEmail(String email);
-
     Optional<JpaUserEntity> findByLogin(String login);
     /**
      * Busca usuário por login de forma case-insensitive.

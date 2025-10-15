@@ -8,13 +8,12 @@ import java.util.function.Supplier;
 
 import org.springframework.stereotype.Repository;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.RolesEnum;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNotFoundException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaUserEntity;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.enumx.RolesEnum;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.mappers.UserEntityMapper;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,13 +48,6 @@ public class UserRepositoryImpl implements UserRepositoryPort {
     private final JpaUserRepository jpaUserRepository;
     private final UserEntityMapper userMapper;
 
-    @PostConstruct
-    public void init() {
-        log.info("🏗️ UserRepositoryImpl bean created successfully!");
-        log.info("📦 JpaUserRepository: {}", jpaUserRepository != null ? "INJECTED" : "NULL");
-        log.info("📦 UserEntityMapper: {}", userMapper != null ? "INJECTED" : "NULL");
-    }
-
     @Override
     public UserDomain save(UserDomain user) {
         return userMapper.toDomain(jpaUserRepository.save(userMapper.toEntity(user)));
@@ -73,26 +65,6 @@ public class UserRepositoryImpl implements UserRepositoryPort {
             false,
             "checking if username exists: " + username
         );
-    }
-
-    public UserDomain update(UUID id, UserDomain user) {
-        return this.jpaUserRepository.findById(id)
-                .map(entity -> {
-                    updateEntityFromDomain(entity, user);
-                    JpaUserEntity savedEntity = this.jpaUserRepository.save(entity);
-                    return userMapper.toDomain(savedEntity);
-                })
-                .orElseThrow(createUserNotFoundExceptionSupplier(id));
-    }
-
-    public UserDomain updatePassword(UUID id, String password) {
-        return this.jpaUserRepository.findById(id)
-                .map(entity -> {
-                    entity.setPassword(password);
-                    JpaUserEntity saved = this.jpaUserRepository.save(entity);
-                    return userMapper.toDomain(saved);
-                })
-                .orElseThrow(createUserNotFoundExceptionSupplier(id));
     }
 
     @Override
@@ -168,16 +140,6 @@ public class UserRepositoryImpl implements UserRepositoryPort {
      */
     private Supplier<UserNotFoundException> createUserNotFoundExceptionSupplier(UUID id) {
         return () -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE + " with id: " + id);
-    }
-
-    /**
-     * Método utilitário para atualizar entidade JPA a partir do domínio.
-     * Aplica SRP separando lógica de mapeamento.
-     */
-    private void updateEntityFromDomain(JpaUserEntity entity, UserDomain user) {
-        entity.setName(user.getName());
-        entity.setEmail(user.getEmail());
-        entity.setLogin(user.getLogin());
     }
 
     /**
