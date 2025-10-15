@@ -1,7 +1,7 @@
 # 🏛️ Arquitetura Hexagonal - Visão Geral Completa
 
-**Data**: Outubro 2025  
-**Versão**: 2.0  
+**Data**: 15 de Outubro 2025  
+**Versão**: 2.1  
 **Status**: ✅ Implementado e Validado
 
 ## 📋 Índice da Documentação

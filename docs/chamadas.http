@@ -1,14 +1,18 @@
 ### =================================================================
 ### TECH CHALLENGE FASE 01 - CHAMADAS REST API
 ### Base URL: http://localhost:8080
+### Atualizado: 15/10/2025
 ### =================================================================
 
 ### VARIÁVEIS GLOBAIS
 @baseUrl = http://localhost:8080
 @contentType = application/json
 
-### TOKEN JWT (obter através do login)
+### TOKEN JWT (obter através do login) - Será preenchido automaticamente após login
 @token = 
+
+### ID do usuário criado - Para reutilização em outros endpoints
+@user_id = 
 
 ### =================================================================
 ### AUTENTICAÇÃO - Rotas PÚBLICAS (sem token necessário)
@@ -17,15 +21,16 @@
 ### 1. LOGIN - Gerar token JWT
 ### Rota: POST /api/v1/auth/login
 ### Segurança: PÚBLICA
+### Resposta: { "token": "jwt_token_here" }
 POST {{baseUrl}}/api/v1/auth/login
 Content-Type: {{contentType}}
 
 {
-  "login": "joao.silva",
+  "login": "login.atualizado",
   "password": "senha123"
 }
 
-### 2. LOGIN - Teste com usuário vpadovam
+### 2. LOGIN - Teste com usuário vpadovam (OWNER)
 POST {{baseUrl}}/api/v1/auth/login
 Content-Type: {{contentType}}
 
@@ -34,7 +39,7 @@ Content-Type: {{contentType}}
   "password": "senha123"
 }
 
-### 3. LOGIN - Teste com usuário mariasilva
+### 3. LOGIN - Teste com usuário mariasilva (CLIENT)
 POST {{baseUrl}}/api/v1/auth/login
 Content-Type: {{contentType}}
 
@@ -50,13 +55,14 @@ Content-Type: {{contentType}}
 ### 4. CRIAR USUÁRIO CLIENTE - Rota pública
 ### Rota: POST /api/v1/users
 ### Segurança: PÚBLICA (permitAll)
+### Resposta: { "id": "uuid", "name": "...", "email": "...", "login": "..." }
 POST {{baseUrl}}/api/v1/users
 Content-Type: {{contentType}}
 
 {
-  "name": "Novo Cliente",
-  "email": "novo.cliente@example.com",
-  "login": "novo.cliente",
+  "name": "João Silva",
+  "email": "joao.silva6@email.com",
+  "login": "joao.silva6",
   "password": "senha123"
 }
 
@@ -67,39 +73,40 @@ Content-Type: {{contentType}}
 ### 5. BUSCAR USUÁRIO POR ID
 ### Rota: GET /api/v1/users/{id}
 ### Segurança: ADMIN ou OWNER
-### Substituir {USER_ID} por um UUID válido do banco
-GET {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+### Usar {{user_id}} da criação do usuário ou UUID específico
+GET {{baseUrl}}/api/v1/users/{{user_id}}
 Authorization: Bearer {{token}}
 
 ### 6. BUSCAR USUÁRIOS POR NOME
 ### Rota: GET /api/v1/users/by-name?name={nome}
 ### Segurança: ADMIN ou OWNER
-GET {{baseUrl}}/api/v1/users/by-name?name=João
+GET {{baseUrl}}/api/v1/users/by-name?name=Fulano
 Authorization: Bearer {{token}}
 
 ### 7. ATUALIZAR USUÁRIO
 ### Rota: PUT /api/v1/users/{id}
 ### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário)
-PUT {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+PUT {{baseUrl}}/api/v1/users/{{user_id}}
 Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
   "name": "Nome Atualizado",
-  "email": "email.atualizado@example.com",
+  "email": "email.atualizado@exemplo.com",
   "login": "login.atualizado"
 }
 
-### 8. ATUALIZAR SENHA DO USUÁRIO
-### Rota: PATCH /api/v1/users/{id}/password
-### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário)
-PATCH {{baseUrl}}/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/password
+### 8. ATUALIZAR A PRÓPRIA SENHA
+### Rota: PATCH /api/v1/users/password
+### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário autenticado)
+PATCH {{baseUrl}}/api/v1/users/password
 Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
-  "currentPassword": "senha123",
-  "newPassword": "novaSenha123"
+  "currentPassword": "senhaSegura456",
+  "newPassword": "senha123",
+  "confirmPassword": "senha123"
 }
 
 ### 9. CRIAR USUÁRIO OWNER (Apenas ADMIN)
@@ -110,10 +117,10 @@ Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
-  "name": "Novo Owner",
-  "email": "novo.owner@example.com",
-  "login": "novo.owner",
-  "password": "senha123"
+  "name": "Novo Dono",
+  "email": "dono@exemplo.com",
+  "login": "novo.dono",
+  "password": "senhaSegura456"
 }
 
 ### 10. DELETAR USUÁRIO (Apenas ADMIN)
