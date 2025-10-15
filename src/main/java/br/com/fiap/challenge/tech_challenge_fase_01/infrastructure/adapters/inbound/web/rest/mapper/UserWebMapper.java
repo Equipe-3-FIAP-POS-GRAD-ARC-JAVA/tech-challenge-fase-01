@@ -62,7 +62,9 @@ public class UserWebMapper {
             return null;
         }
         return new UpdatePasswordRequest(
-                dto.password());
+                dto.currentPassword(),
+                dto.newPassword(),
+                dto.confirmPassword());
     }
 
     /**

@@ -15,5 +15,14 @@ import jakarta.validation.constraints.Size;
  * - Separado do DTO da camada de aplicação
  */
 public record UpdatePasswordRequestDTO(
-                @NotBlank(message = "Senha é obrigatória") @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres") String password) {
-}
+
+        @NotBlank(message = "A senha atual é obrigatória")
+        String currentPassword,
+
+        @NotBlank(message = "A nova senha é obrigatória")
+        @Size(min = 6, message = "A nova senha deve ter no mínimo 6 caracteres")
+        String newPassword,
+
+        @NotBlank(message = "A confirmação da nova senha é obrigatória")
+        String confirmPassword
+) {}

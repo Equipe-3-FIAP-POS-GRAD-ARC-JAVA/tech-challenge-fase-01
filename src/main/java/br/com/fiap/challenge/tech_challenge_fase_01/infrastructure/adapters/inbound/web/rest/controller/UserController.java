@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,6 +29,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.us
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserFindByNamePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserUpdatePasswordPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserUpdatePort;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.security.SecurityUser;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.UpdatePasswordRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.UserCreateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.UserUpdateRequestDTO;
@@ -126,14 +128,14 @@ public class UserController {
     }
 
     /**
-     * Atualiza senha do usuário.
+     * Atualiza a própria senha do usuário autenticado.
      */
-    @PatchMapping("/{id}/password")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'CLIENT')")
+    @PatchMapping("/password")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponseDTO> updatePassword(
-            @PathVariable String id,
+            @AuthenticationPrincipal SecurityUser principal,
             @Valid @RequestBody UpdatePasswordRequestDTO dto) {
-        UUID userId = UUID.fromString(id);
+        UUID userId = principal.getId();
         UpdatePasswordRequest request = webMapper.toApplicationPasswordRequest(dto);
         UserResponse response = userUpdatePasswordPort.updatePassword(userId, request);
         return ResponseEntity.ok(webMapper.toWebResponse(response));
