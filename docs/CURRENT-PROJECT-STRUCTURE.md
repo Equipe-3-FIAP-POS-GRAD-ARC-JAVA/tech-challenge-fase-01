@@ -30,7 +30,9 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
 ├── application/                                           # APPLICATION LAYER (37 arquivos)
 │   ├── domain/
 │   │   ├── exception/
-│   │   │   └── BusinessRuleException.java
+│   │   │   ├── BusinessRuleException.java
+│   │   │   ├── DomainValidationException.java
+│   │   │   └── InvalidFieldException.java
 │   │   ├── service/
 │   │   │   └── UserDomainService.java
 │   │   ├── user/
@@ -44,7 +46,8 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
 │   │   ├── requests/
 │   │   │   ├── LoginRequest.java
 │   │   │   ├── UpdatePasswordRequest.java
-│   │   │   └── UserCreateRequest.java
+│   │   │   ├── UserCreateRequest.java
+│   │   │   └── UserUpdateRequest.java
 │   │   └── response/
 │   │       ├── LoginResponse.java
 │   │       └── UserResponse.java
@@ -70,7 +73,6 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
 │   │       ├── repository/
 │   │       │   └── UserRepositoryPort.java
 │   │       └── security/
-│   │           ├── JwtTokenPort.java
 │   │           └── PasswordEncoderPort.java
 │   ├── service/
 │   │   └── auth/
@@ -80,7 +82,6 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
 │           ├── CreateOwnerUseCase.java
 │           ├── CreateUserUseCase.java
 │           ├── DeleteUserUseCase.java
-│           ├── FindAuthenticatedUserByUsernameUseCase.java
 │           ├── FindUserByIdUseCase.java
 │           ├── FindUserByNameUseCase.java
 │           ├── UpdatePasswordUseCase.java
@@ -98,7 +99,7 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
     │   │   └── web/
     │   │       └── rest/
     │   │           ├── controller/
-    │   │           │   ├── AuthController.java
+    │   │           │   ├── LoginController.java
     │   │           │   └── UserController.java
     │   │           ├── dto/
     │   │           │   ├── factory/
@@ -109,10 +110,10 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
     │   │           │   │   ├── UserCreateRequestDTO.java
     │   │           │   │   └── UserUpdateRequestDTO.java
     │   │           │   └── response/
-    │   │           │       ├── enumx/
-    │   │           │       │   └── RolesEnum.java
-    │   │           │       ├── LoginResponseDTO.java
-    │   │           │       └── UserResponseDTO.java
+    │   │           │       ├── LoginResponse.java
+    │   │           │       ├── UserResponseDTO.java
+    │   │           │       └── enumx/
+    │   │           │           └── RolesEnum.java
     │   │           ├── handler/
     │   │           │   └── AuthExceptionHandler.java
     │   │           └── mapper/
@@ -120,24 +121,22 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
     │   │               └── UserWebMapper.java
     │   └── outbound/
     │       ├── entities/
-    │       │   ├── enumx/
-    │       │   │   └── RolesEnum.java
-    │       │   └── JpaUserEntity.java
+    │       │   ├── JpaUserEntity.java
+    │       │   └── enumx/
+    │       │       └── RolesEnum.java
     │       ├── mappers/
     │       │   └── UserEntityMapper.java
     │       ├── repositories/
     │       │   ├── JpaUserRepository.java
     │       │   └── UserRepositoryImpl.java
     │       └── security/
-    │           ├── BCryptPasswordEncoderAdapter.java
-    │           └── JwtTokenAdapter.java
+    │           └── BCryptPasswordEncoderAdapter.java
     ├── configs/
-    │   ├── constants/
-    │   │   └── SecurityConstants.java
     │   ├── AuthUseCaseConfig.java
     │   ├── SecurityConfig.java
     │   ├── UserUseCaseConfig.java
-    │   └── WebSecurityConfig.java
+    │   ├── WebSecurityConfig.java
+    │   └── constants/
     └── exceptions/
         ├── GlobalExceptionHandler.java
         ├── NotFoundException.java
