@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -43,10 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             Optional<JpaUserEntity> userOpt = userRepository.findByLogin(username);
             if (userOpt.isPresent() && jwtUtil.validateToken(token)) {
-                UserDetails userDetails = org.springframework.security.core.userdetails.User
-                        .withUsername(userOpt.get().getLogin())
-                        .password(userOpt.get().getPassword())
-                        .authorities("USER")
+                JpaUserEntity user = userOpt.get();
+                String[] roles = user.getRole().stream()
+                        .map(role -> "ROLE_" + role.name())
+                        .toArray(String[]::new);
+
+                UserDetails userDetails = User.withUsername(user.getLogin())
+                        .password(user.getPassword())
+                        .authorities(roles)
                         .build();
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
