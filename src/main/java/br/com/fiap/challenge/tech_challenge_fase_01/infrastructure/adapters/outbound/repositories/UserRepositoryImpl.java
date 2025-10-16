@@ -15,11 +15,9 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.r
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaUserEntity;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.mappers.UserEntityMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class UserRepositoryImpl implements UserRepositoryPort {
 
     private static final String USER_NOT_FOUND_MESSAGE = "User not found";
@@ -87,7 +85,6 @@ public class UserRepositoryImpl implements UserRepositoryPort {
         try {
             return operation.get();
         } catch (Exception ex) {
-            log.debug("Exception during {}: {}", operationDescription, ex.getMessage());
             return defaultValue;
         }
     }
