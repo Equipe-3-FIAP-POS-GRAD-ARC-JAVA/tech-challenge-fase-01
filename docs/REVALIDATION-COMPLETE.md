@@ -42,8 +42,8 @@
 ```
 📊 Estrutura do Projeto
 ├── 63 arquivos Java total
-├── 24 arquivos na camada Application (33%)
-├── 49 arquivos na camada Infrastructure (67%)
+├── 37 arquivos na camada Application (59%)
+├── 25 arquivos na camada Infrastructure (40%)
 ├── 0 dependências de frameworks no core ✅
 ├── 9 Inbound Ports
 ├── 3 Outbound Ports
