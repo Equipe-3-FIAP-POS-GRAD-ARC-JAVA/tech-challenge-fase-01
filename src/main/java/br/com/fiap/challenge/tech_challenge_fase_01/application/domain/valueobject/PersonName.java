@@ -4,15 +4,6 @@ import java.util.Objects;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.InvalidFieldException;
 
-/**
- * Value Object representando um nome de pessoa.
- * 
- * Seguindo os princípios de DDD:
- * - Imutável (final fields, sem setters)
- * - Auto-validável (valida no construtor)
- * - Semântico (representa um conceito do domínio)
- * - Comparável por valor (equals/hashCode baseado no valor)
- */
 public final class PersonName {
 
     private static final int MIN_LENGTH = 2;
@@ -21,30 +12,16 @@ public final class PersonName {
 
     private final String value;
 
-    /**
-     * Construtor privado. Use o método of() para criar instâncias.
-     */
     private PersonName(String value) {
         this.value = value;
     }
 
-    /**
-     * Factory method para criar um PersonName.
-     * Valida e normaliza o nome.
-     * 
-     * @param name Nome em formato String
-     * @return Instância de PersonName validada
-     * @throws InvalidFieldException se o nome for inválido
-     */
     public static PersonName of(String name) {
         validate(name);
         String normalized = normalize(name);
         return new PersonName(normalized);
     }
 
-    /**
-     * Valida o formato do nome.
-     */
     private static void validate(String name) {
         if (name == null || name.isBlank()) {
             throw new InvalidFieldException("name", "Nome é obrigatório");
@@ -68,40 +45,24 @@ public final class PersonName {
         }
     }
 
-    /**
-     * Normaliza o nome (trim + capitaliza primeira letra de cada palavra).
-     */
     private static String normalize(String name) {
         return name.trim();
     }
 
-    /**
-     * Retorna o valor do nome como String.
-     */
     public String getValue() {
         return value;
     }
 
-    /**
-     * Retorna o primeiro nome (primeira palavra).
-     */
     public String getFirstName() {
         String[] parts = value.split("\\s+");
         return parts.length > 0 ? parts[0] : value;
     }
 
-    /**
-     * Retorna o sobrenome (última palavra).
-     */
     public String getLastName() {
         String[] parts = value.split("\\s+");
         return parts.length > 1 ? parts[parts.length - 1] : "";
     }
 
-    /**
-     * Retorna as iniciais do nome.
-     * Exemplo: "João Silva" -> "JS"
-     */
     public String getInitials() {
         String[] parts = value.split("\\s+");
         StringBuilder initials = new StringBuilder();
@@ -113,9 +74,6 @@ public final class PersonName {
         return initials.toString();
     }
 
-    /**
-     * Verifica se o nome é composto (tem mais de uma palavra).
-     */
     public boolean isCompound() {
         return value.contains(" ");
     }

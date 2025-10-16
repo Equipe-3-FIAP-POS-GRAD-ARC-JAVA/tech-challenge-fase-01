@@ -10,15 +10,6 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.us
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
 
-/**
- * Use Case para criação de usuário proprietário.
- * 
- * Responsabilidades:
- * - Orquestrar a criação do usuário
- * - Delegar validações para o Domain Service
- * - Criptografar senha antes de passar para o Domain
- * - Delegar criação para o Domain (que contém as regras de negócio)
- */
 public class CreateOwnerUseCase implements UserCreateOwnerPort {
 
     private final UserRepositoryPort userRepository;
@@ -37,14 +28,11 @@ public class CreateOwnerUseCase implements UserCreateOwnerPort {
     @Override
     public UserResponse createOwner(UserCreateRequest userCreateRequest) {
 
-        // Domain Service valida regras de negócio que envolvem o repositório
         userDomainService.ensureUsernameIsUnique(userCreateRequest.login());
         userDomainService.ensureEmailIsUnique(Email.of(userCreateRequest.email()));
 
-        // Criptografa a senha antes de criar o domínio
         String encryptedPassword = passwordEncoder.encode(userCreateRequest.password());
 
-        // Domain cria e valida a entidade
         var user = UserDomain.createOwner(
                 userCreateRequest.name(),
                 userCreateRequest.email(),

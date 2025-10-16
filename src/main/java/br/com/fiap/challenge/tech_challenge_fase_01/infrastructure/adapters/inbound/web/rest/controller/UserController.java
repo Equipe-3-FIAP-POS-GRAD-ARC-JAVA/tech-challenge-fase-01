@@ -38,21 +38,6 @@ import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbo
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Controller REST para operações de usuário.
- * 
- * Responsabilidades (seguindo SOLID):
- * - Receber requisições HTTP (DTOs da camada web)
- * - Converter DTOs web para DTOs da camada de aplicação
- * - Delegar para os Use Cases (ports inbound)
- * - Converter respostas de volta para DTOs web
- * - Tratar aspectos HTTP (status codes, headers, etc)
- * 
- * Arquitetura Hexagonal:
- * - Esta classe é um Adapter Inbound (driving adapter)
- * - Não contém lógica de negócio
- * - Depende apenas de abstrações (ports)
- */
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -67,10 +52,6 @@ public class UserController {
     private final UserFindByIdPort userFindByIdPort;
     private final UserWebMapper webMapper;
 
-    /**
-     * Cria um novo usuário com role CLIENT.
-     * Endpoint público (permitAll no SecurityConfig).
-     */
     @PostMapping
     public ResponseEntity<UserResponseDTO> createClient(@Valid @RequestBody UserCreateRequestDTO dto) {
         UserCreateRequest request = webMapper.toApplicationRequest(dto);
@@ -78,10 +59,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Cria um novo usuário com role OWNER.
-     * Apenas ADMIN pode criar owners.
-     */
     @PostMapping("/owner")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> createOwner(@Valid @RequestBody UserCreateRequestDTO dto) {
@@ -90,9 +67,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Busca um usuário por ID.
-     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
@@ -101,25 +75,16 @@ public class UserController {
         return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Busca usuários por nome.
-     */
     @GetMapping("/by-name")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<List<UserResponseDTO>> getUserByName(@RequestParam String name) {
         List<UserResponse> responses = userFindByNamePort.findByName(name);
-        return ResponseEntity.ok(responses.stream()
-                .map(webMapper::toWebResponse)
-                .toList());
+        return ResponseEntity.ok(responses.stream().map(webMapper::toWebResponse).toList());
     }
 
-    /**
-     * Atualiza dados do usuário.
-     */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'CLIENT')")
-    public ResponseEntity<UserResponseDTO> update(
-            @PathVariable String id,
+    public ResponseEntity<UserResponseDTO> update(@PathVariable String id,
             @Valid @RequestBody UserUpdateRequestDTO dto) {
         UUID userId = UUID.fromString(id);
         UserUpdateRequest request = webMapper.toApplicationUpdateRequest(dto);
@@ -127,13 +92,9 @@ public class UserController {
         return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Atualiza a própria senha do usuário autenticado.
-     */
     @PatchMapping("/password")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponseDTO> updatePassword(
-            @AuthenticationPrincipal SecurityUser principal,
+    public ResponseEntity<UserResponseDTO> updatePassword(@AuthenticationPrincipal SecurityUser principal,
             @Valid @RequestBody UpdatePasswordRequestDTO dto) {
         UUID userId = principal.getId();
         UpdatePasswordRequest request = webMapper.toApplicationPasswordRequest(dto);
@@ -141,9 +102,6 @@ public class UserController {
         return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Deleta um usuário.
-     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {

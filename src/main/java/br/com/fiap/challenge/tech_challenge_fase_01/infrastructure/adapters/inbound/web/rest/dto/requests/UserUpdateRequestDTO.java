@@ -3,17 +3,6 @@ package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inb
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
-/**
- * DTO para requisição de atualização de usuário na camada web.
- * 
- * Responsabilidade (SOLID - SRP):
- * - Validar dados de entrada HTTP
- * - Representar requisição de atualização de usuário
- * 
- * Arquitetura Hexagonal:
- * - Pertence à camada de infraestrutura (adapter inbound web)
- * - Separado do DTO da camada de aplicação
- */
 public record UserUpdateRequestDTO(
                 @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres") String name,
 

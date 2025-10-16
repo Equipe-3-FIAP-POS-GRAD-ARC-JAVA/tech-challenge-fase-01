@@ -290,8 +290,8 @@ public class UserDomain {
 
     @Override
     public String toString() {
-        return "UserDomain{" +
-                "id='" + id + '\'' +
+        return "UserDomain{"
+                + "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 ", login='" + login + '\'' +

@@ -18,7 +18,6 @@ public class JwtUtil {
     public JwtUtil() {
         String secret = System.getenv("JWT_SECRET");
         if (secret == null || secret.length() < 32) {
-            // Usa uma chave padrão segura para desenvolvimento/testes
             secret = "my-secret-key-for-jwt-token-generation-that-is-32-chars-or-more";
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
