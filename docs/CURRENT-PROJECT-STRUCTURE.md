@@ -1,7 +1,7 @@
 # 📁 Estrutura Atual do Projeto - Tech Challenge Fase 01
 
 **Data**: 15 de Outubro de 2025  
-**Versão**: 1.0  
+**Versão**: 1.1  
 **Status**: ✅ Atualizado conforme realidade dos arquivos
 
 ---
@@ -10,9 +10,9 @@
 
 | Métrica | Valor | Observação |
 |---------|-------|------------|
-| **Total de Arquivos Java** | 68 | 37 Application + 30 Infrastructure + 1 Main |
+| **Total de Arquivos Java** | 63 | 37 Application + 25 Infrastructure + 1 Main |
 | **Application Layer** | 37 arquivos | Core do negócio (framework-free) |
-| **Infrastructure Layer** | 30 arquivos | Adapters e integrações |
+| **Infrastructure Layer** | 25 arquivos | Adapters e integrações |
 | **Arquivo Principal** | 1 arquivo | TechChallengeFase01Application.java |
 | **Arquivos de Teste** | 1 arquivo | TechChallengeFase01ApplicationTests.java |
 
@@ -87,23 +87,19 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
 │           ├── UpdatePasswordUseCase.java
 │           └── UpdateUserUseCase.java
 │
-└── infrastructure/                                        # INFRASTRUCTURE LAYER (30 arquivos)
+└── infrastructure/                                        # INFRASTRUCTURE LAYER (25 arquivos)
     ├── adapters/
     │   ├── inbound/
     │   │   ├── security/
     │   │   │   ├── JwtAuthenticationFilter.java
     │   │   │   ├── JwtUtil.java
     │   │   │   └── SecurityUser.java
-    │   │   ├── validation/
-    │   │   │   └── ValidationAdapter.java
     │   │   └── web/
     │   │       └── rest/
     │   │           ├── controller/
     │   │           │   ├── LoginController.java
     │   │           │   └── UserController.java
     │   │           ├── dto/
-    │   │           │   ├── factory/
-    │   │           │   │   └── ResponseDTOFactory.java
     │   │           │   ├── requests/
     │   │           │   │   ├── LoginRequest.java
     │   │           │   │   ├── UpdatePasswordRequestDTO.java
@@ -111,19 +107,13 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
     │   │           │   │   └── UserUpdateRequestDTO.java
     │   │           │   └── response/
     │   │           │       ├── LoginResponse.java
-    │   │           │       ├── UserResponseDTO.java
-    │   │           │       └── enumx/
-    │   │           │           └── RolesEnum.java
-    │   │           ├── handler/
-    │   │           │   └── AuthExceptionHandler.java
+    │   │           │       └── UserResponseDTO.java
     │   │           └── mapper/
     │   │               ├── AuthWebMapper.java
     │   │               └── UserWebMapper.java
     │   └── outbound/
     │       ├── entities/
-    │       │   ├── JpaUserEntity.java
-    │       │   └── enumx/
-    │       │       └── RolesEnum.java
+    │       │   └── JpaUserEntity.java
     │       ├── mappers/
     │       │   └── UserEntityMapper.java
     │       ├── repositories/
@@ -135,13 +125,11 @@ src/main/java/br/com/fiap/challenge/tech_challenge_fase_01/
     │   ├── AuthUseCaseConfig.java
     │   ├── SecurityConfig.java
     │   ├── UserUseCaseConfig.java
-    │   ├── WebSecurityConfig.java
-    │   └── constants/
+    │   └── WebSecurityConfig.java
     └── exceptions/
         ├── GlobalExceptionHandler.java
         ├── NotFoundException.java
         └── UnauthorizedException.java
-```
 
 ### 📦 Resources (`src/main/resources`)
 
@@ -170,22 +158,22 @@ src/test/java/br/com/fiap/challenge/tech_challenge_fase_01/
 
 | Arquivo | Tipo | Descrição | Status |
 |---------|------|-----------|--------|
-| **API-DOCUMENTATION.md** | Documentação | Endpoints e schemas da API | ✅ |
+| **API-DOCUMENTATION.md** | Documentação | Endpoints e schemas da API | ⚠️ Desatualizado |
 | **ARCHITECTURE-DIAGRAM.md** | Arquitetura | Diagramas do sistema | ✅ |
 | **DOCS-INDEX.md** | Índice | Navegação pelos documentos | ✅ |
 | **HEXAGONAL-ARCHITECTURE-APPLICATION-LAYER.md** | Arquitetura | Application Layer detalhada | ✅ |
-| **HEXAGONAL-ARCHITECTURE-INFRASTRUCTURE-LAYER.md** | Arquitetura | Infrastructure Layer detalhada | ✅ |
+| **HEXAGONAL-ARCHITECTURE-INFRASTRUCTURE-LAYER.md** | Arquitetura | Infrastructure Layer detalhada | ⚠️ Desatualizado |
 | **HEXAGONAL-ARCHITECTURE-OVERVIEW.md** | Arquitetura | Visão geral hexagonal | ✅ |
-| **HEXAGONAL-ARCHITECTURE-UPDATE-SUMMARY.md** | Resumo | Atualizações da documentação | ✅ |
+| **HEXAGONAL-ARCHITECTURE-UPDATE-SUMMARY.md** | Resumo | Atualizações da documentação | ⚠️ Desatualizado |
 | **IMPLEMENTATION-COMPLETE.md** | Checklist | Lista de implementações | ✅ |
-| **INFRASTRUCTURE-IMPLEMENTATION-SUMMARY.md** | Resumo | Implementação da infraestrutura | ✅ |
-| **INFRASTRUCTURE-LAYER.md** | Documentação | Detalhes da infraestrutura | ✅ |
-| **PROJECT-VALIDATION-REPORT.md** | Relatório | Validação completa do projeto | ✅ |
-| **REVALIDATION-COMPLETE.md** | Relatório | Revalidação do projeto | ✅ |
+| **INFRASTRUCTURE-IMPLEMENTATION-SUMMARY.md** | Resumo | Implementação da infraestrutura | ⚠️ Desatualizado |
+| **INFRASTRUCTURE-LAYER.md** | Documentação | Detalhes da infraestrutura | ⚠️ Desatualizado |
+| **PROJECT-VALIDATION-REPORT.md** | Relatório | Validação completa do projeto | ⚠️ Desatualizado |
+| **REVALIDATION-COMPLETE.md** | Relatório | Revalidação do projeto | ⚠️ Desatualizado |
 | **RFC-7807-EXCEPTION-HANDLING.md** | Especificação | Tratamento de exceções RFC 7807 | ✅ |
-| **SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md** | Análise | SOLID e Arquitetura Hexagonal | ✅ |
-| **SOLID-HEXAGONAL-VALIDATION-REPORT.md** | Relatório | Validação SOLID/Hexagonal | ✅ |
-| **VALIDATION-SUMMARY.md** | Resumo | Sumário das validações | ✅ |
+| **SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md** | Análise | SOLID e Arquitetura Hexagonal | ⚠️ Desatualizado |
+| **SOLID-HEXAGONAL-VALIDATION-REPORT.md** | Relatório | Validação SOLID/Hexagonal | ⚠️ Desatualizado |
+| **VALIDATION-SUMMARY.md** | Resumo | Sumário das validações | ⚠️ Desatualizado |
 | **chamadas.http** | Testes | Collection HTTP VS Code | ✅ |
 | **postman-collection.json** | Testes | Collection Postman | ✅ |
 
@@ -207,12 +195,12 @@ src/test/java/br/com/fiap/challenge/tech_challenge_fase_01/
 
 ### ✅ **Arquitetura Hexagonal Completa**
 - **37 arquivos** na Application Layer (framework-free)
-- **30 arquivos** na Infrastructure Layer (Spring Boot)
+- **25 arquivos** na Infrastructure Layer (Spring Boot)
 - Separação clara de responsabilidades
 
 ### ✅ **Ports & Adapters Implementados**
 - **9 Inbound Ports** (casos de uso)
-- **3 Outbound Ports** (repository, security)
+- **2 Outbound Ports** (repository, security)
 - **7 Use Cases** implementados
 
 ### ✅ **Documentação Abrangente**
@@ -232,14 +220,14 @@ src/test/java/br/com/fiap/challenge/tech_challenge_fase_01/
 
 | Aspecto | Nota | Status |
 |---------|------|--------|
-| **Arquitetura Hexagonal** | 10.0/10 | ✅ Excelente |
-| **Princípios SOLID** | 9.9/10 | ✅ Excelente |
-| **Clean Architecture** | 10.0/10 | ✅ Excelente |
-| **Domain-Driven Design** | 9.5/10 | ✅ Muito Bom |
+| **Arquitetura Hexagonal** | 9.5/10 | ✅ Muito Bom |
+| **Princípios SOLID** | 9.0/10 | ✅ Muito Bom |
+| **Clean Architecture** | 9.5/10 | ✅ Muito Bom |
+| **Domain-Driven Design** | 9.0/10 | ✅ Muito Bom |
 | **Segurança JWT + RBAC** | 9.5/10 | ✅ Muito Bom |
 | **Exception Handling RFC 7807** | 10.0/10 | ✅ Excelente |
 
-**Nota Final**: **97/100** ⭐⭐⭐⭐⭐
+**Nota Final**: **94/100** ⭐⭐⭐⭐
 
 ---
 

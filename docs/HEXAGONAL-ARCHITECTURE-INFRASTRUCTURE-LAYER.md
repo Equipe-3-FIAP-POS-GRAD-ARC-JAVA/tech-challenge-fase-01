@@ -22,27 +22,47 @@ A **Infrastructure Layer** implementa os **Adapters** da Arquitetura Hexagonal, 
 ```
 infrastructure/
 ├── adapters/
-│   ├── inbound/           # Driving Adapters (quem CHAMA a aplicação)
-│   │   ├── web/
-│   │   │   ├── rest/
-│   │   │   │   ├── controller/      # Controllers REST
-│   │   │   │   ├── dto/             # DTOs da camada web
-│   │   │   │   └── mapper/          # Mappers web ↔ application
-│   │   │   └── handler/             # Exception handlers globais
-│   │   └── security/                # Filtros de segurança
-│   │       ├── jwt/                 # Implementação JWT
-│   │       └── dto/                 # DTOs de segurança
-│   └── outbound/          # Driven Adapters (CHAMADOS pela aplicação)
-│       ├── repositories/            # Implementação JPA
-│       │   ├── entities/            # Entidades JPA
-│       │   ├── impl/                # Implementações dos Repository Ports
-│       │   └── mappers/             # Mappers domain ↔ entity
-│       └── security/                # Adapters de segurança
-├── configs/               # Configurações Spring
-│   ├── SecurityBeansConfig.java    # Beans de use cases
-│   └── WebSecurityConfig.java      # Configuração Spring Security
-└── exceptions/            # Exceções de infraestrutura
-    └── handler/           # Exception handlers
+│   ├── inbound/
+│   │   ├── security/
+│   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   ├── JwtUtil.java
+│   │   │   └── SecurityUser.java
+│   │   └── web/
+│   │       └── rest/
+│   │           ├── controller/
+│   │           │   ├── LoginController.java
+│   │           │   └── UserController.java
+│   │           ├── dto/
+│   │           │   ├── requests/
+│   │           │   │   ├── LoginRequest.java
+│   │           │   │   ├── UpdatePasswordRequestDTO.java
+│   │           │   │   ├── UserCreateRequestDTO.java
+│   │           │   │   └── UserUpdateRequestDTO.java
+│   │           │   └── response/
+│   │           │       ├── LoginResponse.java
+│   │           │       └── UserResponseDTO.java
+│   │           └── mapper/
+│   │               ├── AuthWebMapper.java
+│   │               └── UserWebMapper.java
+│   └── outbound/
+│       ├── entities/
+│       │   └── JpaUserEntity.java
+│       ├── mappers/
+│       │   └── UserEntityMapper.java
+│       ├── repositories/
+│       │   ├── JpaUserRepository.java
+│       │   └── UserRepositoryImpl.java
+│       └── security/
+│           └── BCryptPasswordEncoderAdapter.java
+├── configs/
+│   ├── AuthUseCaseConfig.java
+│   ├── SecurityConfig.java
+│   ├── UserUseCaseConfig.java
+│   └── WebSecurityConfig.java
+└── exceptions/
+    ├── GlobalExceptionHandler.java
+    ├── NotFoundException.java
+    └── UnauthorizedException.java
 ```
 
 ---
@@ -58,52 +78,80 @@ Os **Inbound Adapters** são **dirigidos por agentes externos** (usuários, sist
 ```java
 @RestController
 @RequestMapping("/api/v1/users")
-@Validated
-@Tag(name = "User Management", description = "Operações de gerenciamento de usuários")
+@RequiredArgsConstructor
 public class UserController {
-    
-    private final UserService userService;  // Facade da Application Layer
-    private final UserWebMapper webMapper;  // Conversão Web ↔ Application DTOs
-    
+
+    private final UserCreatePort userCreatePort;
+    private final UserCreateOwnerPort userCreateOwnerPort;
+    private final UserUpdatePort userUpdatePort;
+    private final UserUpdatePasswordPort userUpdatePasswordPort;
+    private final UserDeletePort userDeletePort;
+    private final UserFindByNamePort userFindByNamePort;
+    private final UserFindByIdPort userFindByIdPort;
+    private final UserWebMapper webMapper;
+
     @PostMapping
-    @Operation(summary = "Criar usuário CLIENT")
-    public ResponseEntity<UserResponseDTO> createUser(
-            @Valid @RequestBody UserCreateRequestDTO request) {
-        
-        // 1. Converte Web DTO → Application DTO
-        UserCreateRequest appRequest = webMapper.toApplicationRequest(request);
-        
-        // 2. Chama Application Layer através do Port
-        UserResponse appResponse = userService.createUser(appRequest);
-        
-        // 3. Converte Application DTO → Web DTO
-        UserResponseDTO webResponse = webMapper.toWebResponse(appResponse);
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(webResponse);
+    public ResponseEntity<UserResponseDTO> createClient(@Valid @RequestBody UserCreateRequestDTO dto) {
+        UserCreateRequest request = webMapper.toApplicationRequest(dto);
+        UserResponse response = userCreatePort.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
-    
+
     @PostMapping("/owner")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Criar usuário OWNER (apenas ADMIN)")
-    public ResponseEntity<UserResponseDTO> createOwner(
-            @Valid @RequestBody UserCreateOwnerRequestDTO request) {
-        
-        UserCreateOwnerRequest appRequest = webMapper.toApplicationOwnerRequest(request);
-        UserResponse appResponse = userService.createOwner(appRequest);
-        UserResponseDTO webResponse = webMapper.toWebResponse(appResponse);
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(webResponse);
+    public ResponseEntity<UserResponseDTO> createOwner(@Valid @RequestBody UserCreateRequestDTO dto) {
+        UserCreateRequest request = webMapper.toApplicationRequest(dto);
+        UserResponse response = userCreateOwnerPort.createOwner(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
-    
+
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar usuário por ID")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
-        UserResponse appResponse = userService.findById(id);
-        UserResponseDTO webResponse = webMapper.toWebResponse(appResponse);
-        return ResponseEntity.ok(webResponse);
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
+        UUID userId = UUID.fromString(id);
+        UserResponse response = userFindByIdPort.findById(userId);
+        return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
-    
-    // ... outros endpoints
+
+    @GetMapping("/by-name")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<List<UserResponseDTO>> getUserByName(@RequestParam String name) {
+        List<UserResponse> responses = userFindByNamePort.findByName(name);
+        return ResponseEntity.ok(responses.stream()
+                .map(webMapper::toWebResponse)
+                .toList());
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'CLIENT')")
+    public ResponseEntity<UserResponseDTO> update(
+            @PathVariable String id,
+            @Valid @RequestBody UserUpdateRequestDTO dto) {
+        UUID userId = UUID.fromString(id);
+        UserUpdateRequest request = webMapper.toApplicationUpdateRequest(dto);
+        UserResponse response = userUpdatePort.update(userId, request);
+        return ResponseEntity.ok(webMapper.toWebResponse(response));
+    }
+
+    @PatchMapping("/password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserResponseDTO> updatePassword(
+            @AuthenticationPrincipal SecurityUser principal,
+            @Valid @RequestBody UpdatePasswordRequestDTO dto) {
+        UUID userId = principal.getId();
+        UpdatePasswordRequest request = webMapper.toApplicationPasswordRequest(dto);
+        UserResponse response = userUpdatePasswordPort.updatePassword(userId, request);
+        return ResponseEntity.ok(webMapper.toWebResponse(response));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+        UUID userId = UUID.fromString(id);
+        userDeletePort.delete(userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 ```
 
@@ -118,28 +166,23 @@ public class UserController {
 
 ```java
 @RestController
-@RequestMapping("/login")
-@Tag(name = "Authentication", description = "Operações de autenticação")
+@RequiredArgsConstructor 
+@RequestMapping("/api/v1/auth")
 public class LoginController {
     
-    private final AuthService authService;
+    private final AuthPort authPort;
     private final AuthWebMapper authWebMapper;
-    
-    @PostMapping
-    @Operation(summary = "Autenticar usuário e obter JWT token")
-    public ResponseEntity<LoginResponseDTO> login(
-            @Valid @RequestBody LoginRequestDTO request) {
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        // 1. Converte DTO Web → DTO Application
+        var appRequest = authWebMapper.toApplicationLoginRequest(loginRequest);
         
-        // 1. Converte Web DTO → Application DTO
-        LoginRequest appRequest = authWebMapper.toApplicationRequest(request);
+        // 2. Chama Use Case através do Port
+        var appResponse = authPort.login(appRequest);
         
-        // 2. Chama Application Layer
-        LoginResponse appResponse = authService.login(appRequest);
-        
-        // 3. Converte Application DTO → Web DTO
-        LoginResponseDTO webResponse = authWebMapper.toWebResponse(appResponse);
-        
-        return ResponseEntity.ok(webResponse);
+        // 3. Converte DTO Application → DTO Web  
+        return ResponseEntity.ok(authWebMapper.toWebLoginResponse(appResponse));
     }
 }
 ```
@@ -149,42 +192,22 @@ public class LoginController {
 #### Request DTOs
 ```java
 // UserCreateRequestDTO.java
-public class UserCreateRequestDTO {
-    
-    @NotBlank(message = "Nome é obrigatório")
-    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
-    private String name;
-    
-    @NotBlank(message = "Email é obrigatório")
-    @Email(message = "Email deve ter formato válido")
-    private String email;
-    
-    @NotBlank(message = "Username é obrigatório")
-    @Pattern(regexp = "^[a-zA-Z0-9._]{3,20}$", 
-             message = "Username deve ter 3-20 caracteres (letras, números, . e _)")
-    private String username;
-    
-    @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 6, max = 50, message = "Senha deve ter entre 6 e 50 caracteres")
-    private String password;
-    
-    // getters e setters
+public record UserCreateRequestDTO(
+        @NotBlank(message = "Nome é obrigatório") @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres") String name,
+
+        @NotBlank(message = "Email é obrigatório") @Email(message = "Email inválido") String email,
+
+        @NotBlank(message = "Login é obrigatório") @Size(min = 3, max = 50, message = "Login deve ter entre 3 e 50 caracteres") String login,
+
+        @NotBlank(message = "Senha é obrigatória") @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres") String password) {
 }
 ```
 
 #### Response DTOs
 ```java
 // UserResponseDTO.java
-public class UserResponseDTO {
-    private Long id;
-    private String name;
-    private String email;
-    private String username;
-    private String role;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    
-    // getters e setters
+public record UserResponseDTO(String id, String name, String email, String login) {
+
 }
 ```
 
@@ -199,28 +222,47 @@ public class UserResponseDTO {
 ```java
 @Component
 public class UserWebMapper {
-    
-    // Web DTO → Application DTO
-    public UserCreateRequest toApplicationRequest(UserCreateRequestDTO webDto) {
-        return UserCreateRequest.builder()
-            .name(webDto.getName())
-            .email(webDto.getEmail())
-            .username(webDto.getUsername())
-            .password(webDto.getPassword())
-            .build();
+
+    public UserCreateRequest toApplicationRequest(UserCreateRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new UserCreateRequest(
+                dto.name(),
+                dto.email(),
+                dto.login(),
+                dto.password());
     }
-    
-    // Application DTO → Web DTO
-    public UserResponseDTO toWebResponse(UserResponse appDto) {
-        return UserResponseDTO.builder()
-            .id(appDto.getId())
-            .name(appDto.getName())
-            .email(appDto.getEmail())
-            .username(appDto.getUsername())
-            .role(appDto.getRole())
-            .createdAt(appDto.getCreatedAt())
-            .updatedAt(appDto.getUpdatedAt())
-            .build();
+
+    public UserUpdateRequest toApplicationUpdateRequest(UserUpdateRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new UserUpdateRequest(
+                dto.name(),
+                dto.email(),
+                dto.login());
+    }
+
+    public UpdatePasswordRequest toApplicationPasswordRequest(UpdatePasswordRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new UpdatePasswordRequest(
+                dto.currentPassword(),
+                dto.newPassword(),
+                dto.confirmPassword());
+    }
+
+    public UserResponseDTO toWebResponse(UserResponse response) {
+        if (response == null) {
+            return null;
+        }
+        return new UserResponseDTO(
+                response.id().toString(),
+                response.name(),
+                response.email(),
+                response.login());
     }
 }
 ```
@@ -232,45 +274,50 @@ public class UserWebMapper {
 ```java
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
-    private final JwtTokenManager jwtTokenManager;
-    private final UserDetailsService userDetailsService;
-    
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                   HttpServletResponse response, 
-                                   FilterChain filterChain) {
-        try {
-            // 1. Extrair token do header Authorization
-            String token = extractTokenFromRequest(request);
-            
-            if (token != null && jwtTokenManager.validateToken(token)) {
-                // 2. Extrair username do token
-                String username = jwtTokenManager.getUsernameFromToken(token);
-                
-                // 3. Carregar usuário via UserDetailsService
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                
-                // 4. Configurar Authentication no SecurityContext
-                UsernamePasswordAuthenticationToken auth = 
-                    new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-        } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e.getMessage());
-        }
-        
-        filterChain.doFilter(request, response);
+    private final JwtUtil jwtUtil;
+    private final JpaUserRepository userRepository;
+
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, JpaUserRepository userRepository) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
-    
-    private String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+
+    @SuppressWarnings("null")
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
+        String username = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            username = jwtUtil.getUsernameFromToken(token);
         }
-        return null;
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            Optional<JpaUserEntity> userOpt = userRepository.findByLogin(username);
+            if (userOpt.isPresent() && jwtUtil.validateToken(token)) {
+                UserDetails userDetails = new SecurityUser(userOpt.get());
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                if (userDetails instanceof SecurityUser) {
+                    SecurityUser securityUser = (SecurityUser) userDetails;
+                    logger.info(
+                        String.format("User Authenticated: Username=%s, ID=%s, Roles=%s",
+                                securityUser.getUsername(),
+                                securityUser.getId(),
+                                securityUser.getAuthorities()
+                        )
+                    );
+                }
+            }
+        }
+        filterChain.doFilter(request, response);
     }
 }
 ```

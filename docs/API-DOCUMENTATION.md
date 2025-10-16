@@ -2,7 +2,7 @@
 
 **Versão da API**: v1  
 **Base URL**: `http://localhost:8080`  
-**Última Atualização**: 04/10/2025  
+**Última Atualização**: 15/10/2025
 **Formato**: REST/JSON
 
 ---
@@ -14,7 +14,6 @@
 - [Endpoints](#endpoints)
   - [Authentication](#authentication)
   - [Users](#users)
-  - [Health Check](#health-check)
 - [Schemas](#schemas)
 - [Error Handling](#error-handling)
 - [Swagger/OpenAPI](#swaggeropenapi)
@@ -58,7 +57,7 @@ A API utiliza **JSON Web Tokens (JWT)** para autenticação.
 #### Como Obter o Token
 
 ```http
-POST /login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -104,11 +103,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### Authentication
 
-#### POST /login
+#### POST /api/v1/auth/login
 
 Autentica um usuário e retorna um token JWT.
 
-**Endpoint**: `POST /login`  
+**Endpoint**: `POST /api/v1/auth/login`  
 **Autenticação**: ❌ Público  
 **Content-Type**: `application/json`
 
@@ -143,7 +142,7 @@ Autentica um usuário e retorna um token JWT.
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:8080/login \
+curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "login": "joao",
@@ -428,17 +427,14 @@ curl -X PUT http://localhost:8080/api/v1/users/123e4567-e89b-12d3-a456-426614174
 
 ---
 
-#### PATCH /api/v1/users/{id}/password
+#### PATCH /api/v1/users/password
 
-Atualiza a senha de um usuário.
+Atualiza a própria senha do usuário autenticado.
 
-**Endpoint**: `PATCH /api/v1/users/{id}/password`  
+**Endpoint**: `PATCH /api/v1/users/password`  
 **Autenticação**: ✅ JWT Required  
-**Autorização**: `ADMIN`, `OWNER`, `CLIENT`  
+**Autorização**: `ADMIN`, `OWNER`, `CLIENT` (qualquer usuário autenticado pode alterar a própria senha)  
 **Content-Type**: `application/json`
-
-**Path Parameters:**
-- `id` (UUID) - ID do usuário
 
 **Request Body:**
 ```json
@@ -467,14 +463,14 @@ Atualiza a senha de um usuário.
   "title": "Não Autorizado",
   "status": 401,
   "detail": "Senha atual incorreta",
-  "instance": "/api/v1/users/123e4567-e89b-12d3-a456-426614174000/password",
+  "instance": "/api/v1/users/password",
   "timestamp": "2025-10-04T10:30:00Z"
 }
 ```
 
 **cURL Example:**
 ```bash
-curl -X PATCH http://localhost:8080/api/v1/users/123e4567-e89b-12d3-a456-426614174000/password \
+curl -X PATCH http://localhost:8080/api/v1/users/password \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {token}" \
   -d '{
@@ -519,29 +515,7 @@ curl -X DELETE http://localhost:8080/api/v1/users/123e4567-e89b-12d3-a456-426614
   -H "Authorization: Bearer {token}"
 ```
 
----
 
-### Health Check
-
-#### GET /api/health
-
-Verifica o status da aplicação.
-
-**Endpoint**: `GET /api/health`  
-**Autenticação**: ❌ Público
-
-**Response 200 - Success:**
-```json
-{
-  "status": "UP",
-  "timestamp": "2025-10-04T10:30:00Z"
-}
-```
-
-**cURL Example:**
-```bash
-curl -X GET http://localhost:8080/api/health
-```
 
 ---
 
