@@ -41,8 +41,9 @@ public class AuthUseCases implements AuthPort {
             throw new UserNotFoundException("Credenciais inválidas");
         }
 
-        String token = jwtUtil.generateToken(user.getLogin());
+        var roles = user.getRole().stream().map(Enum::name).toList();
+        String token = jwtUtil.generateToken(user.getLogin(), roles);
 
-        return new LoginResponse(token);
+        return new LoginResponse(token, user);
     }
 }
