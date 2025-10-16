@@ -9,7 +9,7 @@ O objetivo é criar um sistema robusto que permita a todos os restaurantes geren
 **Versão**: 0.0.1-SNAPSHOT  
 **Data de Validação**: 15/10/2025  
 **Status**: ✅ **APROVADO - 97/100**  
-**Total de Arquivos Java**: 68
+**Total de Arquivos Java**: 63
 
 ### Conformidade Arquitetural
 
@@ -48,12 +48,12 @@ Este projeto segue os princípios de:
 📦 Application Layer (Core - 37 arquivos)
 ├── Domain (Entities, Value Objects, Services)
 ├── DTOs (Application-level)
-├── Ports (Inbound: 9 | Outbound: 3)
+├── Ports (Inbound: 9 | Outbound: 2)
 ├── Use Cases (7 use cases)
 ├── Services (2 facades)
 └── Mappers e Exceptions
 
-📦 Infrastructure Layer (30 arquivos)
+📦 Infrastructure Layer (25 arquivos)
 ├── Adapters Inbound (Controllers, Security, Validation)
 ├── Adapters Outbound (Repositories, Security, Entities)
 ├── Configurations

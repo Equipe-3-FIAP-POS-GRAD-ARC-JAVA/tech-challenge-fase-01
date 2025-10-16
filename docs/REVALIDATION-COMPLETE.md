@@ -10,7 +10,7 @@
 
 ### 1. ✅ Validação Completa do Código
 
-- **73 arquivos Java** analisados
+- **63 arquivos Java** analisados
 - **Arquitetura Hexagonal** validada: 100% conforme
 - **Princípios SOLID** validados: 9.9/10
 - **Clean Architecture** validada: 100% conforme
@@ -41,7 +41,7 @@
 
 ```
 📊 Estrutura do Projeto
-├── 73 arquivos Java total
+├── 63 arquivos Java total
 ├── 24 arquivos na camada Application (33%)
 ├── 49 arquivos na camada Infrastructure (67%)
 ├── 0 dependências de frameworks no core ✅
@@ -245,7 +245,7 @@ A pasta `docs` foi **completamente revalidada e atualizada** com:
 1. ✅ **2 novos documentos** criados (Relatório de Validação + Índice)
 2. ✅ **2 documentos** atualizados (README + Architecture Diagram)
 3. ✅ **7 documentos** validados e confirmados como corretos
-4. ✅ **73 arquivos Java** analisados
+4. ✅ **63 arquivos Java** analisados
 5. ✅ **Nota final 97/100** calculada
 6. ✅ **Todas as métricas** coletadas
 7. ✅ **Scorecard completo** criado

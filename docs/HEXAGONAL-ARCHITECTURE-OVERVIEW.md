@@ -1,7 +1,7 @@
 # 🏛️ Arquitetura Hexagonal - Visão Geral Completa
 
 **Data**: 15 de Outubro 2025  
-**Versão**: 2.1  
+**Versão**: 2.2  
 **Status**: ✅ Implementado e Validado
 
 ## 📋 Índice da Documentação
@@ -59,7 +59,7 @@
     │  │                     │       │                     │   │
     │  │ • UserCreatePort    │       │ • UserRepositoryPort│   │
     │  │ • UserUpdatePort    │       │ • PasswordEncoderPort│  │
-    │  │ • UserDeletePort    │       │ • JwtTokenPort      │   │
+    │  │ • UserDeletePort    │       │                     │   │
     │  │ • AuthPort          │       │                     │   │
     │  └──────────┬──────────┘       └──────────▲──────────┘   │
     │             │ implemented by              │ used by      │

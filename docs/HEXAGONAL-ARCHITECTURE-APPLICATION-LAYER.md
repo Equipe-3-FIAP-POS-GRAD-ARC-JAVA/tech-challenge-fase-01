@@ -1,7 +1,7 @@
 # 🎯 Application Layer - Arquitetura Hexagonal
 
 **Data**: 15 de Outubro 2025  
-**Versão**: 2.1  
+**Versão**: 2.2  
 **Status**: ✅ Implementado e Validado
 
 ## 📋 Visão Geral
@@ -125,13 +125,7 @@ public interface PasswordEncoderPort {
     boolean matches(String rawPassword, String encodedPassword);
 }
 
-// ports/outbound/security/JwtTokenPort.java
-public interface JwtTokenPort {
-    String generateToken(String username, Set<String> roles);
-    boolean validateToken(String token);
-    String getUsernameFromToken(String token);
-    Set<String> getRolesFromToken(String token);
-}
+// Note: JwtTokenPort foi removido - funcionalidade integrada diretamente no AuthUseCases
 ```
 
 **Características dos Outbound Ports**:

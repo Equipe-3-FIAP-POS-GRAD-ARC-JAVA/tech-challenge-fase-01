@@ -1,7 +1,7 @@
 # 🏗️ Infrastructure Layer - Arquitetura Hexagonal
 
 **Data**: 15 de Outubro 2025  
-**Versão**: 2.1  
+**Versão**: 2.2  
 **Status**: ✅ Implementado e Validado
 
 ## 📋 Visão Geral
@@ -328,42 +328,193 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 ```java
 @ControllerAdvice
-@Slf4j
 public class GlobalExceptionHandler {
-    
+
+    private static final String BASE_PROBLEM_TYPE = "/problems";
+
+    @ExceptionHandler(InvalidFieldException.class)
+    public ProblemDetail handleInvalidFieldException(InvalidFieldException ex, WebRequest request) {
+        ProblemDetail problemDetail = createBaseProblemDetail(
+                HttpStatus.BAD_REQUEST, 
+                ex.getMessage(), 
+                "/invalid-field", 
+                "Campo Inválido", 
+                "VALIDATION_ERROR", 
+                request
+        );
+        
+        problemDetail.setProperty("fieldName", ex.getFieldName());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ProblemDetail handleBusinessRuleException(BusinessRuleException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.UNPROCESSABLE_ENTITY, 
+                ex.getMessage(), 
+                "/business-rule-violation", 
+                "Regra de Negócio Violada", 
+                "BUSINESS_RULE_VIOLATION", 
+                request
+        );
+    }
+
+    @ExceptionHandler(DomainValidationException.class)
+    public ProblemDetail handleDomainValidationException(DomainValidationException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.BAD_REQUEST, 
+                ex.getMessage(), 
+                "/domain-validation", 
+                "Validação de Domínio", 
+                "DOMAIN_VALIDATION_ERROR", 
+                request
+        );
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ProblemDetail> handleUserNotFound(UserNotFoundException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("User Not Found");
-        problem.setType(URI.create("/errors/user-not-found"));
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
+    public ProblemDetail handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                "/not-found",
+                "Usuário Não Encontrado",
+                "RESOURCE_NOT_FOUND",
+                request
+        );
     }
-    
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ResponseEntity<ProblemDetail> handleUsernameExists(UsernameAlreadyExistsException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.CONFLICT, ex.getMessage());
-        problem.setTitle("Username Already Exists");
-        problem.setType(URI.create("/errors/username-conflict"));
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ProblemDetail handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/conflict"));
+        problemDetail.setTitle("Conflito de Dados");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "DUPLICATE_RESOURCE");
+
+        return problemDetail;
     }
-    
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ProblemDetail> handleValidationErrors(
-            MethodArgumentNotValidException ex) {
-        
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error -> 
-            errors.put(error.getField(), error.getDefaultMessage()));
-        
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.BAD_REQUEST, "Validation failed");
-        problem.setTitle("Validation Error");
-        problem.setProperty("validationErrors", errors);
-        
-        return ResponseEntity.badRequest().body(problem);
+
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFoundException(NotFoundException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/not-found"));
+        problemDetail.setTitle("Recurso Não Encontrado");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "NOT_FOUND");
+
+        return problemDetail;
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ProblemDetail handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/unauthorized"));
+        problemDetail.setTitle("Não Autorizado");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "UNAUTHORIZED");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(org.springframework.security.authorization.AuthorizationDeniedException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.FORBIDDEN,
+                "Você não tem permissão para acessar este recurso.",
+                "/access-denied",
+                "Acesso Negado",
+                "ACCESS_DENIED",
+                request
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/invalid-argument"));
+        problemDetail.setTitle("Argumento Inválido");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "INVALID_ARGUMENT");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(JpaSystemException.class)
+    public ProblemDetail handleJpaSystemException(JpaSystemException ex, WebRequest request) {
+        // Log do erro real para debug
+        System.err.println("JpaSystemException caught: " + ex.getMessage());
+        System.err.println("Cause: " + ex.getCause());
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocorreu um erro interno. Por favor, tente novamente mais tarde.");
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/internal-server-error"));
+        problemDetail.setTitle("Erro Interno do Servidor");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "JPA_SYSTEM_ERROR");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGenericException(Exception ex, WebRequest request) {
+        // Em produção, logar a exceção e retornar mensagem genérica
+        // logger.error("Erro inesperado", ex);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocorreu um erro interno. Por favor, tente novamente mais tarde.");
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/internal-server-error"));
+        problemDetail.setTitle("Erro Interno do Servidor");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "INTERNAL_SERVER_ERROR");
+
+        return problemDetail;
+    }
+
+    private ProblemDetail createBaseProblemDetail(
+            HttpStatus status,
+            String detail,
+            String typeSubpath,
+            String title,
+            String errorType,
+            WebRequest request) {
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, detail);
+        
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + typeSubpath));
+        problemDetail.setTitle(title);
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty(TIMESTAMP_PROPERTY, getTimestamp());
+        problemDetail.setProperty(ERROR_TYPE_PROPERTY, errorType);
+        
+        return problemDetail;
+    }
+
+    private URI getRequestUri(WebRequest request) {
+        String path = request.getDescription(false).replace("uri=", "");
+        return URI.create(path);
+    }
+
+    private String getTimestamp() {
+        return ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    private static final String TIMESTAMP_PROPERTY = "timestamp";
+    private static final String ERROR_TYPE_PROPERTY = "errorType";
 }
 ```
 
@@ -380,35 +531,36 @@ Os **Outbound Adapters** são **chamados pela aplicação** e implementam os **O
 ```java
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class JpaUserEntity {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(name = "name", nullable = false, length = 100)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(nullable = false)
+    private UUID id;
+    @Column(nullable = false, length = 100)
     private String name;
-    
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(unique = true, nullable = false)
     private String email;
-    
-    @Column(name = "username", nullable = false, unique = true, length = 50)
-    private String username;
-    
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false, length = 100)
+    private String login;
+    @Column(nullable = false, length = 100)
     private String password;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role;
-    
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
-    
     @Column(name = "updated_at")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
-    
-    // getters, setters, construtores
+    @Enumerated(EnumType.STRING)
+    @Column(name = "roles", nullable = false)
+    private List<RolesEnum> role;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
 }
 ```
 
@@ -416,17 +568,17 @@ public class JpaUserEntity {
 
 ```java
 @Repository
-public interface JpaUserRepository extends JpaRepository<JpaUserEntity, Long> {
-    
-    Optional<JpaUserEntity> findByUsername(String username);
-    
-    Optional<JpaUserEntity> findByEmail(String email);
-    
-    List<JpaUserEntity> findByNameContainingIgnoreCase(String name);
-    
-    boolean existsByUsername(String username);
-    
-    boolean existsByEmail(String email);
+public interface JpaUserRepository extends JpaRepository<JpaUserEntity, UUID> {
+
+    @Query("SELECT u FROM JpaUserEntity u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%',:name,'%')) AND u.isActive = true")
+    public List<JpaUserEntity> findByName(@Param("name") String name);
+
+    Optional<JpaUserEntity> findByLogin(String login);
+
+    Optional<JpaUserEntity> findByLoginIgnoreCase(String login);
+
+    Optional<JpaUserEntity> findByEmailIgnoreCase(String email);
+
 }
 ```
 
@@ -434,49 +586,116 @@ public interface JpaUserRepository extends JpaRepository<JpaUserEntity, Long> {
 
 ```java
 @Repository
+@RequiredArgsConstructor
+@Slf4j
 public class UserRepositoryImpl implements UserRepositoryPort {
+
+    private static final String USER_NOT_FOUND_MESSAGE = "User not found";
     
-    private final JpaUserRepository jpaRepository;
-    private final UserDomainMapper domainMapper;
-    
+    private final JpaUserRepository jpaUserRepository;
+    private final UserEntityMapper userMapper;
+
     @Override
     public UserDomain save(UserDomain user) {
-        // 1. Domain → JPA Entity
-        JpaUserEntity entity = domainMapper.toJpaEntity(user);
-        
-        // 2. Persistir via JPA
-        JpaUserEntity savedEntity = jpaRepository.save(entity);
-        
-        // 3. JPA Entity → Domain
-        return domainMapper.toDomain(savedEntity);
+        return userMapper.toDomain(jpaUserRepository.save(userMapper.toEntity(user)));
     }
-    
+
     @Override
-    public Optional<UserDomain> findById(Long id) {
-        return jpaRepository.findById(id)
-            .map(domainMapper::toDomain);
+    public Optional<UserDomain> findById(UUID id) {
+        return jpaUserRepository.findById(id).map(userMapper::toDomain);
     }
-    
-    @Override
-    public Optional<UserDomain> findByUsername(String username) {
-        return jpaRepository.findByUsername(username)
-            .map(domainMapper::toDomain);
-    }
-    
-    @Override
-    public List<UserDomain> findByNameContainingIgnoreCase(String name) {
-        return jpaRepository.findByNameContainingIgnoreCase(name)
-            .stream()
-            .map(domainMapper::toDomain)
-            .collect(Collectors.toList());
-    }
-    
+
     @Override
     public boolean existsByUsername(String username) {
-        return jpaRepository.existsByUsername(username);
+        return executeWithExceptionHandling(
+            () -> jpaUserRepository.findByLoginIgnoreCase(username).isPresent(),
+            false,
+            "checking if username exists: " + username
+        );
     }
-    
-    // ... outras implementações
+
+    @Override
+    public List<UserDomain> findByName(String name) {
+        List<JpaUserEntity> entities = this.jpaUserRepository.findByName(name);
+        if (entities == null || entities.isEmpty()) {
+            throw new UserNotFoundException("User not found by name: " + name);
+        }
+        return entities.stream()
+                .map(userMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void delete(UUID id) {
+        JpaUserEntity entity = this.jpaUserRepository.findById(id)
+                .orElseThrow(createUserNotFoundExceptionSupplier(id));
+
+        entity.setActive(false);
+        this.jpaUserRepository.save(entity);
+    }
+
+    public UserDomain createOwner(UserDomain request) {
+        JpaUserEntity entity = createEntityFromDomain(request, RolesEnum.OWNER);
+        JpaUserEntity saved = this.jpaUserRepository.save(entity);
+        return userMapper.toDomain(saved);
+    }
+
+    @Override
+    public Optional<UserDomain> findByLogin(String login) {
+        log.info("🔍 UserRepositoryImpl.findByLogin() called with login: {}", login);
+
+        Optional<UserDomain> result = executeWithExceptionHandling(
+            () -> {
+                log.info("📦 Searching in JpaUserRepository for login: {}", login);
+                Optional<JpaUserEntity> entity = jpaUserRepository.findByLoginIgnoreCase(login);
+                log.info("🔍 JPA query result present: {}", entity.isPresent());
+                return entity.map(userMapper::toDomain);
+            },
+            Optional.empty(),
+            "finding user by username: " + login
+        );
+        
+        log.info("✅ UserRepositoryImpl.findByUsername() returning: {}", result.isPresent() ? "User found" : USER_NOT_FOUND_MESSAGE);
+        return result;
+    }
+
+    @Override
+    public Optional<UserDomain> findByEmail(String email) {
+        return executeWithExceptionHandling(
+            () -> jpaUserRepository.findByEmailIgnoreCase(email).map(userMapper::toDomain),
+            Optional.empty(),
+            "finding user by email: " + email
+        );
+    }
+
+    private <T> T executeWithExceptionHandling(Supplier<T> operation, T defaultValue, String operationDescription) {
+        try {
+            return operation.get();
+        } catch (Exception ex) {
+            log.debug("Exception during {}: {}", operationDescription, ex.getMessage());
+            return defaultValue;
+        }
+    }
+
+    private Supplier<UserNotFoundException> createUserNotFoundExceptionSupplier(UUID id) {
+        return () -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE + " with id: " + id);
+    }
+
+    private JpaUserEntity createEntityFromDomain(UserDomain domain, RolesEnum role) {
+        LocalDateTime now = LocalDateTime.now();
+        
+        JpaUserEntity entity = new JpaUserEntity();
+        entity.setId(null);
+        entity.setName(domain.getName());
+        entity.setEmail(domain.getEmail());
+        entity.setLogin(domain.getLogin());
+        entity.setPassword(domain.getPassword());
+        entity.setCreatedAt(now);
+        entity.setActive(true);
+        entity.setRole(List.of(role));
+        
+        return entity;
+    }
 }
 ```
 
@@ -484,61 +703,86 @@ public class UserRepositoryImpl implements UserRepositoryPort {
 
 ```java
 @Component
-public class UserDomainMapper {
-    
-    // Domain → JPA Entity
-    public JpaUserEntity toJpaEntity(UserDomain domain) {
+public class UserEntityMapper {
+
+    public JpaUserEntity toEntity(UserDomain domain) {
+        if (domain == null) {
+            return null;
+        }
+
         JpaUserEntity entity = new JpaUserEntity();
         entity.setId(domain.getId());
-        entity.setName(domain.getName().getValue());
-        entity.setEmail(domain.getEmail().getValue());
-        entity.setUsername(domain.getUsername().getValue());
+        entity.setName(domain.getName());
+        entity.setEmail(domain.getEmail());
+        entity.setLogin(domain.getLogin());
         entity.setPassword(domain.getPassword());
-        entity.setRole(domain.getRole());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
+        entity.setActive(domain.isActive());
+
+        if (domain.getRole() != null) {
+            List<RolesEnum> entityRoles = domain
+                    .getRole().stream()
+                    .map(this::toEntityRole)
+                    .collect(Collectors.toList());
+            entity.setRole(entityRoles);
+        }
+
         return entity;
     }
-    
-    // JPA Entity → Domain
+
     public UserDomain toDomain(JpaUserEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        List<RolesEnum> domainRoles = null;
+        if (entity.getRole() != null) {
+            domainRoles = entity.getRole().stream()
+                    .map(this::toDomainRole)
+                    .collect(Collectors.toList());
+        }
+
         return UserDomain.builder()
-            .id(entity.getId())
-            .name(PersonName.of(entity.getName()))
-            .email(Email.of(entity.getEmail()))
-            .username(Username.of(entity.getUsername()))
-            .password(entity.getPassword())
-            .role(entity.getRole())
-            .createdAt(entity.getCreatedAt())
-            .updatedAt(entity.getUpdatedAt())
-            .build();
+                .id(entity.getId())
+                .name(entity.getName() != null ? PersonName.of(entity.getName()) : null)
+                .email(entity.getEmail() != null ? Email.of(entity.getEmail()) : null)
+                .login(entity.getLogin() != null ? Username.of(entity.getLogin()) : null)
+                .password(entity.getPassword())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .role(domainRoles)
+                .isActive(entity.isActive())
+                .build();
+    }
+
+    private RolesEnum toEntityRole(
+            RolesEnum domainRole) {
+        if (domainRole == null) {
+            return null;
+        }
+        return RolesEnum
+                .valueOf(domainRole.name());
+    }
+
+    private RolesEnum toDomainRole(
+            RolesEnum entityRole) {
+        if (entityRole == null) {
+            return null;
+        }
+        return RolesEnum.valueOf(entityRole.name());
     }
 }
 ```
 
 ### Security Adapters
 
-#### JWT Token Adapter
+#### JWT Token Management
 
 ```java
-@Component
-public class JwtTokenAdapter implements JwtTokenPort {
-    
-    private final JwtTokenManager jwtTokenManager;
-    
-    @Override
-    public String generateToken(String username, Set<String> roles) {
-        return jwtTokenManager.generateToken(username, roles);
-    }
-    
-    @Override
-    public boolean validateToken(String token) {
-        return jwtTokenManager.validateToken(token);
-    }
-    
-    @Override
-    public String getUsernameFromToken(String token) {
-        return jwtTokenManager.getUsernameFromToken(token);
+// Note: JWT Token functionality is now integrated directly into Security layer
+// through JwtUtil and JwtAuthenticationFilter classes
+// No separate adapter needed as JWT handling is infrastructure-specific
     }
     
     @Override
