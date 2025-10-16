@@ -1,0 +1,183 @@
+### =================================================================
+### TECH CHALLENGE FASE 01 - CHAMADAS REST API
+### Base URL: http://localhost:8080
+### Atualizado: 15/10/2025
+### =================================================================
+
+### VARIÁVEIS GLOBAIS
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### TOKEN JWT (obter através do login) - Será preenchido automaticamente após login
+@token = 
+
+### ID do usuário criado - Para reutilização em outros endpoints
+@user_id = 
+
+### =================================================================
+### AUTENTICAÇÃO - Rotas PÚBLICAS (sem token necessário)
+### =================================================================
+
+### 1. LOGIN - Gerar token JWT
+### Rota: POST /api/v1/auth/login
+### Segurança: PÚBLICA
+### Resposta: { "token": "jwt_token_here" }
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "login.atualizado",
+  "password": "senha123"
+}
+
+### 2. LOGIN - Teste com usuário vpadovam (OWNER)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "vpadovam",
+  "password": "senha123"
+}
+
+### 3. LOGIN - Teste com usuário mariasilva (CLIENT)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "mariasilva",
+  "password": "senha123"
+}
+
+### =================================================================
+### USUÁRIOS - CRIAÇÃO DE CLIENTE (PÚBLICO)
+### =================================================================
+
+### 4. CRIAR USUÁRIO CLIENTE - Rota pública
+### Rota: POST /api/v1/users
+### Segurança: PÚBLICA (permitAll)
+### Resposta: { "id": "uuid", "name": "...", "email": "...", "login": "..." }
+POST {{baseUrl}}/api/v1/users
+Content-Type: {{contentType}}
+
+{
+  "name": "João Silva",
+  "email": "joao.silva6@email.com",
+  "login": "joao.silva6",
+  "password": "senha123"
+}
+
+### =================================================================
+### USUÁRIOS - OPERAÇÕES AUTENTICADAS (Requer Token)
+### =================================================================
+
+### 5. BUSCAR USUÁRIO POR ID
+### Rota: GET /api/v1/users/{id}
+### Segurança: ADMIN ou OWNER
+### Usar {{user_id}} da criação do usuário ou UUID específico
+GET {{baseUrl}}/api/v1/users/{{user_id}}
+Authorization: Bearer {{token}}
+
+### 6. BUSCAR USUÁRIOS POR NOME
+### Rota: GET /api/v1/users/by-name?name={nome}
+### Segurança: ADMIN ou OWNER
+GET {{baseUrl}}/api/v1/users/by-name?name=Fulano
+Authorization: Bearer {{token}}
+
+### 7. ATUALIZAR USUÁRIO
+### Rota: PUT /api/v1/users/{id}
+### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário)
+PUT {{baseUrl}}/api/v1/users/{{user_id}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Nome Atualizado",
+  "email": "email.atualizado@exemplo.com",
+  "login": "login.atualizado"
+}
+
+### 8. ATUALIZAR A PRÓPRIA SENHA
+### Rota: PATCH /api/v1/users/password
+### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário autenticado)
+PATCH {{baseUrl}}/api/v1/users/password
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "senhaSegura456",
+  "newPassword": "senha123",
+  "confirmPassword": "senha123"
+}
+
+### 9. CRIAR USUÁRIO OWNER (Apenas ADMIN)
+### Rota: POST /api/v1/users/owner
+### Segurança: Apenas ADMIN
+POST {{baseUrl}}/api/v1/users/owner
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Novo Dono",
+  "email": "dono@exemplo.com",
+  "login": "novo.dono",
+  "password": "senhaSegura456"
+}
+
+### 10. DELETAR USUÁRIO (Apenas ADMIN)
+### Rota: DELETE /api/v1/users/{id}
+### Segurança: Apenas ADMIN
+DELETE {{baseUrl}}/api/v1/users/{{user_id}}
+Authorization: Bearer {{token}}
+
+### =================================================================
+### INSTRUÇÕES DE USO
+### =================================================================
+
+### FLUXO DE TESTE RECOMENDADO:
+### 1. Execute "CRIAR USUÁRIO CLIENTE" (item 4) para criar um novo usuário
+### 2. Execute "LOGIN" (item 1) com as credenciais do usuário criado
+### 3. Copie o token retornado e cole na variável @token no topo do arquivo
+### 4. Copie o ID do usuário criado e cole na variável @user_id
+### 5. Execute as demais chamadas que precisam de autenticação
+
+### EXEMPLOS DE FLUXO COMPLETO:
+### A) Criar usuário → Login → Buscar por ID → Atualizar dados → Atualizar senha
+### B) Login (usuário existente) → Buscar por nome → Criar Owner (se ADMIN) → Deletar (se ADMIN)
+
+### USUÁRIOS DISPONÍVEIS NO BANCO:
+### - Login: vpadovam     | Role: OWNER  | Password: senha123
+### - Login: mariasilva   | Role: CLIENT | Password: senha123  
+### - Login: joaop        | Role: CLIENT | Password: senha123
+### - Login: anasouza     | Role: CLIENT | Password: senha123
+### - Login: carlosol     | Role: OWNER  | Password: senha123
+### - Login: joao.silva   | Role: CLIENT | Password: senha123
+
+### ROTAS PÚBLICAS (não precisam de token):
+### - POST /api/v1/auth/login
+### - POST /api/v1/users (criar cliente)
+
+### ROTAS AUTENTICADAS (precisam de token no header Authorization):
+### - GET /api/v1/users/{id} - ADMIN ou OWNER
+### - GET /api/v1/users/by-name - ADMIN ou OWNER  
+### - PUT /api/v1/users/{id} - ADMIN, OWNER ou CLIENT (próprio usuário)
+### - PATCH /api/v1/users/password - ADMIN, OWNER ou CLIENT (próprio usuário)
+### - POST /api/v1/users/owner - Apenas ADMIN
+### - DELETE /api/v1/users/{id} - Apenas ADMIN
+
+### OBSERVAÇÕES:
+### - Todos os hashes de senha no banco correspondem à senha: "senha123"
+### - Os UUIDs dos usuários estão fixos conforme data.sql
+### - Para testes com ADMIN, será necessário criar um usuário com role ADMIN no banco
+### - Use {{user_id}} para referenciar o ID do usuário criado nas chamadas subsequentes
+### - O token JWT é válido por um período limitado e deve ser renovado quando expirar
+
+### VARIÁVEIS DISPONÍVEIS:
+### - {{baseUrl}} = http://localhost:8080
+### - {{contentType}} = application/json  
+### - {{token}} = Token JWT obtido no login
+### - {{user_id}} = ID do usuário criado (para reutilização)
+
+### COLLECTION POSTMAN:
+### Este arquivo HTTP é baseado na collection "TechChallenge" do Postman
+### Todas as funcionalidades foram adaptadas para formato HTTP nativo do VS Code
+### Para usar no Postman, importe o JSON fornecido separadamente

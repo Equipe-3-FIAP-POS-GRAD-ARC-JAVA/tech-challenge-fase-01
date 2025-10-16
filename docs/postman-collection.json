@@ -1,0 +1,384 @@
+{
+	"info": {
+		"_postman_id": "e905c926-1823-4449-a59f-ce690442b46c",
+		"name": "TechChallenge - FIAP Tech Challenge Fase 01",
+		"description": "Collection completa da API REST do Tech Challenge Fase 01\n\nBase URL: http://localhost:8080\nAutenticação: JWT Bearer Token\nAtualizado: 15/10/2025",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2416633"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Extract token and save to collection variable\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('token');",
+							"    pm.collectionVariables.set('token', jsonData.token);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"login\": \"login.atualizado\",\r\n  \"password\": \"senha123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/v1/auth/login",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Endpoint de autenticação que retorna um token JWT.\nRota: POST /api/v1/auth/login\nSegurança: PÚBLICA"
+			},
+			"response": []
+		},
+		{
+			"name": "Criar Usuário (CLIENT)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Captura o campo 'id' da resposta e armazena na variável de coleção 'user_id'",
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData && jsonData.id) {",
+							"        pm.collectionVariables.set('user_id', jsonData.id);",
+							"        pm.test('O campo id foi salvo na variável de coleção user_id', function () {",
+							"            pm.expect(pm.collectionVariables.get('user_id')).to.eql(jsonData.id);",
+							"        });",
+							"    } else {",
+							"        pm.test('Resposta não contém o campo id', function () {",
+							"            pm.expect(jsonData && jsonData.id).to.not.be.undefined;",
+							"        });",
+							"    }",
+							"} else {",
+							"    pm.test('Código de resposta não é 201', function () {",
+							"        pm.expect(pm.response.code).to.eql(201);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva6@email.com\",\r\n  \"login\": \"joao.silva6\",\r\n  \"password\": \"senha123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/v1/users",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users"
+					]
+				},
+				"description": "Criação de usuário cliente (público).\nRota: POST /api/v1/users\nSegurança: PÚBLICA"
+			},
+			"response": []
+		},
+		{
+			"name": "Criar Usuário (OWNER) - apenas ADMIN",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Novo Dono\",\r\n    \"email\": \"dono@exemplo.com\",\r\n    \"login\": \"novo.dono\",\r\n    \"password\": \"senhaSegura456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/v1/users/owner",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"owner"
+					]
+				},
+				"description": "Criação de usuário OWNER - restrito a ADMIN.\nRota: POST /api/v1/users/owner\nSegurança: Apenas ADMIN"
+			},
+			"response": []
+		},
+		{
+			"name": "Atualizar a Própria Senha",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"currentPassword\": \"senhaSegura456\",\r\n  \"newPassword\": \"senha123\",\r\n  \"confirmPassword\":\"senha123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/v1/users/password",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"password"
+					]
+				},
+				"description": "Atualização da própria senha do usuário autenticado.\nRota: PATCH /api/v1/users/password\nSegurança: ADMIN, OWNER ou CLIENT (próprio usuário)"
+			},
+			"response": []
+		},
+		{
+			"name": "Atualizar Dados do Usuário",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado@exemplo.com\",\r\n    \"login\": \"login.atualizado\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/v1/users/{{user_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"{{user_id}}"
+					]
+				},
+				"description": "Atualização dos dados do usuário.\nRota: PUT /api/v1/users/{id}\nSegurança: ADMIN, OWNER ou CLIENT (próprio usuário)"
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar Usuário por ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/v1/users/{{user_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"{{user_id}}"
+					]
+				},
+				"description": "Busca usuário por ID.\nRota: GET /api/v1/users/{id}\nSegurança: ADMIN ou OWNER"
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar Usuário por Nome",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/v1/users/by-name?name=Fulano",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"by-name"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "Fulano"
+						}
+					]
+				},
+				"description": "Busca usuários por nome.\nRota: GET /api/v1/users/by-name?name={nome}\nSegurança: ADMIN ou OWNER"
+			},
+			"response": []
+		},
+		{
+			"name": "Deletar Usuário",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/v1/users/{{user_id}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"{{user_id}}"
+					]
+				},
+				"description": "Exclusão de usuário.\nRota: DELETE /api/v1/users/{id}\nSegurança: Apenas ADMIN"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "",
+			"type": "string",
+			"description": "JWT Token obtido no login"
+		},
+		{
+			"key": "host",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "URL base da API"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string", 
+			"description": "ID do usuário criado (salvo automaticamente)"
+		}
+	]
+}

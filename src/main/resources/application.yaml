@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: tech-challenge-fase-01
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/restaurantapp
+    username: postgres
+    password: secret
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Recreate schema on startup
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/postgres/schema.sql
+      data-locations: classpath:db/postgres/data.sql
+
+  main:
+    allow-bean-definition-overriding: true
+
+# MVC Configuration
+# mvc:
+#   problemdetails:
+#     enabled: true
