@@ -1,10 +1,9 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests;
 
-public record UserCreateRequest(
-        String name,
-        String email,
-        String login,
-        String password,
+import java.util.UUID;
+
+public record AddressCreateRequest(
+        UUID userId,
         String street,
         String number,
         String city) {

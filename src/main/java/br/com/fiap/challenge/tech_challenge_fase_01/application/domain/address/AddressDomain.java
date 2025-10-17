@@ -35,14 +35,6 @@ public class AddressDomain {
                 .build();
     }
 
-//    public void update(String street, String number, String city) {
-//        validate(this.userId, street, number, city);
-//        this.street = street.trim();
-//        this.number = number.trim();
-//        this.city = city.trim();
-//        this.updatedAt = LocalDateTime.now();
-//    }
-
     private static void validate(UUID userId, String street, String number, String city) {
         if (userId == null) throw new InvalidFieldException("userId", "Usuário é obrigatório");
         checkLen("street", street, STREET_MIN, STREET_MAX, "Rua");

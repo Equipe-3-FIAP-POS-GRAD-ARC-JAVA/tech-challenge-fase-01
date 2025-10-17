@@ -5,6 +5,6 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.Add
 import java.util.List;
 import java.util.UUID;
 
-public interface AddressFindByUser {
+public interface AddressFindByUserPort {
     List<AddressResponse> findAddress(UUID id);
 }

@@ -10,7 +10,6 @@ import java.util.UUID;
 @Component
 public class AddressEntityMapper {
 
-    /** Domain -> Entity (sem SELECT no usuário) */
     public JpaAddressEntity toEntity(AddressDomain domain) {
         if (domain == null) return null;
 
@@ -22,7 +21,6 @@ public class AddressEntityMapper {
         e.setCreatedAt(domain.getCreatedAt());
         e.setUpdatedAt(domain.getUpdatedAt());
 
-        // associa por referência leve (apenas o ID)
         if (domain.getUserId() != null) {
             JpaUserEntity userRef = new JpaUserEntity();
             userRef.setId(domain.getUserId());

@@ -69,7 +69,7 @@ public class UserDomain {
                 .name(PersonName.of(name))
                 .email(Email.of(email))
                 .login(Username.of(login))
-                .password(password) // Senha já deve vir criptografada
+                .password(password)
                 .createdAt(LocalDateTime.now())
                 .isActive(true)
                 .role(List.of(RolesEnum.CLIENT))
@@ -83,7 +83,7 @@ public class UserDomain {
                 .name(PersonName.of(name))
                 .email(Email.of(email))
                 .login(Username.of(login))
-                .password(password) // Senha já deve vir criptografada
+                .password(password)
                 .createdAt(LocalDateTime.now())
                 .isActive(true)
                 .role(List.of(RolesEnum.OWNER))
@@ -95,7 +95,6 @@ public class UserDomain {
             throw new BusinessRuleException("Não é possível atualizar informações de usuário inativo");
         }
 
-        // Value Objects fazem validação automaticamente
         this.name = PersonName.of(name);
         this.email = Email.of(email);
         this.login = Username.of(login);
@@ -107,7 +106,6 @@ public class UserDomain {
             throw new InvalidFieldException("password", "Nova senha não pode ser vazia");
         }
 
-        // Validação adicional: não permitir senha igual à atual
         if (this.password != null && this.password.equals(newPassword)) {
             throw new BusinessRuleException("A nova senha deve ser diferente da senha atual");
         }
@@ -184,7 +182,6 @@ public class UserDomain {
                     String.format("Senha deve ter no máximo %d caracteres", PASSWORD_MAX_LENGTH));
         }
 
-        // Validação de complexidade (regra de negócio)
         boolean hasLetter = password.matches(".*[a-zA-Z].*");
         boolean hasDigit = password.matches(".*\\d.*");
 

@@ -12,5 +12,7 @@ public interface AddressRepositoryPort {
 
     Optional<AddressDomain> findById(UUID id);
 
-    List<AddressDomain> findByUser(UUID userId);
+    List<AddressDomain> findByAddressFromUser(UUID userId);
+
+    void deleteAddress(UUID addressId);
 }

@@ -110,13 +110,6 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/addres")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
-    public ResponseEntity<List<UserResponseDTO>> getAddres(@RequestParam String name) {
-        List<UserResponse> responses = userFindByNamePort.findByName(name);
-        return ResponseEntity.ok(responses.stream().map(webMapper::toWebResponse).toList());
-    }
-
     public boolean isOwnerOfResource(SecurityUser principal, String resourceId) {
         if (principal == null || resourceId == null) {
             return false;
