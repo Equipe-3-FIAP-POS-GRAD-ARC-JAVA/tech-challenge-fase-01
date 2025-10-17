@@ -23,7 +23,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=secret
     ports:
-      - "8081:8080"
+      - "8080:8080"
     networks:
       - app-network
     depends_on:

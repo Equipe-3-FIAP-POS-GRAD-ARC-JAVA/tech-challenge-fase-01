@@ -1,8 +1,5 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception;
 
-/**
- * Exceção lançada quando um campo obrigatório está ausente ou inválido.
- */
 public class InvalidFieldException extends DomainValidationException {
 
     private final String fieldName;

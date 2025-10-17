@@ -70,9 +70,14 @@ Content-Type: application/json
 **Response:**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "type": "Bearer",
-  "expiresIn": 3600
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "userProfile": {
+    "id": 123,
+    "email": "usuario@exemplo.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"]
+  }
 }
 ```
 
@@ -123,9 +128,15 @@ Autentica um usuário e retorna um token JWT.
 **Response 200 - Success:**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "type": "Bearer",
-  "expiresIn": 3600
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "refreshToken": "optional.refresh.token.if.used...",
+  "userProfile": {
+    "id": 123,
+    "email": "usuario@exemplo.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"]
+  }
 }
 ```
 
@@ -560,9 +571,15 @@ curl -X GET http://localhost:8080/api/health
 
 ```json
 {
-  "token": "string",      // JWT token
-  "type": "Bearer",
-  "expiresIn": 3600       // seconds
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600, // Tempo de expiração em segundos (ex: 1 hora)
+  "refreshToken": "optional.refresh.token.if.used...", // Opcional, se usar o padrão Refresh Token
+  "userProfile": { // Opcional: Dados básicos do usuário para o frontend
+    "id": 123,
+    "email": "usuario@exemplo.com",
+    "roles": ["ROLE_ADMIN", "ROLE_USER"]
+  }
 }
 ```
 

@@ -18,17 +18,9 @@ public interface JpaUserRepository extends JpaRepository<JpaUserEntity, UUID> {
     public List<JpaUserEntity> findByName(@Param("name") String name);
 
     Optional<JpaUserEntity> findByLogin(String login);
-    /**
-     * Busca usuário por login de forma case-insensitive.
-     * @param login Username do usuário
-     * @return Optional contendo o usuário se encontrado
-     */
+
     Optional<JpaUserEntity> findByLoginIgnoreCase(String login);
-    /**
-     * Busca usuário por email de forma case-insensitive.
-     * @param email Email do usuário
-     * @return Optional contendo o usuário se encontrado
-     */
+
     Optional<JpaUserEntity> findByEmailIgnoreCase(String email);
 
 }

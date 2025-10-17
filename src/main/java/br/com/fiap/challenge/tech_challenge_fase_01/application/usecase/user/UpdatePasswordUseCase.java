@@ -11,15 +11,6 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.us
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
 
-/**
- * Use Case para atualização de senha do usuário.
- * 
- * Responsabilidades:
- * - Orquestrar a alteração de senha
- * - Buscar usuário existente
- * - Criptografar nova senha
- * - Delegar alteração para o método de comportamento do Domain
- */
 public class UpdatePasswordUseCase implements UserUpdatePasswordPort {
 
     private final UserRepositoryPort userRepository;
@@ -48,7 +39,6 @@ public class UpdatePasswordUseCase implements UserUpdatePasswordPort {
             throw new BusinessRuleException("A nova senha e a confirmação não conferem.");
         }
 
-        // Criptografa a nova senha
         String encryptedPassword = passwordEncoder.encode(updatePasswordRequest.newPassword());
 
         user.changePassword(encryptedPassword);
