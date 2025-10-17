@@ -1,0 +1,169 @@
+@startuml Database_Schema
+!theme plain
+title Schema do Banco de Dados - Sistema de Gestão de Usuários
+
+' Configuração de estilos
+skinparam entity {
+    BackgroundColor<<main>> #E3F2FD
+    BorderColor<<main>> #1976D2
+    BackgroundColor<<audit>> #FFF3E0
+    BorderColor<<audit>> #F57C00
+    BackgroundColor<<lookup>> #E8F5E8
+    BorderColor<<lookup>> #388E3C
+}
+
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+}
+
+' Tabela principal de usuários
+entity TB_USUARIO <<main>> {
+    * **ID** : UUID <<PK>>
+    ==
+    * **NOME** : VARCHAR(255) <<NOT NULL>>
+    * **EMAIL** : VARCHAR(255) <<NOT NULL, UNIQUE>>
+    * **LOGIN** : VARCHAR(50) <<NOT NULL, UNIQUE>>
+    * **SENHA_HASH** : VARCHAR(255) <<NOT NULL>>
+    * **TIPO_USUARIO** : VARCHAR(20) <<NOT NULL>>
+    * **ATIVO** : BOOLEAN <<NOT NULL, DEFAULT TRUE>>
+    ==
+    **ENDERECO_RUA** : VARCHAR(255)
+    **ENDERECO_NUMERO** : VARCHAR(20)
+    **ENDERECO_COMPLEMENTO** : VARCHAR(100)
+    **ENDERECO_CIDADE** : VARCHAR(100)
+    **ENDERECO_ESTADO** : VARCHAR(2)
+    **ENDERECO_CEP** : VARCHAR(10)
+    ==
+    **CNPJ** : VARCHAR(18) <<UNIQUE>>
+    ==
+    **DATA_CRIACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
+    **DATA_ULTIMA_ALTERACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
+    **VERSAO** : BIGINT <<NOT NULL, DEFAULT 0>>
+}
+
+' Tabela de tokens de refresh (para controle de sessões)
+entity TB_REFRESH_TOKEN <<audit>> {
+    * **ID** : UUID <<PK>>
+    ==
+    * **TOKEN** : VARCHAR(500) <<NOT NULL, UNIQUE>>
+    * **USUARIO_ID** : UUID <<NOT NULL, FK>>
+    * **DATA_EXPIRACAO** : TIMESTAMP <<NOT NULL>>
+    * **REVOGADO** : BOOLEAN <<NOT NULL, DEFAULT FALSE>>
+    ==
+    **DATA_CRIACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
+    **IP_ADDRESS** : VARCHAR(45)
+    **USER_AGENT** : VARCHAR(500)
+}
+
+' Tabela de auditoria para mudanças de senha
+entity TB_HISTORICO_SENHA <<audit>> {
+    * **ID** : UUID <<PK>>
+    ==
+    * **USUARIO_ID** : UUID <<NOT NULL, FK>>
+    * **SENHA_HASH_ANTERIOR** : VARCHAR(255) <<NOT NULL>>
+    * **DATA_ALTERACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
+    * **IP_ADDRESS** : VARCHAR(45)
+    * **MOTIVO** : VARCHAR(100)
+}
+
+' Tabela lookup para tipos de usuário (opcional, para normalização)
+entity TB_TIPO_USUARIO <<lookup>> {
+    * **ID** : SMALLINT <<PK>>
+    ==
+    * **CODIGO** : VARCHAR(20) <<NOT NULL, UNIQUE>>
+    * **DESCRICAO** : VARCHAR(100) <<NOT NULL>>
+    * **ATIVO** : BOOLEAN <<NOT NULL, DEFAULT TRUE>>
+}
+
+' Relacionamentos
+TB_USUARIO ||--o{ TB_REFRESH_TOKEN : "possui tokens"
+TB_USUARIO ||--o{ TB_HISTORICO_SENHA : "histórico de senhas"
+TB_TIPO_USUARIO ||--o{ TB_USUARIO : "classifica"
+
+' Notas explicativas
+note right of TB_USUARIO
+    **Tipos de Usuário:**
+    • CLIENTE
+    • DONO_RESTAURANTE
+    
+    **Validações:**
+    • Email deve ser único e válido
+    • Login deve ser único (3-50 chars)
+    • CEP formato: 99999-999
+    • CNPJ apenas para DONO_RESTAURANTE
+    • Estados brasileiros (SP, RJ, etc.)
+    
+    **Índices Recomendados:**
+    • idx_usuario_email (UNIQUE)
+    • idx_usuario_login (UNIQUE)
+    • idx_usuario_tipo_ativo
+    • idx_usuario_data_criacao
+end note
+
+note right of TB_REFRESH_TOKEN
+    **Controle de Sessão:**
+    • Tokens de refresh para renovação
+    • Rastreamento de IP e User-Agent
+    • Controle de revogação manual
+    • TTL configurável (ex: 30 dias)
+    
+    **Limpeza Automática:**
+    • Job para remover tokens expirados
+    • Limite de tokens ativos por usuário
+end note
+
+note right of TB_HISTORICO_SENHA
+    **Auditoria de Segurança:**
+    • Histórico de mudanças de senha
+    • Rastreamento de IP
+    • Motivos: 'USUARIO_SOLICITOU', 
+      'RESET_EMAIL', 'ADMIN_RESET'
+    
+    **Políticas:**
+    • Não reutilizar últimas 5 senhas
+    • Retenção de 2 anos
+end note
+
+note right of TB_TIPO_USUARIO
+    **Dados de Referência:**
+    
+    | ID | CODIGO | DESCRICAO |
+    |----|----|-----------|
+    | 1  | CLIENTE | Cliente do Sistema |
+    | 2  | DONO_RESTAURANTE | Proprietário de Restaurante |
+    
+    **Vantagens:**
+    • Facilita adição de novos tipos
+    • Normalização dos dados
+    • Controle de tipos ativos
+end note
+
+' Scripts DDL de apoio
+note bottom
+    **Scripts de Criação:**
+    
+    ```sql
+    -- Índices para performance
+    CREATE INDEX idx_usuario_email ON TB_USUARIO(EMAIL);
+    CREATE INDEX idx_usuario_login ON TB_USUARIO(LOGIN);
+    CREATE INDEX idx_usuario_tipo_ativo ON TB_USUARIO(TIPO_USUARIO, ATIVO);
+    CREATE INDEX idx_refresh_token_usuario ON TB_REFRESH_TOKEN(USUARIO_ID);
+    CREATE INDEX idx_refresh_token_expiracao ON TB_REFRESH_TOKEN(DATA_EXPIRACAO);
+    
+    -- Triggers para auditoria
+    CREATE TRIGGER tr_usuario_update_timestamp 
+        BEFORE UPDATE ON TB_USUARIO
+        FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+    
+    -- Constraints de domínio
+    ALTER TABLE TB_USUARIO ADD CONSTRAINT ck_tipo_usuario 
+        CHECK (TIPO_USUARIO IN ('CLIENTE', 'DONO_RESTAURANTE'));
+    
+    ALTER TABLE TB_USUARIO ADD CONSTRAINT ck_cnpj_dono 
+        CHECK ((TIPO_USUARIO = 'DONO_RESTAURANTE' AND CNPJ IS NOT NULL) 
+               OR (TIPO_USUARIO = 'CLIENTE' AND CNPJ IS NULL));
+    ```
+end note
+
+@enduml

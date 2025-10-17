@@ -32,7 +32,11 @@ O sistema deve permitir:
 - Validação  de  login  obrigatória,  por  meio  de  um serviço que  verifique se login e senha são válidos:
 
 - Implementações extras:
+<<<<<<< Updated upstream
     - Conter três niveis de acesso: Cliente, Restaurante e Administrador;
+=======
+    - Conter três niveis de acesso: Cliente, Restaurante (Dono) e Administrador;
+>>>>>>> Stashed changes
     - Testes
 
 A  aplicação  deverá  ser  dockerizada,  utilizando  Docker  Compose  para orquestração junto com um banco de dados relacional (MySQL)

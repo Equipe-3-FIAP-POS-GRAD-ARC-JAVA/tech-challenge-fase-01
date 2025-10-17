@@ -1,0 +1,239 @@
+@startuml Authentication_Sequence
+!theme plain
+title Fluxo Completo de Autenticação - Arquitetura Hexagonal
+
+' Definição de cores para cada camada
+!define DRIVING_ADAPTER_COLOR #E8F5E8
+!define APPLICATION_CORE_COLOR #E3F2FD  
+!define DRIVEN_ADAPTER_COLOR #FFF3E0
+!define DATABASE_COLOR #F3E5F5
+
+actor "Cliente/Postman" as Client #FFE0B2
+
+' Camada de Adaptadores de Entrada (Driving Adapters)
+box "Driving Adapters" DRIVING_ADAPTER_COLOR
+    participant "AuthController" as Controller
+    participant "ExceptionHandler" as ExceptionHandler
+    participant "JwtAuthFilter" as JwtFilter
+end box
+
+' Núcleo da Aplicação (Application Core)
+box "Application Core" APPLICATION_CORE_COLOR
+    participant "IAuthenticationPort" as IAuthPort
+    participant "AuthenticationService" as AuthService
+    participant "IUserRepositoryPort" as IUserRepo
+    participant "IPasswordEncoderPort" as IPasswordEncoder
+    participant "ITokenGeneratorPort" as ITokenGenerator
+    participant "User Entity" as UserEntity
+end box
+
+' Camada de Adaptadores de Saída (Driven Adapters)
+box "Driven Adapters" DRIVEN_ADAPTER_COLOR
+    participant "UserRepositoryAdapter" as RepoAdapter
+    participant "BCryptPasswordEncoder" as PasswordEncoderImpl
+    participant "JwtTokenGenerator" as TokenGeneratorImpl
+end box
+
+' Infraestrutura de Dados
+box "Database" DATABASE_COLOR
+    database "PostgreSQL" as DB
+end box
+
+== Cenário 1: Login Bem-Sucedido ==
+
+Client -> Controller : POST /api/auth/login\n{ "login": "user123", "senha": "senha123" }
+activate Controller
+
+note right of Controller
+    LoginRequestDTO:
+    - login: String
+    - senha: String
+end note
+
+Controller -> AuthService : validarLogin(login, senha)
+activate AuthService
+
+' Buscar usuário por login
+AuthService -> IUserRepo : findByLogin("user123")
+activate IUserRepo
+
+IUserRepo -> RepoAdapter : findByLogin("user123")
+activate RepoAdapter
+
+RepoAdapter -> DB : SELECT * FROM tb_usuario\nWHERE login = 'user123'\nAND ativo = true
+activate DB
+DB --> RepoAdapter : UserEntity data
+deactivate DB
+
+RepoAdapter --> IUserRepo : Optional<User>
+note right : Mapeia JPA Entity\npara Domain Entity
+deactivate RepoAdapter
+
+IUserRepo --> AuthService : Optional<User>
+deactivate IUserRepo
+
+alt Usuário encontrado e ativo
+    
+    AuthService -> UserEntity : validarSenha("senha123")
+    activate UserEntity
+    
+    UserEntity -> IPasswordEncoder : matches("senha123", hashedPassword)
+    activate IPasswordEncoder
+    
+    IPasswordEncoder -> PasswordEncoderImpl : matches("senha123", hashedPassword)
+    activate PasswordEncoderImpl
+    
+    PasswordEncoderImpl --> IPasswordEncoder : true
+    deactivate PasswordEncoderImpl
+    
+    IPasswordEncoder --> UserEntity : true
+    deactivate IPasswordEncoder
+    
+    UserEntity --> AuthService : true (senha válida)
+    deactivate UserEntity
+    
+    ' Gerar tokens JWT
+    AuthService -> ITokenGenerator : generateAccessToken(user)
+    activate ITokenGenerator
+    
+    ITokenGenerator -> TokenGeneratorImpl : generateAccessToken(user)
+    activate TokenGeneratorImpl
+    
+    TokenGeneratorImpl --> ITokenGenerator : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    deactivate TokenGeneratorImpl
+    
+    ITokenGenerator --> AuthService : accessToken
+    deactivate ITokenGenerator
+    
+    AuthService -> ITokenGenerator : generateRefreshToken(user)
+    activate ITokenGenerator
+    
+    ITokenGenerator -> TokenGeneratorImpl : generateRefreshToken(user)
+    activate TokenGeneratorImpl
+    
+    TokenGeneratorImpl --> ITokenGenerator : "refreshToken123..."
+    deactivate TokenGeneratorImpl
+    
+    ITokenGenerator --> AuthService : refreshToken
+    deactivate ITokenGenerator
+    
+    AuthService --> Controller : TokenDTO\n{ accessToken, refreshToken, expiresIn }
+    note right
+        TokenDTO:
+        - accessToken: String
+        - refreshToken: String
+        - tokenType: "Bearer"
+        - expiresIn: Long
+        - user: UserDTO
+    end note
+    
+else Senha inválida
+    
+    AuthService -> UserEntity : validarSenha("senhaErrada")
+    activate UserEntity
+    
+    UserEntity -> IPasswordEncoder : matches("senhaErrada", hashedPassword)
+    activate IPasswordEncoder
+    
+    IPasswordEncoder -> PasswordEncoderImpl : matches("senhaErrada", hashedPassword)
+    activate PasswordEncoderImpl
+    
+    PasswordEncoderImpl --> IPasswordEncoder : false
+    deactivate PasswordEncoderImpl
+    
+    IPasswordEncoder --> UserEntity : false
+    deactivate IPasswordEncoder
+    
+    UserEntity --> AuthService : false (senha inválida)
+    deactivate UserEntity
+    
+    AuthService --> Controller : InvalidCredentialsException
+    
+    Controller -> ExceptionHandler : handle(InvalidCredentialsException)
+    activate ExceptionHandler
+    
+    ExceptionHandler --> Controller : ResponseEntity<ProblemDetail>\n(401 Unauthorized)
+    deactivate ExceptionHandler
+    
+else Usuário não encontrado ou inativo
+    
+    AuthService --> Controller : UserNotFoundException
+    
+    Controller -> ExceptionHandler : handle(UserNotFoundException)
+    activate ExceptionHandler
+    
+    ExceptionHandler --> Controller : ResponseEntity<ProblemDetail>\n(401 Unauthorized)
+    deactivate ExceptionHandler
+    
+end
+
+deactivate AuthService
+
+Controller --> Client : HTTP Response
+deactivate Controller
+
+== Cenário 2: Validação de Token em Requisições Subsequentes ==
+
+Client -> JwtFilter : GET /api/users/profile\nAuthorization: Bearer <token>
+activate JwtFilter
+
+JwtFilter -> ITokenGenerator : validateToken(token)
+activate ITokenGenerator
+
+ITokenGenerator -> TokenGeneratorImpl : validateToken(token)
+activate TokenGeneratorImpl
+
+TokenGeneratorImpl --> ITokenGenerator : true/false
+deactivate TokenGeneratorImpl
+
+ITokenGenerator --> JwtFilter : isValid
+deactivate ITokenGenerator
+
+alt Token válido
+    
+    JwtFilter -> ITokenGenerator : extractUserFromToken(token)
+    activate ITokenGenerator
+    
+    ITokenGenerator -> TokenGeneratorImpl : extractUserFromToken(token)
+    activate TokenGeneratorImpl
+    
+    TokenGeneratorImpl --> ITokenGenerator : userId (UUID)
+    deactivate TokenGeneratorImpl
+    
+    ITokenGenerator --> JwtFilter : userId
+    deactivate ITokenGenerator
+    
+    JwtFilter -> IUserRepo : findById(userId)
+    activate IUserRepo
+    
+    IUserRepo -> RepoAdapter : findById(userId)
+    activate RepoAdapter
+    
+    RepoAdapter -> DB : SELECT * FROM tb_usuario WHERE id = ?
+    activate DB
+    DB --> RepoAdapter : UserEntity data
+    deactivate DB
+    
+    RepoAdapter --> IUserRepo : Optional<User>
+    deactivate RepoAdapter
+    
+    IUserRepo --> JwtFilter : Optional<User>
+    deactivate IUserRepo
+    
+    note right of JwtFilter
+        Usuário autenticado é 
+        adicionado ao Security Context
+        para uso nos Controllers
+    end note
+    
+    JwtFilter --> Client : Continua processamento da requisição
+    
+else Token inválido ou expirado
+    
+    JwtFilter --> Client : HTTP 401 Unauthorized\n{ "error": "Invalid or expired token" }
+    
+end
+
+deactivate JwtFilter
+
+@enduml

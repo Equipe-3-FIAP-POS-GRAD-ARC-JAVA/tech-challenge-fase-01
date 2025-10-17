@@ -1,0 +1,270 @@
+@startuml Domain_Model_Classes
+!theme plain
+title Modelo de Domínio - Sistema de Gestão de Usuários
+
+' Configuração de estilos
+skinparam class {
+    BackgroundColor<<entity>> #E3F2FD
+    BorderColor<<entity>> #1976D2
+    BackgroundColor<<value_object>> #F3E5F5
+    BorderColor<<value_object>> #7B1FA2
+    BackgroundColor<<port>> #FFF3E0
+    BorderColor<<port>> #F57C00
+    BackgroundColor<<service>> #E8F5E8
+    BorderColor<<service>> #388E3C
+}
+
+skinparam classAttributeIconVisible false
+
+' Entidades do Domínio
+package "Domain Entities" {
+    
+    abstract class User <<entity>> {
+        - id: UUID
+        - nome: String
+        - email: Email
+        - login: String
+        - senha: PasswordHash
+        - tipoUsuario: TipoUsuario
+        - endereco: Endereco
+        - dataUltimaAlteracao: LocalDateTime
+        - ativo: boolean
+        --
+        + User(nome, email, login, senha, endereco)
+        + atualizarDados(nome: String, endereco: Endereco): void
+        + trocarSenha(senhaAtual: String, novaSenha: String): void
+        + desativar(): void
+        + ativar(): void
+        + isAtivo(): boolean
+        + validarSenha(senha: String): boolean
+        --
+        # validarDados(): void
+        # atualizarDataAlteracao(): void
+    }
+
+    class Cliente <<entity>> {
+        - historicoAvaliacoes: List<Avaliacao>
+        --
+        + Cliente(nome, email, login, senha, endereco)
+        + realizarPedido(restaurante: Restaurante): Pedido
+        + deixarAvaliacao(restaurante: Restaurante, nota: int, comentario: String): void
+        + getHistoricoAvaliacoes(): List<Avaliacao>
+    }
+
+    class DonoRestaurante <<entity>> {
+        - restaurantes: List<Restaurante>
+        - cnpj: CNPJ
+        --
+        + DonoRestaurante(nome, email, login, senha, endereco, cnpj)
+        + adicionarRestaurante(restaurante: Restaurante): void
+        + removerRestaurante(restauranteId: UUID): void
+        + gerenciarEstabelecimento(restauranteId: UUID): void
+        + getRestaurantes(): List<Restaurante>
+    }
+}
+
+' Value Objects
+package "Value Objects" {
+    
+    class Endereco <<value_object>> {
+        - rua: String
+        - numero: String
+        - complemento: String
+        - cidade: String
+        - estado: String
+        - cep: CEP
+        --
+        + Endereco(rua, numero, cidade, estado, cep)
+        + Endereco(rua, numero, complemento, cidade, estado, cep)
+        + getEnderecoCompleto(): String
+        + validar(): boolean
+        --
+        + equals(other: Object): boolean
+        + hashCode(): int
+    }
+    
+    class Email <<value_object>> {
+        - value: String
+        --
+        + Email(email: String)
+        + getValue(): String
+        + getDominio(): String
+        --
+        - validar(email: String): void
+        + equals(other: Object): boolean
+        + hashCode(): int
+    }
+    
+    class PasswordHash <<value_object>> {
+        - hash: String
+        - algoritmo: String
+        --
+        + PasswordHash(senhaPlana: String)
+        + verificar(senhaPlana: String): boolean
+        + getHash(): String
+        --
+        - criptografar(senha: String): String
+        + equals(other: Object): boolean
+        + hashCode(): int
+    }
+    
+    class CEP <<value_object>> {
+        - valor: String
+        --
+        + CEP(cep: String)
+        + getValor(): String
+        + getFormatado(): String
+        --
+        - validar(cep: String): void
+        + equals(other: Object): boolean
+        + hashCode(): int
+    }
+    
+    class CNPJ <<value_object>> {
+        - numero: String
+        --
+        + CNPJ(cnpj: String)
+        + getNumero(): String
+        + getFormatado(): String
+        --
+        - validar(cnpj: String): void
+        + equals(other: Object): boolean
+        + hashCode(): int
+    }
+    
+    enum TipoUsuario <<value_object>> {
+        CLIENTE
+        DONO_RESTAURANTE
+        --
+        + getDescricao(): String
+    }
+}
+
+' Primary Ports (Casos de Uso)
+package "Primary Ports" {
+    
+    interface IUserManagementPort <<port>> {
+        + cadastrarCliente(dados: CadastroClienteDTO): UUID
+        + cadastrarDonoRestaurante(dados: CadastroDonoDTO): UUID
+        + atualizarDadosUsuario(id: UUID, dados: AtualizacaoUsuarioDTO): void
+        + trocarSenha(id: UUID, senhaAntiga: String, novaSenha: String): void
+        + buscarUsuariosPorNome(nome: String): List<UsuarioDTO>
+        + buscarUsuarioPorId(id: UUID): UsuarioDTO
+        + desativarUsuario(id: UUID): void
+        + ativarUsuario(id: UUID): void
+    }
+    
+    interface IAuthenticationPort <<port>> {
+        + validarLogin(login: String, senha: String): TokenDTO
+        + validarToken(token: String): UsuarioDTO
+        + renovarToken(refreshToken: String): TokenDTO
+        + logout(token: String): void
+    }
+}
+
+' Secondary Ports (Contratos de Infraestrutura)
+package "Secondary Ports" {
+    
+    interface IUserRepositoryPort <<port>> {
+        + save(user: User): User
+        + findById(id: UUID): Optional<User>
+        + findByEmail(email: String): Optional<User>
+        + findByLogin(login: String): Optional<User>
+        + findByNomeContaining(nome: String): List<User>
+        + delete(id: UUID): void
+        + existsByEmail(email: String): boolean
+        + existsByLogin(login: String): boolean
+    }
+    
+    interface IPasswordEncoderPort <<port>> {
+        + encode(rawPassword: String): String
+        + matches(rawPassword: String, encodedPassword: String): boolean
+    }
+    
+    interface ITokenGeneratorPort <<port>> {
+        + generateAccessToken(user: User): String
+        + generateRefreshToken(user: User): String
+        + validateToken(token: String): boolean
+        + extractUserFromToken(token: String): UUID
+    }
+}
+
+' Application Services
+package "Application Services" {
+    
+    class UserRegistrationService <<service>> {
+        - userRepository: IUserRepositoryPort
+        - passwordEncoder: IPasswordEncoderPort
+        --
+        + cadastrarCliente(dados: CadastroClienteDTO): UUID
+        + cadastrarDonoRestaurante(dados: CadastroDonoDTO): UUID
+        --
+        - validarDadosUnicos(email: String, login: String): void
+        - criarCliente(dados: CadastroClienteDTO): Cliente
+        - criarDonoRestaurante(dados: CadastroDonoDTO): DonoRestaurante
+    }
+    
+    class AuthenticationService <<service>> {
+        - userRepository: IUserRepositoryPort
+        - passwordEncoder: IPasswordEncoderPort
+        - tokenGenerator: ITokenGeneratorPort
+        --
+        + validarLogin(login: String, senha: String): TokenDTO
+        + validarToken(token: String): UsuarioDTO
+        + renovarToken(refreshToken: String): TokenDTO
+        + logout(token: String): void
+        --
+        - autenticarUsuario(login: String, senha: String): User
+        - gerarTokens(user: User): TokenDTO
+    }
+    
+    class UserManagementService <<service>> {
+        - userRepository: IUserRepositoryPort
+        - passwordEncoder: IPasswordEncoderPort
+        --
+        + atualizarDadosUsuario(id: UUID, dados: AtualizacaoUsuarioDTO): void
+        + trocarSenha(id: UUID, senhaAntiga: String, novaSenha: String): void
+        + buscarUsuariosPorNome(nome: String): List<UsuarioDTO>
+        + buscarUsuarioPorId(id: UUID): UsuarioDTO
+        + desativarUsuario(id: UUID): void
+        + ativarUsuario(id: UUID): void
+        --
+        - validarUsuarioExiste(id: UUID): User
+        - mapearParaDTO(user: User): UsuarioDTO
+    }
+}
+
+' Relacionamentos de Herança e Composição
+User <|-- Cliente : extends
+User <|-- DonoRestaurante : extends
+User *--> Endereco : contains
+User *--> Email : contains  
+User *--> PasswordHash : contains
+User --> TipoUsuario : uses
+
+DonoRestaurante *--> CNPJ : contains
+Endereco *--> CEP : contains
+
+' Implementação das Portas
+IUserManagementPort <|.. UserRegistrationService : implements
+IUserManagementPort <|.. UserManagementService : implements
+IAuthenticationPort <|.. AuthenticationService : implements
+
+' Dependências dos Serviços
+UserRegistrationService --> IUserRepositoryPort : depends on
+UserRegistrationService --> IPasswordEncoderPort : depends on
+
+AuthenticationService --> IUserRepositoryPort : depends on
+AuthenticationService --> IPasswordEncoderPort : depends on
+AuthenticationService --> ITokenGeneratorPort : depends on
+
+UserManagementService --> IUserRepositoryPort : depends on
+UserManagementService --> IPasswordEncoderPort : depends on
+
+' Relacionamentos de criação
+UserRegistrationService ..> Cliente : creates
+UserRegistrationService ..> DonoRestaurante : creates
+AuthenticationService ..> User : authenticates
+UserManagementService ..> User : manages
+
+@enduml

@@ -1,0 +1,143 @@
+@startuml Hexagonal_Architecture
+!theme plain
+title Sistema de Gestão de Usuários - Arquitetura Hexagonal
+
+' Configuração de cores e estilos
+skinparam package {
+    BackgroundColor<<core>> #E1F5FE
+    BorderColor<<core>> #0277BD
+    BackgroundColor<<adapter>> #F3E5F5
+    BorderColor<<adapter>> #7B1FA2
+    BackgroundColor<<infrastructure>> #E8F5E8
+    BorderColor<<infrastructure>> #2E7D32
+}
+
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #424242
+    FontSize 12
+}
+
+skinparam interface {
+    BackgroundColor #FFF59D
+    BorderColor #F57F17
+}
+
+' Atores externos
+actor "Cliente/Postman" as Client #FFE0B2
+database "PostgreSQL\nDatabase" as DB #C8E6C9
+
+' Camada de Infraestrutura - Adaptadores de Entrada (Driving Adapters)
+package "Driving Adapters" <<adapter>> {
+    component "UserController" as Controller
+    component "AuthController" as AuthController
+    component "ExceptionHandler" as ExceptionHandler
+    
+    note right of Controller
+        • POST /api/users/register
+        • PUT /api/users/{id}
+        • GET /api/users/search?name=
+    end note
+    
+    note right of AuthController
+        • POST /api/auth/login
+        • POST /api/auth/change-password
+    end note
+}
+
+' Núcleo da Aplicação (Core)
+package "Application Core" <<core>> {
+    
+    ' Portas de Entrada (Primary Ports)
+    package "Primary Ports" {
+        interface "IUserManagementPort" as IUserMgmt
+        interface "IAuthenticationPort" as IAuth
+    }
+    
+    ' Casos de Uso (Application Services)
+    package "Use Cases" {
+        component "UserRegistrationService" as UserRegService
+        component "UserUpdateService" as UserUpdateService
+        component "LoginValidationService" as LoginService
+        component "PasswordChangeService" as PasswordService
+    }
+    
+    ' Domínio (Domain Models)
+    package "Domain Models" {
+        component "User" as UserEntity
+        component "Cliente" as ClienteEntity
+        component "DonoRestaurante" as DonoEntity
+        component "Endereco" as EnderecoEntity
+        component "ValueObjects" as ValueObjects
+    }
+    
+    ' Portas de Saída (Secondary Ports)
+    package "Secondary Ports" {
+        interface "IUserRepositoryPort" as IUserRepo
+        interface "IPasswordEncoderPort" as IPasswordEncoder
+        interface "IEmailValidatorPort" as IEmailValidator
+    }
+}
+
+' Camada de Infraestrutura - Adaptadores de Saída (Driven Adapters)
+package "Driven Adapters" <<infrastructure>> {
+    component "UserRepositoryAdapter" as RepoAdapter
+    component "BCryptPasswordEncoder" as PasswordEncoder
+    component "EmailValidatorAdapter" as EmailValidator
+    component "UserEntityMapper" as Mapper
+    
+    note right of RepoAdapter
+        • JPA Repository
+        • Entity Mapping
+        • Query Implementation
+    end note
+}
+
+' Relacionamentos - Entrada
+Client --> Controller : HTTP Requests\n(JSON)
+Client --> AuthController : Authentication\nRequests
+
+Controller --> IUserMgmt : Uses
+AuthController --> IAuth : Uses
+
+' Implementações dos casos de uso
+IUserMgmt <|.. UserRegService : implements
+IUserMgmt <|.. UserUpdateService : implements
+IAuth <|.. LoginService : implements
+IAuth <|.. PasswordService : implements
+
+' Dependências do domínio
+UserRegService --> UserEntity : creates
+UserUpdateService --> UserEntity : modifies
+LoginService --> UserEntity : validates
+PasswordService --> UserEntity : updates
+
+UserEntity <|-- ClienteEntity : extends
+UserEntity <|-- DonoEntity : extends
+UserEntity *--> EnderecoEntity : contains
+UserEntity --> ValueObjects : uses
+
+' Dependências das portas de saída
+UserRegService --> IUserRepo : depends on
+UserRegService --> IPasswordEncoder : depends on
+UserRegService --> IEmailValidator : depends on
+
+UserUpdateService --> IUserRepo : depends on
+LoginService --> IUserRepo : depends on
+LoginService --> IPasswordEncoder : depends on
+PasswordService --> IUserRepo : depends on
+PasswordService --> IPasswordEncoder : depends on
+
+' Implementações dos adaptadores de saída
+IUserRepo <|.. RepoAdapter : implements
+IPasswordEncoder <|.. PasswordEncoder : implements
+IEmailValidator <|.. EmailValidator : implements
+
+RepoAdapter --> Mapper : uses
+RepoAdapter --> DB : persistence
+
+' Tratamento de exceções
+Controller --> ExceptionHandler : handles errors
+AuthController --> ExceptionHandler : handles errors
+
+@enduml
