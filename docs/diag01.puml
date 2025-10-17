@@ -30,18 +30,27 @@ database "PostgreSQL\nDatabase" as DB #C8E6C9
 ' Camada de Infraestrutura - Adaptadores de Entrada (Driving Adapters)
 package "Driving Adapters" <<adapter>> {
     component "UserController" as Controller
-    component "AuthController" as AuthController
-    component "ExceptionHandler" as ExceptionHandler
+    component "LoginController" as LoginController
+    component "JwtAuthFilter" as JwtFilter
+    component "GlobalExceptionHandler" as ExceptionHandler
     
     note right of Controller
-        • POST /api/users/register
-        • PUT /api/users/{id}
-        • GET /api/users/search?name=
+        • POST /api/v1/users (CLIENT)
+        • POST /api/v1/users/owner (ADMIN)
+        • GET /api/v1/users/{id}
+        • GET /api/v1/users/by-name
+        • PUT /api/v1/users/{id}
+        • PATCH /api/v1/users/password
+        • DELETE /api/v1/users/{id}
     end note
     
-    note right of AuthController
-        • POST /api/auth/login
-        • POST /api/auth/change-password
+    note right of LoginController
+        • POST /api/v1/auth/login
+    end note
+    
+    note right of JwtFilter
+        • JWT Token Validation
+        • Security Context Setup
     end note
 }
 
@@ -50,54 +59,120 @@ package "Application Core" <<core>> {
     
     ' Portas de Entrada (Primary Ports)
     package "Primary Ports" {
-        interface "IUserManagementPort" as IUserMgmt
-        interface "IAuthenticationPort" as IAuth
+        interface "UserCreatePort" as IUserCreate
+        interface "UserCreateOwnerPort" as IUserCreateOwner
+        interface "UserUpdatePort" as IUserUpdate
+        interface "UserUpdatePasswordPort" as IUserUpdatePassword
+        interface "UserFindByIdPort" as IUserFindById
+        interface "UserFindByNamePort" as IUserFindByName
+        interface "UserDeletePort" as IUserDelete
+        interface "AuthPort" as IAuth
     }
     
-    ' Casos de Uso (Application Services)
+    ' Casos de Uso (Use Cases)
     package "Use Cases" {
-        component "UserRegistrationService" as UserRegService
-        component "UserUpdateService" as UserUpdateService
-        component "LoginValidationService" as LoginService
-        component "PasswordChangeService" as PasswordService
+        component "CreateUserUseCase" as CreateUserUC
+        component "CreateOwnerUseCase" as CreateOwnerUC
+        component "UpdateUserUseCase" as UpdateUserUC
+        component "UpdatePasswordUseCase" as UpdatePasswordUC
+        component "FindUserByIdUseCase" as FindByIdUC
+        component "FindUserByNameUseCase" as FindByNameUC
+        component "DeleteUserUseCase" as DeleteUserUC
+        component "AuthUseCase" as AuthUC
     }
     
     ' Domínio (Domain Models)
     package "Domain Models" {
-        component "User" as UserEntity
-        component "Cliente" as ClienteEntity
-        component "DonoRestaurante" as DonoEntity
-        component "Endereco" as EnderecoEntity
-        component "ValueObjects" as ValueObjects
+        component "UserDomain" as UserEntity
+        component "RolesEnum" as RolesEnum
+        component "Email (Value Object)" as EmailVO
+        component "Username (Value Object)" as UsernameVO
+        component "PersonName (Value Object)" as PersonNameVO
+        component "UserDomainService" as UserDomainService
     }
     
     ' Portas de Saída (Secondary Ports)
     package "Secondary Ports" {
-        interface "IUserRepositoryPort" as IUserRepo
-        interface "IPasswordEncoderPort" as IPasswordEncoder
-        interface "IEmailValidatorPort" as IEmailValidator
+        interface "UserRepositoryPort" as IUserRepo
+        interface "PasswordEncoderPort" as IPasswordEncoder
+        interface "TokenGeneratorPort" as ITokenGenerator
     }
 }
 
 ' Camada de Infraestrutura - Adaptadores de Saída (Driven Adapters)
 package "Driven Adapters" <<infrastructure>> {
-    component "UserRepositoryAdapter" as RepoAdapter
-    component "BCryptPasswordEncoder" as PasswordEncoder
-    component "EmailValidatorAdapter" as EmailValidator
+    component "UserRepositoryImpl" as RepoAdapter
+    component "JpaUserRepository" as JpaRepo
+    component "BCryptPasswordEncoderAdapter" as PasswordEncoder
+    component "JwtUtil" as TokenGenerator
     component "UserEntityMapper" as Mapper
+    component "JpaUserEntity" as JpaEntity
     
     note right of RepoAdapter
-        • JPA Repository
+        • JPA Repository Implementation
         • Entity Mapping
         • Query Implementation
+        • UserDomain ↔ JpaUserEntity
     end note
 }
 
 ' Relacionamentos - Entrada
 Client --> Controller : HTTP Requests\n(JSON)
-Client --> AuthController : Authentication\nRequests
+Client --> LoginController : Authentication\nRequests
 
-Controller --> IUserMgmt : Uses
+Controller --> IUserCreate : Uses
+Controller --> IUserCreateOwner : Uses
+Controller --> IUserUpdate : Uses
+Controller --> IUserUpdatePassword : Uses
+Controller --> IUserFindById : Uses
+Controller --> IUserFindByName : Uses
+Controller --> IUserDelete : Uses
+
+LoginController --> IAuth : Uses
+
+' Relacionamentos - Use Cases implementam Ports
+IUserCreate --> CreateUserUC : Implements
+IUserCreateOwner --> CreateOwnerUC : Implements
+IUserUpdate --> UpdateUserUC : Implements
+IUserUpdatePassword --> UpdatePasswordUC : Implements
+IUserFindById --> FindByIdUC : Implements
+IUserFindByName --> FindByNameUC : Implements
+IUserDelete --> DeleteUserUC : Implements
+IAuth --> AuthUC : Implements
+
+' Relacionamentos - Domain
+CreateUserUC --> UserEntity : Creates
+UpdateUserUC --> UserEntity : Updates
+FindByIdUC --> UserEntity : Returns
+FindByNameUC --> UserEntity : Returns
+AuthUC --> UserEntity : Validates
+
+UserEntity --> EmailVO : Contains
+UserEntity --> UsernameVO : Contains
+UserEntity --> PersonNameVO : Contains
+UserEntity --> RolesEnum : Has
+
+' Relacionamentos - Use Cases para Ports de Saída
+CreateUserUC --> IUserRepo : Uses
+UpdateUserUC --> IUserRepo : Uses
+FindByIdUC --> IUserRepo : Uses
+FindByNameUC --> IUserRepo : Uses
+DeleteUserUC --> IUserRepo : Uses
+UpdatePasswordUC --> IPasswordEncoder : Uses
+AuthUC --> IPasswordEncoder : Uses
+AuthUC --> ITokenGenerator : Uses
+
+' Relacionamentos - Saída
+IUserRepo --> RepoAdapter : Implements
+IPasswordEncoder --> PasswordEncoder : Implements
+ITokenGenerator --> TokenGenerator : Implements
+
+RepoAdapter --> JpaRepo : Uses
+RepoAdapter --> Mapper : Uses
+RepoAdapter --> JpaEntity : Maps to/from
+JpaRepo --> DB : Persists
+
+@enduml
 AuthController --> IAuth : Uses
 
 ' Implementações dos casos de uso

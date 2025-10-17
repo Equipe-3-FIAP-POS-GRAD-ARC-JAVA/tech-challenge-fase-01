@@ -6,8 +6,8 @@ title Schema do Banco de Dados - Sistema de Gestão de Usuários
 skinparam entity {
     BackgroundColor<<main>> #E3F2FD
     BorderColor<<main>> #1976D2
-    BackgroundColor<<audit>> #FFF3E0
-    BorderColor<<audit>> #F57C00
+    BackgroundColor<<relationship>> #FFF3E0
+    BorderColor<<relationship>> #F57C00
     BackgroundColor<<lookup>> #E8F5E8
     BorderColor<<lookup>> #388E3C
 }
@@ -18,36 +18,83 @@ skinparam note {
 }
 
 ' Tabela principal de usuários
-entity TB_USUARIO <<main>> {
+entity USERS <<main>> {
     * **ID** : UUID <<PK>>
     ==
-    * **NOME** : VARCHAR(255) <<NOT NULL>>
-    * **EMAIL** : VARCHAR(255) <<NOT NULL, UNIQUE>>
-    * **LOGIN** : VARCHAR(50) <<NOT NULL, UNIQUE>>
-    * **SENHA_HASH** : VARCHAR(255) <<NOT NULL>>
-    * **TIPO_USUARIO** : VARCHAR(20) <<NOT NULL>>
-    * **ATIVO** : BOOLEAN <<NOT NULL, DEFAULT TRUE>>
+    * **NAME** : VARCHAR(100) <<NOT NULL>>
+    * **EMAIL** : VARCHAR(100) <<NOT NULL, UNIQUE>>
+    * **LOGIN** : VARCHAR(50) <<NOT NULL>>
+    * **PASSWORD** : VARCHAR(100) <<NOT NULL>>
+    * **ROLES** : VARCHAR(255)[] <<NOT NULL>>
+    * **IS_ACTIVE** : BOOLEAN <<NOT NULL, DEFAULT TRUE>>
     ==
-    **ENDERECO_RUA** : VARCHAR(255)
-    **ENDERECO_NUMERO** : VARCHAR(20)
-    **ENDERECO_COMPLEMENTO** : VARCHAR(100)
-    **ENDERECO_CIDADE** : VARCHAR(100)
-    **ENDERECO_ESTADO** : VARCHAR(2)
-    **ENDERECO_CEP** : VARCHAR(10)
-    ==
-    **CNPJ** : VARCHAR(18) <<UNIQUE>>
-    ==
-    **DATA_CRIACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
-    **DATA_ULTIMA_ALTERACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
-    **VERSAO** : BIGINT <<NOT NULL, DEFAULT 0>>
+    **CREATED_AT** : TIMESTAMP <<AUTO>>
+    **UPDATED_AT** : TIMESTAMP <<AUTO>>
 }
 
-' Tabela de tokens de refresh (para controle de sessões)
-entity TB_REFRESH_TOKEN <<audit>> {
+' Tabela de endereços (relacionamento 1:N)
+entity ADDRESS <<relationship>> {
     * **ID** : UUID <<PK>>
     ==
-    * **TOKEN** : VARCHAR(500) <<NOT NULL, UNIQUE>>
-    * **USUARIO_ID** : UUID <<NOT NULL, FK>>
+    * **USER_ID** : UUID <<NOT NULL, FK>>
+    * **STREET** : VARCHAR(100) <<NOT NULL>>
+    * **NUMBER** : VARCHAR(20) <<NOT NULL>>
+    * **CITY** : VARCHAR(50) <<NOT NULL>>
+    ==
+    **CREATED_AT** : TIMESTAMP <<AUTO>>
+    **UPDATED_AT** : TIMESTAMP <<AUTO>>
+}
+
+' Relacionamentos
+USERS ||--o{ ADDRESS : "has addresses"
+
+note right of USERS
+    **Campos Principais:**
+    • ID: Primary Key UUID
+    • EMAIL: Unique constraint
+    • LOGIN: Username único
+    • PASSWORD: BCrypt hash
+    • ROLES: Array de roles [ADMIN, OWNER, CLIENT]
+    • IS_ACTIVE: Status ativo/inativo
+    
+    **Auditoria:**
+    • CREATED_AT: Timestamp de criação
+    • UPDATED_AT: Timestamp de última alteração
+end note
+
+note right of ADDRESS
+    **Endereços do Usuário:**
+    • USER_ID: Foreign Key para USERS
+    • Suporte a múltiplos endereços por usuário
+    • Campos obrigatórios: STREET, NUMBER, CITY
+    
+    **Relacionamento:**
+    • 1 User : N Addresses
+end note
+
+note bottom of USERS
+    **Roles Disponíveis:**
+    • **ADMIN**: Acesso total ao sistema
+    • **OWNER**: Proprietário de restaurante  
+    • **CLIENT**: Cliente comum
+    
+    **Constraints:**
+    • EMAIL deve ser único
+    • LOGIN deve ser único
+    • PASSWORD é armazenado com BCrypt
+    • IS_ACTIVE controla se o usuário pode fazer login
+end note
+
+note top of ADDRESS
+    **Extensibilidade:**
+    Esta tabela pode ser estendida para incluir:
+    • COMPLEMENT (complemento)
+    • STATE (estado)
+    • ZIP_CODE (CEP)
+    • COUNTRY (país)
+end note
+
+@enduml
     * **DATA_EXPIRACAO** : TIMESTAMP <<NOT NULL>>
     * **REVOGADO** : BOOLEAN <<NOT NULL, DEFAULT FALSE>>
     ==

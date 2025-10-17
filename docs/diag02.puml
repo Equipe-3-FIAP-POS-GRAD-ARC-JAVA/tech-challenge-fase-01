@@ -8,263 +8,227 @@ skinparam class {
     BorderColor<<entity>> #1976D2
     BackgroundColor<<value_object>> #F3E5F5
     BorderColor<<value_object>> #7B1FA2
-    BackgroundColor<<port>> #FFF3E0
-    BorderColor<<port>> #F57C00
+    BackgroundColor<<enum>> #FFF3E0
+    BorderColor<<enum>> #F57C00
     BackgroundColor<<service>> #E8F5E8
     BorderColor<<service>> #388E3C
+    BackgroundColor<<port>> #FFECB3
+    BorderColor<<port>> #FF8F00
 }
 
 skinparam classAttributeIconVisible false
 
-' Entidades do Domínio
+' Entidade Principal do Domínio
 package "Domain Entities" {
     
-    abstract class User <<entity>> {
+    class UserDomain <<entity>> {
         - id: UUID
-        - nome: String
+        - name: PersonName
         - email: Email
-        - login: String
-        - senha: PasswordHash
-        - tipoUsuario: TipoUsuario
-        - endereco: Endereco
-        - dataUltimaAlteracao: LocalDateTime
-        - ativo: boolean
+        - login: Username
+        - password: String
+        - createdAt: LocalDateTime
+        - updatedAt: LocalDateTime
+        - role: List<RolesEnum>
+        - isActive: boolean
         --
-        + User(nome, email, login, senha, endereco)
-        + atualizarDados(nome: String, endereco: Endereco): void
-        + trocarSenha(senhaAtual: String, novaSenha: String): void
-        + desativar(): void
-        + ativar(): void
-        + isAtivo(): boolean
-        + validarSenha(senha: String): boolean
+        ' Factory Methods
+        + createClient(name, email, login, password): UserDomain
+        + createOwner(name, email, login, password): UserDomain
         --
-        # validarDados(): void
-        # atualizarDataAlteracao(): void
+        ' Business Methods
+        + updateInfo(name, email, login): void
+        + changePassword(newPassword): void
+        + deactivate(): void
+        + activate(): void
+        + hasRole(role): boolean
+        + isClient(): boolean
+        + isOwner(): boolean
+        + isActive(): boolean
+        --
+        ' Convenience getters
+        + getName(): String
+        + getEmail(): String
+        + getLogin(): String
+        + getIdAsString(): String
+        --
+        ' Value Object getters
+        + getPersonName(): PersonName
+        + getEmailObject(): Email
+        + getUsernameObject(): Username
+        --
+        # validatePassword(password): void
     }
+}
 
-    class Cliente <<entity>> {
-        - historicoAvaliacoes: List<Avaliacao>
+' Enumerações
+package "Domain Enums" {
+    
+    enum RolesEnum <<enum>> {
+        ADMIN
+        OWNER
+        CLIENT
         --
-        + Cliente(nome, email, login, senha, endereco)
-        + realizarPedido(restaurante: Restaurante): Pedido
-        + deixarAvaliacao(restaurante: Restaurante, nota: int, comentario: String): void
-        + getHistoricoAvaliacoes(): List<Avaliacao>
-    }
-
-    class DonoRestaurante <<entity>> {
-        - restaurantes: List<Restaurante>
-        - cnpj: CNPJ
-        --
-        + DonoRestaurante(nome, email, login, senha, endereco, cnpj)
-        + adicionarRestaurante(restaurante: Restaurante): void
-        + removerRestaurante(restauranteId: UUID): void
-        + gerenciarEstabelecimento(restauranteId: UUID): void
-        + getRestaurantes(): List<Restaurante>
+        + toString(): String
     }
 }
 
 ' Value Objects
 package "Value Objects" {
     
-    class Endereco <<value_object>> {
-        - rua: String
-        - numero: String
-        - complemento: String
-        - cidade: String
-        - estado: String
-        - cep: CEP
-        --
-        + Endereco(rua, numero, cidade, estado, cep)
-        + Endereco(rua, numero, complemento, cidade, estado, cep)
-        + getEnderecoCompleto(): String
-        + validar(): boolean
-        --
-        + equals(other: Object): boolean
-        + hashCode(): int
-    }
-    
     class Email <<value_object>> {
         - value: String
         --
-        + Email(email: String)
+        + of(email: String): Email
         + getValue(): String
-        + getDominio(): String
-        --
-        - validar(email: String): void
-        + equals(other: Object): boolean
+        + equals(obj: Object): boolean
         + hashCode(): int
+        + toString(): String
+        --
+        # validate(email: String): void
+        # normalize(email: String): String
+        --
+        ' Constantes
+        {static} MAX_LENGTH: int = 255
+        {static} EMAIL_PATTERN: String
     }
     
-    class PasswordHash <<value_object>> {
-        - hash: String
-        - algoritmo: String
+    class Username <<value_object>> {
+        - value: String
         --
-        + PasswordHash(senhaPlana: String)
-        + verificar(senhaPlana: String): boolean
-        + getHash(): String
-        --
-        - criptografar(senha: String): String
-        + equals(other: Object): boolean
+        + of(username: String): Username
+        + getValue(): String
+        + equals(obj: Object): boolean
         + hashCode(): int
+        + toString(): String
+        --
+        # validate(username: String): void
+        # normalize(username: String): String
+        --
+        ' Constantes
+        {static} MIN_LENGTH: int = 3
+        {static} MAX_LENGTH: int = 50
+        {static} VALID_PATTERN: String
     }
     
-    class CEP <<value_object>> {
-        - valor: String
+    class PersonName <<value_object>> {
+        - value: String
         --
-        + CEP(cep: String)
-        + getValor(): String
-        + getFormatado(): String
-        --
-        - validar(cep: String): void
-        + equals(other: Object): boolean
+        + of(name: String): PersonName
+        + getValue(): String
+        + getFirstName(): String
+        + getLastName(): String
+        + equals(obj: Object): boolean
         + hashCode(): int
-    }
-    
-    class CNPJ <<value_object>> {
-        - numero: String
+        + toString(): String
         --
-        + CNPJ(cnpj: String)
-        + getNumero(): String
-        + getFormatado(): String
+        # validate(name: String): void
+        # normalize(name: String): String
         --
-        - validar(cnpj: String): void
-        + equals(other: Object): boolean
-        + hashCode(): int
-    }
-    
-    enum TipoUsuario <<value_object>> {
-        CLIENTE
-        DONO_RESTAURANTE
-        --
-        + getDescricao(): String
+        ' Constantes
+        {static} MIN_LENGTH: int = 2
+        {static} MAX_LENGTH: int = 255
     }
 }
 
-' Primary Ports (Casos de Uso)
-package "Primary Ports" {
+' Domain Services
+package "Domain Services" {
     
-    interface IUserManagementPort <<port>> {
-        + cadastrarCliente(dados: CadastroClienteDTO): UUID
-        + cadastrarDonoRestaurante(dados: CadastroDonoDTO): UUID
-        + atualizarDadosUsuario(id: UUID, dados: AtualizacaoUsuarioDTO): void
-        + trocarSenha(id: UUID, senhaAntiga: String, novaSenha: String): void
-        + buscarUsuariosPorNome(nome: String): List<UsuarioDTO>
-        + buscarUsuarioPorId(id: UUID): UsuarioDTO
-        + desativarUsuario(id: UUID): void
-        + ativarUsuario(id: UUID): void
-    }
-    
-    interface IAuthenticationPort <<port>> {
-        + validarLogin(login: String, senha: String): TokenDTO
-        + validarToken(token: String): UsuarioDTO
-        + renovarToken(refreshToken: String): TokenDTO
-        + logout(token: String): void
+    class UserDomainService <<service>> {
+        --
+        + validateUserBusinessRules(user: UserDomain): void
+        + canUpdateUser(currentUser: UserDomain, targetUser: UserDomain): boolean
+        + canDeleteUser(currentUser: UserDomain, targetUser: UserDomain): boolean
+        + generateUsername(email: String): Username
+        + isEmailUnique(email: Email, userId: UUID): boolean
+        + isUsernameUnique(username: Username, userId: UUID): boolean
+        --
+        # validateRole(role: RolesEnum): void
+        # validateUserState(user: UserDomain): void
     }
 }
 
-' Secondary Ports (Contratos de Infraestrutura)
-package "Secondary Ports" {
+' Domain Exceptions
+package "Domain Exceptions" {
     
-    interface IUserRepositoryPort <<port>> {
-        + save(user: User): User
-        + findById(id: UUID): Optional<User>
-        + findByEmail(email: String): Optional<User>
-        + findByLogin(login: String): Optional<User>
-        + findByNomeContaining(nome: String): List<User>
+    class BusinessRuleException <<entity>> {
+        - message: String
+        --
+        + BusinessRuleException(message: String)
+        + getMessage(): String
+    }
+    
+    class InvalidFieldException <<entity>> {
+        - fieldName: String
+        - message: String
+        --
+        + InvalidFieldException(fieldName: String, message: String)
+        + getFieldName(): String
+        + getMessage(): String
+    }
+}
+
+' Ports (Interfaces)
+package "Domain Ports" {
+    
+    interface UserRepositoryPort <<port>> {
+        + findById(id: UUID): Optional<UserDomain>
+        + findByEmail(email: Email): Optional<UserDomain>
+        + findByUsername(username: Username): Optional<UserDomain>
+        + findByName(name: String): List<UserDomain>
+        + save(user: UserDomain): UserDomain
         + delete(id: UUID): void
-        + existsByEmail(email: String): boolean
-        + existsByLogin(login: String): boolean
+        + existsByEmail(email: Email): boolean
+        + existsByUsername(username: Username): boolean
     }
     
-    interface IPasswordEncoderPort <<port>> {
+    interface PasswordEncoderPort <<port>> {
         + encode(rawPassword: String): String
         + matches(rawPassword: String, encodedPassword: String): boolean
     }
     
-    interface ITokenGeneratorPort <<port>> {
-        + generateAccessToken(user: User): String
-        + generateRefreshToken(user: User): String
+    interface TokenGeneratorPort <<port>> {
+        + generateToken(userDomain: UserDomain): String
         + validateToken(token: String): boolean
-        + extractUserFromToken(token: String): UUID
+        + getUsernameFromToken(token: String): String
     }
 }
 
-' Application Services
-package "Application Services" {
-    
-    class UserRegistrationService <<service>> {
-        - userRepository: IUserRepositoryPort
-        - passwordEncoder: IPasswordEncoderPort
-        --
-        + cadastrarCliente(dados: CadastroClienteDTO): UUID
-        + cadastrarDonoRestaurante(dados: CadastroDonoDTO): UUID
-        --
-        - validarDadosUnicos(email: String, login: String): void
-        - criarCliente(dados: CadastroClienteDTO): Cliente
-        - criarDonoRestaurante(dados: CadastroDonoDTO): DonoRestaurante
-    }
-    
-    class AuthenticationService <<service>> {
-        - userRepository: IUserRepositoryPort
-        - passwordEncoder: IPasswordEncoderPort
-        - tokenGenerator: ITokenGeneratorPort
-        --
-        + validarLogin(login: String, senha: String): TokenDTO
-        + validarToken(token: String): UsuarioDTO
-        + renovarToken(refreshToken: String): TokenDTO
-        + logout(token: String): void
-        --
-        - autenticarUsuario(login: String, senha: String): User
-        - gerarTokens(user: User): TokenDTO
-    }
-    
-    class UserManagementService <<service>> {
-        - userRepository: IUserRepositoryPort
-        - passwordEncoder: IPasswordEncoderPort
-        --
-        + atualizarDadosUsuario(id: UUID, dados: AtualizacaoUsuarioDTO): void
-        + trocarSenha(id: UUID, senhaAntiga: String, novaSenha: String): void
-        + buscarUsuariosPorNome(nome: String): List<UsuarioDTO>
-        + buscarUsuarioPorId(id: UUID): UsuarioDTO
-        + desativarUsuario(id: UUID): void
-        + ativarUsuario(id: UUID): void
-        --
-        - validarUsuarioExiste(id: UUID): User
-        - mapearParaDTO(user: User): UsuarioDTO
-    }
-}
+' Relacionamentos
+UserDomain --> PersonName : contains
+UserDomain --> Email : contains  
+UserDomain --> Username : contains
+UserDomain --> RolesEnum : has
 
-' Relacionamentos de Herança e Composição
-User <|-- Cliente : extends
-User <|-- DonoRestaurante : extends
-User *--> Endereco : contains
-User *--> Email : contains  
-User *--> PasswordHash : contains
-User --> TipoUsuario : uses
+Email ..> InvalidFieldException : throws
+Username ..> InvalidFieldException : throws
+PersonName ..> InvalidFieldException : throws
+UserDomain ..> BusinessRuleException : throws
 
-DonoRestaurante *--> CNPJ : contains
-Endereco *--> CEP : contains
+UserDomainService --> UserDomain : validates
+UserDomainService --> UserRepositoryPort : uses
 
-' Implementação das Portas
-IUserManagementPort <|.. UserRegistrationService : implements
-IUserManagementPort <|.. UserManagementService : implements
-IAuthenticationPort <|.. AuthenticationService : implements
+note top of UserDomain
+    **Entidade Rica de Domínio**
+    - Encapsula regras de negócio
+    - Factory methods para criação
+    - Valida invariantes
+    - Usa Value Objects
+    - Imutabilidade onde possível
+end note
 
-' Dependências dos Serviços
-UserRegistrationService --> IUserRepositoryPort : depends on
-UserRegistrationService --> IPasswordEncoderPort : depends on
+note top of Email
+    **Value Object**
+    - Imutável
+    - Auto-validável  
+    - Comparável por valor
+    - Regras de domínio encapsuladas
+end note
 
-AuthenticationService --> IUserRepositoryPort : depends on
-AuthenticationService --> IPasswordEncoderPort : depends on
-AuthenticationService --> ITokenGeneratorPort : depends on
-
-UserManagementService --> IUserRepositoryPort : depends on
-UserManagementService --> IPasswordEncoderPort : depends on
-
-' Relacionamentos de criação
-UserRegistrationService ..> Cliente : creates
-UserRegistrationService ..> DonoRestaurante : creates
-AuthenticationService ..> User : authenticates
-UserManagementService ..> User : manages
+note bottom of RolesEnum
+    **ADMIN**: Acesso total
+    **OWNER**: Proprietário
+    **CLIENT**: Cliente comum
+end note
 
 @enduml
