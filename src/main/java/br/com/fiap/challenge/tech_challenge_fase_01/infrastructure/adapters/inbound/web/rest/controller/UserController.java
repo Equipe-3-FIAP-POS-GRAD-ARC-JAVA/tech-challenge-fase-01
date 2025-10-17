@@ -83,7 +83,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'CLIENT')")
+    @PreAuthorize("hasRole('ADMIN') or (isAuthenticated() and @userController.isOwnerOfResource(authentication.principal, #id))")
     public ResponseEntity<UserResponseDTO> update(@PathVariable String id,
             @Valid @RequestBody UserUpdateRequestDTO dto) {
         UUID userId = UUID.fromString(id);
@@ -108,6 +108,19 @@ public class UserController {
         UUID userId = UUID.fromString(id);
         userDeletePort.delete(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    public boolean isOwnerOfResource(SecurityUser principal, String resourceId) {
+        if (principal == null || resourceId == null) {
+            return false;
+        }
+        
+        try {
+            UUID resourceUuid = UUID.fromString(resourceId);
+            return principal.getId().equals(resourceUuid);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
 }
