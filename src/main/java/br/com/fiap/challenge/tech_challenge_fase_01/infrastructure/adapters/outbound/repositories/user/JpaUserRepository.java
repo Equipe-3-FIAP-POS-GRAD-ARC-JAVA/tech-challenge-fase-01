@@ -1,4 +1,4 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories;
+package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.user;
 
 import java.util.List;
 import java.util.Optional;

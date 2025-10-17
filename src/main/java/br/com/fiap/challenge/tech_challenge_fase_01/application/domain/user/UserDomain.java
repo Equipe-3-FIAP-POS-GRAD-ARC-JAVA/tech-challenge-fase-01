@@ -13,17 +13,6 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobje
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Entidade de Domínio Rica - User
- * 
- * Esta classe representa o conceito de Usuário no domínio da aplicação.
- * Seguindo os princípios de Domain-Driven Design (DDD):
- * - Encapsula regras de negócio
- * - Valida seu próprio estado
- * - Fornece métodos de fábrica para criação
- * - Protege invariantes do domínio
- * - Usa Value Objects para conceitos do domínio (Email, Username, PersonName)
- */
 @Getter
 @Builder
 public class UserDomain {
@@ -41,11 +30,6 @@ public class UserDomain {
     private List<RolesEnum> role;
     private boolean isActive;
 
-    // Getters convenientes que retornam String (compatibilidade)
-
-    /**
-     * Retorna o ID como String.
-     */
     public String getIdAsString() {
         return id != null ? id.toString() : null;
     }
@@ -54,54 +38,30 @@ public class UserDomain {
         return id != null ? id : null;
     }
 
-    /**
-     * Retorna o nome como String.
-     */
     public String getName() {
         return name != null ? name.getValue() : null;
     }
 
-    /**
-     * Retorna o email como String.
-     */
     public String getEmail() {
         return email != null ? email.getValue() : null;
     }
 
-    /**
-     * Retorna o login como String.
-     */
     public String getLogin() {
         return login != null ? login.getValue() : null;
     }
 
-    // Getters dos Value Objects (para uso interno do domínio)
-
-    /**
-     * Retorna o Value Object PersonName.
-     */
     public PersonName getPersonName() {
         return name;
     }
 
-    /**
-     * Retorna o Value Object Email.
-     */
     public Email getEmailObject() {
         return email;
     }
 
-    /**
-     * Retorna o Value Object Username.
-     */
     public Username getUsernameObject() {
         return login;
     }
 
-    /**
-     * Cria um novo usuário cliente.
-     * Aplica as regras de negócio para criação de cliente.
-     */
     public static UserDomain createClient(String name, String email, String login, String password) {
         validatePassword(password);
 
@@ -116,10 +76,6 @@ public class UserDomain {
                 .build();
     }
 
-    /**
-     * Cria um novo usuário proprietário (owner).
-     * Aplica as regras de negócio para criação de proprietário.
-     */
     public static UserDomain createOwner(String name, String email, String login, String password) {
         validatePassword(password);
 
@@ -134,12 +90,6 @@ public class UserDomain {
                 .build();
     }
 
-    /**
-     * Atualiza as informações básicas do usuário.
-     * Valida os novos dados antes de aplicar.
-     * 
-     * Regra de negócio: Usuário inativo não pode ter suas informações atualizadas.
-     */
     public void updateInfo(String name, String email, String login) {
         if (!this.isActive) {
             throw new BusinessRuleException("Não é possível atualizar informações de usuário inativo");
@@ -219,28 +169,6 @@ public class UserDomain {
         }
     }
 
-    // Métodos de Validação (Invariantes do Domínio)
-
-    /**
-     * Validações de name, email e login foram movidas para os Value Objects:
-     * - PersonName.of(name)
-     * - Email.of(email)
-     * - Username.of(login)
-     * 
-     * Apenas a validação de senha permanece aqui pois não é Value Object.
-     */
-
-    /**
-     * Valida a senha do usuário.
-     * 
-     * Regras de negócio:
-     * - Não pode ser nula ou vazia
-     * - Deve ter entre 6 e 100 caracteres
-     * - Deve conter pelo menos uma letra E um número
-     * 
-     * Nota: A senha deve chegar já criptografada nos Use Cases.
-     * Esta validação é para a senha em texto plano antes da criptografia.
-     */
     private static void validatePassword(String password) {
         if (password == null || password.isBlank()) {
             throw new InvalidFieldException("password", "Senha é obrigatória");
@@ -270,8 +198,6 @@ public class UserDomain {
                     "Senha deve conter pelo menos um número");
         }
     }
-
-    // Sobrescrita de equals e hashCode baseado em ID (Entity pattern)
 
     @Override
     public boolean equals(Object o) {
