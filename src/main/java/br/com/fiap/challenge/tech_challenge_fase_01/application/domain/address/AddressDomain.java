@@ -4,7 +4,11 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.BusinessRuleException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.InvalidFieldException;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Email;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.PersonName;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Username;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -56,7 +60,15 @@ public class AddressDomain {
         return Objects.equals(id, that.id);
     }
     @Override public int hashCode() { return Objects.hash(id); }
+
     @Override public String toString() {
         return "AddressDomain{id=" + id + ", userId=" + userId + ", street='" + street + "', number='" + number + "', city='" + city + "'}";
+    }
+
+    public void updateInfo(String street, String number, String city) {
+        this.street = street;
+        this.number = number;
+        this.city = city;
+        this.updatedAt = LocalDateTime.now();
     }
 }

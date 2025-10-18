@@ -1,12 +1,15 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.controller;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.AddressCreateRequest;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.AddressUpdateRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.AddressResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressCreatePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressDeletePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressFindByUserPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressUpdatePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.security.SecurityUser;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.AddressCreateRequestDTO;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.AddressUpdateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.mapper.AddressWebMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +38,7 @@ public class AddressController {
     private final AddressCreatePort addressCreatePort;
     private final AddressDeletePort addressDeletePort;
     private final AddressWebMapper addressWebMapper;
+    private final AddressUpdatePort addressUpdatePort;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -54,10 +59,22 @@ public class AddressController {
     @DeleteMapping("/{addressId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteAddress(@AuthenticationPrincipal SecurityUser principal,
-                                                     @PathVariable String addressId) {
+                                              @PathVariable String addressId) {
         UUID addressIdUuid = UUID.fromString(addressId);
         addressDeletePort.deleteAddress(principal.getId(), addressIdUuid);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{addressId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AddressResponse> update(
+            @AuthenticationPrincipal SecurityUser principal, @PathVariable String addressId,
+            @Valid @RequestBody AddressUpdateRequestDTO dto) {
+        UUID addressIdUuid = UUID.fromString(addressId);
+        UUID userId = principal.getId();
+        AddressUpdateRequest request = addressWebMapper.toApplicationUpdateRequest(dto);
+        AddressResponse response = addressUpdatePort.updateAddress(userId, addressIdUuid, request);
+        return ResponseEntity.ok(addressWebMapper.toWebResponse(response));
     }
 
 }

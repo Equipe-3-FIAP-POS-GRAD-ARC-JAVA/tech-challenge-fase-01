@@ -1,15 +1,15 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.configs;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.service.AddressDomainService;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.service.UserDomainService;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressCreatePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressDeletePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressFindByUserPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressUpdatePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.address.CreateAddressUseCase;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.address.DeleteAddressUseCase;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.address.FindAddressUseCase;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.address.UpdateAddressUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,5 +37,11 @@ public class AddressUseCaseConfig {
     public AddressDeletePort addressDeletePort(AddressRepositoryPort addressRepositoryPort,
                                                AddressDomainService addressDomainService) {
         return new DeleteAddressUseCase(addressRepositoryPort, addressDomainService);
+    }
+
+    @Bean
+    public AddressUpdatePort addressUpdatePort(AddressRepositoryPort addressRepositoryPort,
+                                               AddressDomainService addressDomainService) {
+        return new UpdateAddressUseCase(addressRepositoryPort, addressDomainService);
     }
 }
