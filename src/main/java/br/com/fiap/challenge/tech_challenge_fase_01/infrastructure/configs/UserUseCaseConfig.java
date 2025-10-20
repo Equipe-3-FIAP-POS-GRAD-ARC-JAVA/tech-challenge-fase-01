@@ -1,5 +1,6 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.configs;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,17 +33,19 @@ public class UserUseCaseConfig {
     @Bean
     public UserCreatePort userCreatePort(
             UserRepositoryPort userRepository,
+            AddressRepositoryPort addressRepository,
             UserDomainService userDomainService,
             PasswordEncoderPort passwordEncoder) {
-        return new CreateUserUseCase(userRepository, userDomainService, passwordEncoder);
+        return new CreateUserUseCase(userRepository, addressRepository, userDomainService, passwordEncoder);
     }
 
     @Bean
     public UserCreateOwnerPort userCreateOwnerPort(
             UserRepositoryPort userRepository,
+            AddressRepositoryPort addressRepository,
             UserDomainService userDomainService,
             PasswordEncoderPort passwordEncoder) {
-        return new CreateOwnerUseCase(userRepository, userDomainService, passwordEncoder);
+        return new CreateOwnerUseCase(userRepository, addressRepository, userDomainService, passwordEncoder);
     }
 
     @Bean

@@ -22,7 +22,11 @@ public class UserWebMapper {
                 dto.name(),
                 dto.email(),
                 dto.login(),
-                dto.password());
+                dto.password(),
+                dto.street(),
+                dto.number(),
+                dto.city()
+        );
     }
 
     public UserUpdateRequest toApplicationUpdateRequest(UserUpdateRequestDTO dto) {

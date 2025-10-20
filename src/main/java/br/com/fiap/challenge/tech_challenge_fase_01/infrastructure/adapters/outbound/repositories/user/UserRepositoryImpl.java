@@ -1,4 +1,4 @@
-package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories;
+package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.user;
 
 import java.time.LocalDateTime;
 import java.util.List;
