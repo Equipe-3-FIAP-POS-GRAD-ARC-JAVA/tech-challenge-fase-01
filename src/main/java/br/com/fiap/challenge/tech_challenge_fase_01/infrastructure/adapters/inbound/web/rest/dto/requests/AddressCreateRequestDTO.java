@@ -9,8 +9,7 @@ public record AddressCreateRequestDTO(
         @Size(min = 3, max = 100, message = "Rua deve ter entre 3 e 100 caracteres")
         String street,
 
-        @NotBlank(message = "Número é obrigatório")
-        @Size(min = 1, max = 10, message = "Número deve ter entre 1 e 10 caracteres")
+        @Size(max = 10, message = "Número deve ter entre 1 e 10 caracteres")
         String number,
 
         @NotBlank(message = "Cidade é obrigatória")

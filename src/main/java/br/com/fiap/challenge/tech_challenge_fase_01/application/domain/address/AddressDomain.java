@@ -1,23 +1,19 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.domain.address;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.InvalidFieldException;
+import lombok.Builder;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
-
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.BusinessRuleException;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.InvalidFieldException;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Email;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.PersonName;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Username;
-import lombok.Builder;
-import lombok.Getter;
 
 @Getter
 @Builder
 public class AddressDomain {
 
     private static final int STREET_MIN = 3, STREET_MAX = 100;
-    private static final int NUMBER_MIN = 1, NUMBER_MAX = 20;
+    private static final int NUMBER_MIN = 0, NUMBER_MAX = 20;
     private static final int CITY_MIN = 2, CITY_MAX = 50;
 
     private UUID id;
@@ -47,21 +43,29 @@ public class AddressDomain {
     }
 
     private static void checkLen(String field, String value, int min, int max, String label) {
-        if (value == null || value.isBlank())
+        if (value == null)
             throw new InvalidFieldException(field, label + " é obrigatório");
         var v = value.trim();
-        if (v.length() < min) throw new InvalidFieldException(field, label + " deve ter no mínimo " + min + " caracteres");
-        if (v.length() > max) throw new InvalidFieldException(field, label + " deve ter no máximo " + max + " caracteres");
+        if (v.length() < min)
+            throw new InvalidFieldException(field, label + " deve ter no mínimo " + min + " caracteres");
+        if (v.length() > max)
+            throw new InvalidFieldException(field, label + " deve ter no máximo " + max + " caracteres");
     }
 
-    @Override public boolean equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AddressDomain that)) return false;
         return Objects.equals(id, that.id);
     }
-    @Override public int hashCode() { return Objects.hash(id); }
 
-    @Override public String toString() {
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
         return "AddressDomain{id=" + id + ", userId=" + userId + ", street='" + street + "', number='" + number + "', city='" + city + "'}";
     }
 
