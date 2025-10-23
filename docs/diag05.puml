@@ -1,0 +1,31 @@
+@startuml database-minimal
+title Tech Challenge - Database Schema
+
+class users {
+  id : UUID [PK]
+  name : VARCHAR(100)
+  email : VARCHAR(100) [UNIQUE]
+  login : VARCHAR(50)
+  password : VARCHAR(100)
+  roles : VARCHAR(255)[]
+  is_active : BOOLEAN
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+class address {
+  id : UUID [PK]
+  user_id : UUID [FK]
+  street : VARCHAR(100)
+  number : VARCHAR(20)
+  city : VARCHAR(50)
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+users ||--o{ address : "has many"
+
+note right of users : Roles: CLIENT, OWNER, ADMIN
+note left of address : User can have multiple addresses
+
+@enduml
