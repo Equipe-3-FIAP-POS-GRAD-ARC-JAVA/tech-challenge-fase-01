@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaUserEntity;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.JpaUserRepository;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.user.JpaUserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,21 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userOpt.isPresent() && jwtUtil.validateToken(token)) {
                 UserDetails userDetails = new SecurityUser(userOpt.get());
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                        null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                if (userDetails instanceof SecurityUser) {
-                    SecurityUser securityUser = (SecurityUser) userDetails;
-                    logger.info(
-                        String.format("User Authenticated: Username=%s, ID=%s, Roles=%s",
-                                securityUser.getUsername(),
-                                securityUser.getId(),
-                                securityUser.getAuthorities()
-                        )
-                    );
-                }
             }
         }
         filterChain.doFilter(request, response);

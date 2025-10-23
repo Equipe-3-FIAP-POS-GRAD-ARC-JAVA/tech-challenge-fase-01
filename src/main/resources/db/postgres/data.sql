@@ -7,25 +7,25 @@
 -- joao.silva2: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16
 
 INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles, is_active)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Vinicius Padovam', 'vinicius@example.com', 'vpadovam', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{OWNER}', true) ON CONFLICT (email) DO NOTHING;
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Vinicius Padovam', 'vinicius@example.com', 'vpadovam', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{OWNER}', true) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles, is_active)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Maria Silva', 'maria.silva@example.com', 'mariasilva', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (email) DO NOTHING;
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Maria Silva', 'maria.silva@example.com', 'mariasilva', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles, is_active)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'João Pereira', 'joao.pereira@example.com', 'joaop', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (email) DO NOTHING;
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'João Pereira', 'joao.pereira@example.com', 'joaop', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles, is_active)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Ana Souza', 'ana.souza@example.com', 'anasouza', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (email) DO NOTHING;
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Ana Souza', 'ana.souza@example.com', 'anasouza', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles, is_active)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'Carlos Oliveira', 'carlos.oliveira@example.com', 'carlosol', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{OWNER}', true) ON CONFLICT (email) DO NOTHING;
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'Carlos Oliveira', 'carlos.oliveira@example.com', 'carlosol', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{OWNER}', true) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles, is_active)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17', 'João Silva', 'joao.silva@example.com', 'joao.silva', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (email) DO NOTHING;
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17', 'João Silva', 'joao.silva@example.com', 'joao.silva', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{CLIENT}', true) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "users" (id, name, email, login, password, created_at, updated_at, roles, is_active)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'Emerson Silva', 'emerson.silva@example.com', 'emerson.silva', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{ADMIN}', true) ON CONFLICT (email) DO NOTHING;
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'Emerson Silva', 'emerson.silva@example.com', 'emerson.silva', '$2a$10$eNG0/QQuDXqfEIlvDBfDb.hkiy22teXIBEMLlug.AZnZTqDE4UAUi', NOW(), NOW(), '{ADMIN}', true) ON CONFLICT (id) DO NOTHING;
 
 -- ADDRESSES (referenciam os usuários já criados)
 INSERT INTO address (id, user_id, street, number, city, created_at, updated_at)

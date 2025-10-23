@@ -9,14 +9,6 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMappe
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserUpdatePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 
-/**
- * Use Case para atualização de informações do usuário.
- * 
- * Responsabilidades:
- * - Orquestrar a atualização do usuário
- * - Buscar usuário existente
- * - Delegar atualização para o método de comportamento do Domain
- */
 public class UpdateUserUseCase implements UserUpdatePort {
 
     private final UserRepositoryPort userRepository;

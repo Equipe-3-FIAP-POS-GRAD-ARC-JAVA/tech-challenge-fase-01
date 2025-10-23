@@ -3,6 +3,7 @@ package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inb
 import java.util.List;
 import java.util.UUID;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.api.UserApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,25 +39,11 @@ import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbo
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Controller REST para operações de usuário.
- * 
- * Responsabilidades (seguindo SOLID):
- * - Receber requisições HTTP (DTOs da camada web)
- * - Converter DTOs web para DTOs da camada de aplicação
- * - Delegar para os Use Cases (ports inbound)
- * - Converter respostas de volta para DTOs web
- * - Tratar aspectos HTTP (status codes, headers, etc)
- * 
- * Arquitetura Hexagonal:
- * - Esta classe é um Adapter Inbound (driving adapter)
- * - Não contém lógica de negócio
- * - Depende apenas de abstrações (ports)
- */
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserApi {
 
     private final UserCreatePort userCreatePort;
     private final UserCreateOwnerPort userCreateOwnerPort;
@@ -67,59 +54,44 @@ public class UserController {
     private final UserFindByIdPort userFindByIdPort;
     private final UserWebMapper webMapper;
 
-    /**
-     * Cria um novo usuário com role CLIENT.
-     * Endpoint público (permitAll no SecurityConfig).
-     */
     @PostMapping
+    @Override
     public ResponseEntity<UserResponseDTO> createClient(@Valid @RequestBody UserCreateRequestDTO dto) {
         UserCreateRequest request = webMapper.toApplicationRequest(dto);
         UserResponse response = userCreatePort.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Cria um novo usuário com role OWNER.
-     * Apenas ADMIN pode criar owners.
-     */
     @PostMapping("/owner")
     @PreAuthorize("hasRole('ADMIN')")
+    @Override
     public ResponseEntity<UserResponseDTO> createOwner(@Valid @RequestBody UserCreateRequestDTO dto) {
         UserCreateRequest request = webMapper.toApplicationRequest(dto);
         UserResponse response = userCreateOwnerPort.createOwner(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Busca um usuário por ID.
-     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @Override
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
         UUID userId = UUID.fromString(id);
         UserResponse response = userFindByIdPort.findById(userId);
         return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Busca usuários por nome.
-     */
     @GetMapping("/by-name")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @Override
     public ResponseEntity<List<UserResponseDTO>> getUserByName(@RequestParam String name) {
         List<UserResponse> responses = userFindByNamePort.findByName(name);
-        return ResponseEntity.ok(responses.stream()
-                .map(webMapper::toWebResponse)
-                .toList());
+        return ResponseEntity.ok(responses.stream().map(webMapper::toWebResponse).toList());
     }
 
-    /**
-     * Atualiza dados do usuário.
-     */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'CLIENT')")
-    public ResponseEntity<UserResponseDTO> update(
-            @PathVariable String id,
+    @PreAuthorize("hasRole('ADMIN') or (isAuthenticated() and @userController.isOwnerOfResource(authentication.principal, #id))")
+    @Override
+    public ResponseEntity<UserResponseDTO> update(@PathVariable String id,
             @Valid @RequestBody UserUpdateRequestDTO dto) {
         UUID userId = UUID.fromString(id);
         UserUpdateRequest request = webMapper.toApplicationUpdateRequest(dto);
@@ -127,13 +99,10 @@ public class UserController {
         return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Atualiza a própria senha do usuário autenticado.
-     */
     @PatchMapping("/password")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponseDTO> updatePassword(
-            @AuthenticationPrincipal SecurityUser principal,
+    @Override
+    public ResponseEntity<UserResponseDTO> updatePassword(@AuthenticationPrincipal SecurityUser principal,
             @Valid @RequestBody UpdatePasswordRequestDTO dto) {
         UUID userId = principal.getId();
         UpdatePasswordRequest request = webMapper.toApplicationPasswordRequest(dto);
@@ -141,15 +110,26 @@ public class UserController {
         return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
 
-    /**
-     * Deleta um usuário.
-     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Override
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         UUID userId = UUID.fromString(id);
         userDeletePort.delete(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    public boolean isOwnerOfResource(SecurityUser principal, String resourceId) {
+        if (principal == null || resourceId == null) {
+            return false;
+        }
+        
+        try {
+            UUID resourceUuid = UUID.fromString(resourceId);
+            return principal.getId().equals(resourceUuid);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
 }

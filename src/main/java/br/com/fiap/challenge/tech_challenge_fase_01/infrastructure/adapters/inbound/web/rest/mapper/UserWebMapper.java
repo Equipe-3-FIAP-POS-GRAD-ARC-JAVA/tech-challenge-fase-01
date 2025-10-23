@@ -11,25 +11,9 @@ import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbo
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.UserUpdateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.response.UserResponseDTO;
 
-/**
- * Mapper para converter entre DTOs da camada web e DTOs da camada de aplicação.
- * 
- * Responsabilidade (SOLID - SRP):
- * - Converter DTOs de entrada da web para DTOs da aplicação
- * - Converter DTOs de saída da aplicação para DTOs da web
- * 
- * Arquitetura Hexagonal:
- * - Faz parte do Adapter Inbound (web)
- * - Isola a camada web da camada de aplicação
- * - Permite que cada camada tenha seus próprios DTOs com necessidades
- * específicas
- */
 @Component
 public class UserWebMapper {
 
-    /**
-     * Converte DTO de criação de usuário da web para aplicação.
-     */
     public UserCreateRequest toApplicationRequest(UserCreateRequestDTO dto) {
         if (dto == null) {
             return null;
@@ -38,12 +22,13 @@ public class UserWebMapper {
                 dto.name(),
                 dto.email(),
                 dto.login(),
-                dto.password());
+                dto.password(),
+                dto.street(),
+                dto.number(),
+                dto.city()
+        );
     }
 
-    /**
-     * Converte DTO de atualização de usuário da web para aplicação.
-     */
     public UserUpdateRequest toApplicationUpdateRequest(UserUpdateRequestDTO dto) {
         if (dto == null) {
             return null;
@@ -54,9 +39,6 @@ public class UserWebMapper {
                 dto.login());
     }
 
-    /**
-     * Converte DTO de atualização de senha da web para aplicação.
-     */
     public UpdatePasswordRequest toApplicationPasswordRequest(UpdatePasswordRequestDTO dto) {
         if (dto == null) {
             return null;
@@ -67,9 +49,6 @@ public class UserWebMapper {
                 dto.confirmPassword());
     }
 
-    /**
-     * Converte resposta da aplicação para resposta web.
-     */
     public UserResponseDTO toWebResponse(UserResponse response) {
         if (response == null) {
             return null;
