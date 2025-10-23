@@ -3,6 +3,7 @@ package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inb
 import java.util.List;
 import java.util.UUID;
 
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.api.UserApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,10 +39,11 @@ import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbo
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserApi {
 
     private final UserCreatePort userCreatePort;
     private final UserCreateOwnerPort userCreateOwnerPort;
@@ -53,6 +55,7 @@ public class UserController {
     private final UserWebMapper webMapper;
 
     @PostMapping
+    @Override
     public ResponseEntity<UserResponseDTO> createClient(@Valid @RequestBody UserCreateRequestDTO dto) {
         UserCreateRequest request = webMapper.toApplicationRequest(dto);
         UserResponse response = userCreatePort.create(request);
@@ -61,6 +64,7 @@ public class UserController {
 
     @PostMapping("/owner")
     @PreAuthorize("hasRole('ADMIN')")
+    @Override
     public ResponseEntity<UserResponseDTO> createOwner(@Valid @RequestBody UserCreateRequestDTO dto) {
         UserCreateRequest request = webMapper.toApplicationRequest(dto);
         UserResponse response = userCreateOwnerPort.createOwner(request);
@@ -69,6 +73,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @Override
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
         UUID userId = UUID.fromString(id);
         UserResponse response = userFindByIdPort.findById(userId);
@@ -77,6 +82,7 @@ public class UserController {
 
     @GetMapping("/by-name")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @Override
     public ResponseEntity<List<UserResponseDTO>> getUserByName(@RequestParam String name) {
         List<UserResponse> responses = userFindByNamePort.findByName(name);
         return ResponseEntity.ok(responses.stream().map(webMapper::toWebResponse).toList());
@@ -84,6 +90,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (isAuthenticated() and @userController.isOwnerOfResource(authentication.principal, #id))")
+    @Override
     public ResponseEntity<UserResponseDTO> update(@PathVariable String id,
             @Valid @RequestBody UserUpdateRequestDTO dto) {
         UUID userId = UUID.fromString(id);
@@ -94,6 +101,7 @@ public class UserController {
 
     @PatchMapping("/password")
     @PreAuthorize("isAuthenticated()")
+    @Override
     public ResponseEntity<UserResponseDTO> updatePassword(@AuthenticationPrincipal SecurityUser principal,
             @Valid @RequestBody UpdatePasswordRequestDTO dto) {
         UUID userId = principal.getId();
@@ -104,6 +112,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Override
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         UUID userId = UUID.fromString(id);
         userDeletePort.delete(userId);

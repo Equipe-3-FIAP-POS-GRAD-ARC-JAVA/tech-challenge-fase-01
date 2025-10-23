@@ -2,6 +2,9 @@ server:
   port: 8080
 
 spring:
+  docker:
+    compose:
+      enabled: false
   application:
     name: tech-challenge-fase-01
 
@@ -27,6 +30,13 @@ spring:
 
   main:
     allow-bean-definition-overriding: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    tryItOutEnabled: true
+    displayRequestDuration: true
+  show-actuator: true
 
 # MVC Configuration
 # mvc:
