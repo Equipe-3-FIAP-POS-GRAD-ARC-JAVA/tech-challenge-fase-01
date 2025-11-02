@@ -32,6 +32,7 @@ O sistema implementa **Arquitetura Hexagonal** com **Clean Architecture** e prin
 - **Exception Handling RFC 7807**: Tratamento padronizado de erros seguindo padrões internacionais
 - **Validações Jakarta Bean**: Validações declarativas em todas as camadas
 - **Containerização Docker**: Docker Compose para orquestração completa
+- **Spring Boot Actuator**: Endpoints de monitoramento, health checks e métricas operacionais
 
 ### **Arquitetura e Design Patterns**
 - **Arquitetura Hexagonal (Ports & Adapters)**: Separação clara entre core e infraestrutura
@@ -48,6 +49,7 @@ O sistema implementa **Arquitetura Hexagonal** com **Clean Architecture** e prin
 - **Documentação**: SpringDoc OpenAPI 3.0 com Swagger UI integrado
 - **Containerização**: Docker multi-stage build + Docker Compose
 - **Build**: Maven 3.9 com profiles de desenvolvimento e teste
+- **Monitoramento**: Spring Boot Actuator com health checks e métricas
 - **Testes**: JUnit 5, Spring Boot Test, H2 Database para testes
 
 A aplicação é completamente dockerizada, utilizando Docker Compose para orquestração junto com PostgreSQL em containers isolados.
@@ -65,11 +67,19 @@ O sistema implementa **Arquitetura Hexagonal** (Ports & Adapters) seguindo rigor
 - **Manutenibilidade**: Código organizado com responsabilidades bem definidas
 - **Escalabilidade**: Arquitetura preparada para crescimento e evolução
 
-## 🏗️ Estrutura das Camadas
+## Estrutura das Camadas
 
-### **📦 Application Layer (Core - 192 arquivos Java)**
+### **Application Layer (Core - 192 arquivos Java)**
 
-#### 🎯 **Domain Layer**
+#### **Domain Layer**
+```
+domain/
+├── address/AddressDomain.java           # Aggregate Root para endereços
+├── user/UserDomain.java                 # Aggregate Root para usuários  
+├── user/RolesEnum.java                  # Enumeração de papéis
+├── valueobject/
+│   ├── Email.java                       # Value Object para email
+│   ├── Username.java                    # Value Object para login
 ```
 application/domain/
 ├── address/AddressDomain.java           # Aggregate Root para endereços
@@ -88,7 +98,7 @@ application/domain/
     └── DomainValidationException.java
 ```
 
-#### 🔌 **Ports (Contratos)**
+#### **Ports (Contratos)**
 ```
 application/ports/
 ├── inbound/                             # Use Cases (Primary Ports)
@@ -102,7 +112,7 @@ application/ports/
     └── security/PasswordEncoderPort.java
 ```
 
-#### ⚙️ **Use Cases (Orquestradores)**
+#### **Use Cases (Orquestradores)**
 ```
 application/usecase/
 ├── user/                                
@@ -238,55 +248,204 @@ CREATE TABLE IF NOT EXISTS address (
 - **Integridade Referencial**: Foreign Key com cascade definido
 - **UUIDs**: Identificadores únicos globais para segurança
 
-#### **📊 Dados de Teste Pré-Carregados** (`data.sql`)
-- **👤 7 usuários** pré-cadastrados:
+#### **Dados de Teste Pré-Carregados** (`data.sql`)
+- **7 usuários** pré-cadastrados:
   - **1 ADMIN**: Emerson Silva (acesso total)  
   - **2 OWNERS**: Vinicius Padovam, Carlos Oliveira (proprietários)
   - **4 CLIENTS**: Maria Silva, João Pereira, Ana Souza, João Silva
-- **🏠 6 endereços** distribuídos em diferentes cidades (SP, RJ, PR, MG)
-- **🔐 Senha padrão**: `senha123` (BCrypt hash) para todos os usuários
-- **� UUIDs fixos**: Para facilitar testes e referências
+- **6 endereços** distribuídos em diferentes cidades (SP, RJ, PR, MG)
+- **Senha padrão**: `senha123` (BCrypt hash) para todos os usuários
+- **UUIDs fixos**: Para facilitar testes e referências
+
+### Diagramas PlantUML Detalhados
+
+Os diagramas estão implementados em PlantUML e cobrem todos os aspectos arquiteturais:
+
+#### **diag01.puml - Arquitetura Hexagonal Completa**
+- Visualização da separação entre Application Core e Infrastructure
+- Representação dos Ports (Inbound e Outbound)
+- Mapeamento dos Adapters (REST Controllers, JPA Repositories, Security)
+- Fluxo de dependências seguindo Clean Architecture
+
+#### **diag02.puml - Fluxos de Use Cases** 
+- Interações entre Controllers, Use Cases e Repositories
+- Sequência de chamadas nos processos de CRUD
+- Validações e transformações de dados
+- Error handling e exception propagation
+
+#### **diag03.puml - Sequence Diagram de Autenticação**
+- Fluxo completo do login JWT
+- Validação de credenciais
+- Geração e retorno do token
+- Autorização em endpoints protegidos
+
+#### **diag04.puml - Camadas da Aplicação**
+- Separação detalhada entre Application e Infrastructure
+- Dependencies flow (dependências apontando para dentro)
+- Interfaces e implementações
+- Configuration e Dependency Injection
+
+#### **diag05.puml - Modelo de Domínio**
+- Agregados e Entidades do domínio
+- Value Objects e Domain Services
+- Relacionamentos e cardinalidades
+- Business rules e invariantes
+
+## Spring Boot Actuator - Monitoramento
+
+### Configuração do Actuator
+
+O projeto está configurado para utilizar Spring Boot Actuator para monitoramento operacional:
+
+#### **Dependência no pom.xml**
+```xml
+<!-- Adicionar esta dependência para habilitar Actuator -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+#### **Configuração no application.yaml**
+```yaml
+# Configuração do Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    db:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    build:
+      enabled: true
+    git:
+      enabled: true
+```
+
+### Endpoints de Monitoramento Disponíveis
+
+#### **Health Checks** (`/actuator/health`)
+- **Liveness Probe**: `/actuator/health/liveness` - Verifica se a aplicação está viva
+- **Readiness Probe**: `/actuator/health/readiness` - Verifica se está pronta para receber tráfego
+- **Database Health**: Verificação automática da conectividade com PostgreSQL
+- **Custom Health Indicators**: Possibilidade de adicionar verificações customizadas
+
+#### **Métricas Operacionais** (`/actuator/metrics`)
+- **JVM Metrics**: Uso de memória, garbage collection, threads
+- **HTTP Metrics**: Latência de requests, contadores de status HTTP
+- **Database Metrics**: Connection pool, query performance
+- **Application Metrics**: Contadores customizados de negócio
+
+#### **Informações da Aplicação** (`/actuator/info`)
+- **Build Information**: Versão, timestamp, artifact details
+- **Git Information**: Branch, commit hash, build time
+- **Environment Properties**: Configurações ativas da aplicação
+
+#### **Prometheus Integration** (`/actuator/prometheus`)
+- **Metrics Export**: Formato compatível com Prometheus
+- **Observability Stack**: Integração com Grafana para dashboards
+- **Alerting**: Configuração de alertas baseados em métricas
+
+### Segurança do Actuator
+
+#### **Configuração de Segurança**
+```java
+// Configuração no WebSecurityConfig
+@Override
+protected void configure(HttpSecurity http) throws Exception {
+    http
+        .authorizeRequests()
+        .requestMatchers("/actuator/health").permitAll()
+        .requestMatchers("/actuator/health/liveness").permitAll()
+        .requestMatchers("/actuator/health/readiness").permitAll()
+        .requestMatchers("/actuator/**").hasRole("ADMIN")
+        .anyRequest().authenticated();
+}
+```
+
+#### **Níveis de Acesso**
+- **Público**: `/health`, `/health/liveness`, `/health/readiness`
+- **Administrador**: Todos os outros endpoints do Actuator
+- **Monitoramento External**: Configuração específica para ferramentas de observability
+
+### Observability e Monitoring Stack
+
+#### **Recommended Stack**
+- **Metrics Collection**: Micrometer + Prometheus
+- **Visualization**: Grafana dashboards
+- **Logging**: Structured JSON logs + ELK Stack
+- **Tracing**: Spring Cloud Sleuth + Zipkin
+- **Alerting**: Prometheus AlertManager
+
+#### **Production Deployment**
+- **Health Check Endpoints**: Para Kubernetes liveness/readiness probes
+- **Metrics Scraping**: Para systems de monitoramento
+- **Log Aggregation**: Para análise centralizada
+- **Performance Monitoring**: Para otimização contínua
 
 # 3. Descrição dos Endpoints da API
 
-## 📋 Tabela Completa de Endpoints
+## Tabela Completa de Endpoints
 
 ### **Autenticação**
 | Endpoint | Método | Descrição | Auth | Autorização | Controller |
 |----------|--------|-----------|------|-------------|------------|
-| `/api/v1/auth/login` | POST | Autenticar e obter token JWT | ❌ | Público | `LoginController` |
+| `/api/v1/auth/login` | POST | Autenticar e obter token JWT | Não | Público | `LoginController` |
 
 ### **Gestão de Usuários**
 | Endpoint | Método | Descrição | Auth | Autorização | Controller |
 |----------|--------|-----------|------|-------------|------------|
-| `/api/v1/users` | POST | Criar usuário CLIENT | ❌ | Público | `UserController` |
-| `/api/v1/users/owner` | POST | Criar usuário OWNER | ✅ | ADMIN | `UserController` |
-| `/api/v1/users/{id}` | GET | Buscar usuário por ID | ✅ | ADMIN ou próprio | `UserController` |
-| `/api/v1/users/by-name` | GET | Buscar por nome (query) | ✅ | ADMIN | `UserController` |
-| `/api/v1/users/{id}` | PUT | Atualizar dados gerais | ✅ | ADMIN ou próprio | `UserController` |
-| `/api/v1/users/{id}/password` | PUT | Alterar senha | ✅ | ADMIN ou próprio | `UserController` |
-| `/api/v1/users/{id}` | DELETE | Excluir usuário | ✅ | ADMIN | `UserController` |
+| `/api/v1/users` | POST | Criar usuário CLIENT | Não | Público | `UserController` |
+| `/api/v1/users/owner` | POST | Criar usuário OWNER | Sim | ADMIN | `UserController` |
+| `/api/v1/users/{id}` | GET | Buscar usuário por ID | Sim | ADMIN ou próprio | `UserController` |
+| `/api/v1/users/by-name` | GET | Buscar por nome (query) | Sim | ADMIN | `UserController` |
+| `/api/v1/users/{id}` | PUT | Atualizar dados gerais | Sim | ADMIN ou próprio | `UserController` |
+| `/api/v1/users/{id}/password` | PUT | Alterar senha | Sim | ADMIN ou próprio | `UserController` |
+| `/api/v1/users/{id}` | DELETE | Excluir usuário | Sim | ADMIN | `UserController` |
 
 ### **Gestão de Endereços**
 | Endpoint | Método | Descrição | Auth | Autorização | Controller |
 |----------|--------|-----------|------|-------------|------------|
-| `/api/v1/address` | GET | Listar endereços próprios | ✅ | Usuário autenticado | `AddressController` |
-| `/api/v1/address` | POST | Criar endereço | ✅ | Usuário autenticado | `AddressController` |
-| `/api/v1/address/{addressId}` | PUT | Atualizar endereço | ✅ | Proprietário | `AddressController` |
-| `/api/v1/address/{addressId}` | DELETE | Excluir endereço | ✅ | Proprietário | `AddressController` |
+| `/api/v1/address` | GET | Listar endereços próprios | Sim | Usuário autenticado | `AddressController` |
+| `/api/v1/address` | POST | Criar endereço | Sim | Usuário autenticado | `AddressController` |
+| `/api/v1/address/{addressId}` | PUT | Atualizar endereço | Sim | Proprietário | `AddressController` |
+| `/api/v1/address/{addressId}` | DELETE | Excluir endereço | Sim | Proprietário | `AddressController` |
+
+### **Monitoramento (Actuator)**
+| Endpoint | Método | Descrição | Auth | Autorização |
+|----------|--------|-----------|------|-------------|
+| `/actuator/health` | GET | Health check geral | Não | Público |
+| `/actuator/health/liveness` | GET | Liveness probe | Não | Público |
+| `/actuator/health/readiness` | GET | Readiness probe | Não | Público |
+| `/actuator/info` | GET | Informações da aplicação | Sim | ADMIN |
+| `/actuator/metrics` | GET | Métricas operacionais | Sim | ADMIN |
+| `/actuator/prometheus` | GET | Métricas para Prometheus | Sim | ADMIN |
 
 ### **Documentação (OpenAPI/Swagger)**
 | Endpoint | Método | Descrição | Auth | Autorização |
 |----------|--------|-----------|------|-------------|
-| `/swagger-ui` | GET | Interface Swagger UI | ❌ | Público |
-| `/v3/api-docs` | GET | Especificação OpenAPI JSON | ❌ | Público |
+| `/swagger-ui` | GET | Interface Swagger UI | Não | Público |
+| `/v3/api-docs` | GET | Especificação OpenAPI JSON | Não | Público |
 
-## 💡 Exemplos de Requisição e Resposta
+## Exemplos de Requisição e Resposta
 
-### 🔐 **POST** `/api/v1/auth/login`
+### **POST** `/api/v1/auth/login`
 **Descrição**: Autenticar usuário e obter token JWT stateless
 
-**📤 Requisição:**
+**Requisição:**
 ```json
 {
   "login": "emerson.silva",
@@ -294,7 +453,7 @@ CREATE TABLE IF NOT EXISTS address (
 }
 ```
 
-**📥 Resposta (200 OK):**
+**Resposta (200 OK):**
 ```json
 {
   "token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlbWVyc29uLnNpbHZhIiwicm9sZXMiOlsiQURNSU4iXSwiaWF0IjoxNzMwNDkyNDAwLCJleHAiOjE3MzA1Nzg4MDB9...",
@@ -303,7 +462,7 @@ CREATE TABLE IF NOT EXISTS address (
 }
 ```
 
-**🔧 Headers de Resposta:**
+**Headers de Resposta:**
 ```http
 Content-Type: application/json
 X-Content-Type-Options: nosniff
@@ -398,11 +557,11 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
 ]
 ```
 
-### ✏️ **PUT** `/api/v1/users/{id}`
+### **PUT** `/api/v1/users/{id}`
 **Descrição**: Atualizar dados gerais do usuário (nome, email, login)  
-**🔐 Autorização**: ADMIN ou próprio usuário
+**Autorização**: ADMIN ou próprio usuário
 
-**📤 Requisição:**
+**Requisição:**
 ```json
 {
   "name": "João Santos Silva Junior",
@@ -411,7 +570,7 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-**📥 Resposta (200 OK):**
+**Resposta (200 OK):**
 ```json
 {
   "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
@@ -425,11 +584,11 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-### 🔒 **PUT** `/api/v1/users/{id}/password`  
+### **PUT** `/api/v1/users/{id}/password`  
 **Descrição**: Alterar senha do usuário (endpoint separado por segurança)  
-**🔐 Autorização**: ADMIN ou próprio usuário
+**Autorização**: ADMIN ou próprio usuário
 
-**📤 Requisição:**
+**Requisição:**
 ```json
 {
   "currentPassword": "minhasenha123",
@@ -437,7 +596,7 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-**📥 Resposta (200 OK):**
+**Resposta (200 OK):**
 ```json
 {
   "message": "Password updated successfully"
@@ -538,9 +697,9 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
 
 ### ✏️ **PUT** `/api/v1/address/{addressId}`
 **Descrição**: Atualizar endereço existente  
-**🔐 Autorização**: Proprietário do endereço
+**Autorização**: Proprietário do endereço
 
-**📤 Requisição:**
+**Requisição:**
 ```json
 {
   "street": "Rua Augusta",
@@ -552,7 +711,7 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-**📥 Resposta (200 OK):**
+**Resposta (200 OK):**
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -567,28 +726,28 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-### 🗑️ **DELETE** `/api/v1/address/{addressId}`
+### **DELETE** `/api/v1/address/{addressId}`
 **Descrição**: Excluir endereço do usuário  
-**🔐 Autorização**: Proprietário do endereço
+**Autorização**: Proprietário do endereço
 
-**📥 Resposta (204 No Content):**
+**Resposta (204 No Content):**
 ```
 (Sem corpo de resposta)
 ```
 
-**🛡️ Segurança de Resources:**
+**Segurança de Resources:**
 - Usuários só podem acessar/modificar seus próprios endereços
 - Verificação automática de ownership nos Use Cases
 - Exception `AddressDoesNotBelongToUserException` em caso de acesso indevido
 
-## 📊 Códigos de Status HTTP e Tratamento de Erros
+## Códigos de Status HTTP e Tratamento de Erros
 
-### ✅ **Códigos de Sucesso**
+### **Códigos de Sucesso**
 - **200 OK**: Operação de leitura/atualização realizada com sucesso
 - **201 Created**: Recurso criado com sucesso (usuário, endereço)
 - **204 No Content**: Operação de exclusão realizada sem retorno de dados
 
-### ⚠️ **Códigos de Erro do Cliente** 
+### **Códigos de Erro do Cliente** 
 - **400 Bad Request**: Dados de entrada inválidos ou malformados
 - **401 Unauthorized**: Token JWT não fornecido, inválido ou expirado
 - **403 Forbidden**: Usuário autenticado mas sem permissão para a operação
@@ -648,7 +807,7 @@ Todas as respostas de erro seguem o padrão **RFC 7807 (Problem Details)**:
 }
 ```
 
-### 🛡️ **Exception Handling Global**
+### **Exception Handling Global**
 
 **Classes de Exceção Implementadas:**
 - `GlobalExceptionHandler`: Captura e padroniza todas as exceções
@@ -661,7 +820,7 @@ Todas as respostas de erro seguem o padrão **RFC 7807 (Problem Details)**:
 
 # 4. Configuração do Projeto
 
-## 🐳 **Configuração Docker & Containerização**
+## **Configuração Docker & Containerização**
 
 ### **Docker Compose Completo** (`compose.yaml`)
 
@@ -736,21 +895,21 @@ EXPOSE 8080
 ENTRYPOINT ["sh","-c","exec java -jar /app/app.jar"]
 ```
 
-**🔧 Características do Build:**
+**Características do Build:**
 - **Multi-stage**: Reduz tamanho final da imagem
 - **Security**: Usuário não-root (UID 2000)
 - **Performance**: Cache de dependências Maven
 - **Production-ready**: JRE-only no runtime
 
-## 🚀 **Instruções para Execução**
+## **Instruções para Execução**
 
-### **📋 Pré-requisitos**
+### **Pré-requisitos**
 - **Docker** e **Docker Compose** (recomendado)
 - **Java 21+** (para desenvolvimento local)
 - **Maven 3.9+** (para build local)
 - **Git** para versionamento
 
-### **🐳 Opção 1: Docker Compose Completo** (Recomendada)
+### **Opção 1: Docker Compose Completo** (Recomendada)
 ```bash
 # Clone o repositório
 git clone https://github.com/Equipe-3-FIAP-POS-GRAD-ARC-JAVA/tech-challenge-fase-01.git
@@ -763,12 +922,12 @@ docker compose up --build
 docker compose up -d --build
 ```
 
-**✅ Vantagens:**
+**Vantagens:**
 - Ambiente isolado e reproduzível
 - PostgreSQL e aplicação configurados automaticamente
 - Network isolation e persistent volumes
 
-### **⚡ Opção 2: Desenvolvimento Híbrido**
+### **Opção 2: Desenvolvimento Híbrido**
 ```bash
 # 1. Iniciar apenas PostgreSQL
 docker compose up -d postgres
@@ -782,12 +941,12 @@ docker compose up -d postgres
   -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'
 ```
 
-**✅ Vantagens:**
+**Vantagens:**
 - Restart rápido durante desenvolvimento  
 - Debug com IDE
 - Logs diretos no terminal
 
-### **🌐 URLs de Acesso**
+### **URLs de Acesso**
 
 | Serviço | URL Local | URL Docker | Descrição |
 |---------|-----------|------------|-----------|
@@ -796,7 +955,7 @@ docker compose up -d postgres
 | **OpenAPI JSON** | http://localhost:8080/v3/api-docs | http://localhost:8080/v3/api-docs | Spec OpenAPI |
 | **PostgreSQL** | localhost:5432 | postgres:5432 | Banco de dados |
 
-### **🗄️ Configuração do Banco**
+### **Configuração do Banco**
 
 | Parâmetro | Valor | Descrição |
 |-----------|-------|-----------|  
@@ -804,12 +963,12 @@ docker compose up -d postgres
 | **Port** | 5432 | Porta padrão PostgreSQL |
 | **Database** | restaurantapp | Nome do banco |
 | **Username** | postgres | Usuário administrador |
-| **Password** | secret | Senha (⚠️ dev only) |
+| **Password** | secret | Senha (dev only) |
 | **Version** | PostgreSQL 17 | Versão mais recente |
 
-### **📊 Dados de Teste Disponíveis**
+### **Dados de Teste Disponíveis**
 
-**👤 Usuários Pré-cadastrados:**
+**Usuários Pré-cadastrados:**
 ```bash
 # ADMIN (acesso total)
 Login: emerson.silva | Senha: senha123
@@ -825,112 +984,111 @@ Login: anasouza     | Senha: senha123
 Login: joao.silva   | Senha: senha123
 ```
 
-**🏠 Endereços:** 6 endereços pré-cadastrados vinculados aos usuários
+**Endereços:** 6 endereços pré-cadastrados vinculados aos usuários
 
 # 5. Qualidade do Código
 
-## 🏆 **Boas Práticas Implementadas**
+## **Boas Práticas Implementadas**
 
-### 🏗️ **Arquitetura e Design Patterns**
-- **✅ Arquitetura Hexagonal (Ports & Adapters)**: Separação rigorosa entre core e infraestrutura
-- **✅ Clean Architecture**: Dependências apontando para o centro, regras de negócio isoladas
-- **✅ Domain-Driven Design (DDD)**: Modelagem rica com Entities, Value Objects, Domain Services
-- **✅ CQRS Pattern**: Separação clara entre comandos (escrita) e queries (leitura)  
-- **✅ Dependency Injection**: Inversão de controle através de interfaces bem definidas
-- **✅ Factory Methods**: Criação controlada de objetos de domínio com validações
+### **Arquitetura e Design Patterns**
+- **Arquitetura Hexagonal (Ports & Adapters)**: Separação rigorosa entre core e infraestrutura
+- **Clean Architecture**: Dependências apontando para o centro, regras de negócio isoladas
+- **Domain-Driven Design (DDD)**: Modelagem rica com Entities, Value Objects, Domain Services
+- **CQRS Pattern**: Separação clara entre comandos (escrita) e queries (leitura)  
+- **Dependency Injection**: Inversão de controle através de interfaces bem definidas
+- **Factory Methods**: Criação controlada de objetos de domínio com validações
+- **Code Quality**: SonarQube ready
 
-- **🔍 Code Quality**: SonarQube ready
+### **Princípios SOLID - Implementação Completa**
 
-### ⚖️ **Princípios SOLID - Implementação Completa**
-
-#### **🎯 S - Single Responsibility Principle**
+#### **S - Single Responsibility Principle**
 - **Use Cases**: Cada um com responsabilidade única e específica
 - **Controllers**: Apenas adaptação entre web e application layers
 - **Repositories**: Somente persistência, sem lógica de negócio
 - **Mappers**: Conversões dedicadas entre camadas
 
-#### **🔧 O - Open/Closed Principle**  
+#### **O - Open/Closed Principle**  
 - **Ports**: Extensibilidade via novas implementações de interfaces
 - **Adapters**: Novos adapters sem modificação do core
 - **Use Cases**: Extensíveis via composition e dependency injection
 
-#### **🔄 L - Liskov Substitution Principle**
+#### **L - Liskov Substitution Principle**
 - **Repository Implementations**: Intercambiáveis (JPA, MongoDB, etc.)
 - **Password Encoders**: Substituíveis (BCrypt, SCrypt, etc.)
 - **Security Adapters**: Diferentes provedores JWT
 
-#### **🎭 I - Interface Segregation Principle**
+#### **I - Interface Segregation Principle**
 - **Ports específicos**: Interfaces coesas por funcionalidade
 - **Inbound Ports**: Contratos específicos por Use Case
 - **Outbound Ports**: Abstrações mínimas e focadas
 
-#### **⬆️ D - Dependency Inversion Principle**  
+#### **D - Dependency Inversion Principle**  
 - **Infrastructure → Application**: Dependência em abstrações
 - **Use Cases → Repositories**: Através de ports outbound
 - **Controllers → Use Cases**: Através de ports inbound
 
-### 🔐 **Segurança Robusta**
-- **🎟️ JWT Stateless**: Tokens auto-contidos com expiração configurável
-- **🛡️ RBAC (Role-Based Access Control)**: 3 níveis (CLIENT, OWNER, ADMIN)
-- **🔒 BCrypt Hashing**: Senhas criptografadas com salt automático
-- **✅ Jakarta Bean Validation**: Validações declarativas em todas as camadas
-- **🌐 CORS Configurado**: Controle granular de origens permitidas
-- **🔑 Resource Authorization**: Usuários só acessam recursos próprios
+### **Segurança Robusta**
+- **JWT Stateless**: Tokens auto-contidos com expiração configurável
+- **RBAC (Role-Based Access Control)**: 3 níveis (CLIENT, OWNER, ADMIN)
+- **BCrypt Hashing**: Senhas criptografadas com salt automático
+- **Jakarta Bean Validation**: Validações declarativas em todas as camadas
+- **CORS Configurado**: Controle granular de origens permitidas
+- **Resource Authorization**: Usuários só acessam recursos próprios
 
-### 🚨 **Exception Handling Padronizado**
-- **📋 RFC 7807 Compliance**: Problem Details para respostas de erro consistentes
-- **🎯 Global Exception Handler**: Tratamento centralizado via `@ControllerAdvice`
-- **📊 Error Logging**: Logs estruturados para debugging e auditoria
-- **🔍 Detailed Messages**: Informações específicas sem exposição de dados sensíveis
+### **Exception Handling Padronizado**
+- **RFC 7807 Compliance**: Problem Details para respostas de erro consistentes
+- **Global Exception Handler**: Tratamento centralizado via `@ControllerAdvice`
+- **Error Logging**: Logs estruturados para debugging e auditoria
+- **Detailed Messages**: Informações específicas sem exposição de dados sensíveis
 
-### 🧪 **Estratégia de Testes**
-- **✅ Jakarta Bean Validation**: Validações automáticas nos DTOs
-- **🏗️ Estrutura de Testes**: Separação entre unitários e integração
-- **🐳 Test Containers**: Testes com PostgreSQL real em containers
-- **🎯 H2 Database**: Testes rápidos em memória
-- **📊 Coverage Ready**: Estrutura preparada para JaCoCo
+### **Estratégia de Testes**
+- **Jakarta Bean Validation**: Validações automáticas nos DTOs
+- **Estrutura de Testes**: Separação entre unitários e integração
+- **Test Containers**: Testes com PostgreSQL real em containers
+- **H2 Database**: Testes rápidos em memória
+- **Coverage Ready**: Estrutura preparada para JaCoCo
 
-### 📝 **Organização e Documentação**
-- **📦 Package by Feature**: Agrupamento por domínios funcionais (User, Address)
-- **📖 OpenAPI 3.0**: Documentação interativa automática com Swagger UI
-- **🏷️ Naming Conventions**: Nomenclatura consistente seguindo padrões Java
-- **📚 Clean Code**: Métodos pequenos, responsabilidades bem definidas
-- **💬 Javadoc**: Documentação nas interfaces principais
+### **Organização e Documentação**
+- **Package by Feature**: Agrupamento por domínios funcionais (User, Address)
+- **OpenAPI 3.0**: Documentação interativa automática com Swagger UI
+- **Naming Conventions**: Nomenclatura consistente seguindo padrões Java
+- **Clean Code**: Métodos pequenos, responsabilidades bem definidas
+- **Javadoc**: Documentação nas interfaces principais
 
-### ⚙️ **Configuração e DevOps**
-- **🎭 Spring Profiles**: Separação clara de ambientes (dev, test, prod)
-- **📄 Externalized Configuration**: Configurações via `application.yaml`
-- **🐳 Docker Multi-stage**: Build otimizado com cache de dependências
-- **📊 Actuator**: Endpoints de monitoramento e health checks
+### **Configuração e DevOps**
+- **Spring Profiles**: Separação clara de ambientes (dev, test, prod)
+- **Externalized Configuration**: Configurações via `application.yaml`
+- **Docker Multi-stage**: Build otimizado com cache de dependências
+- **Actuator**: Endpoints de monitoramento e health checks
 
 # 6. Collections para Teste
 
-## 🧪 **Resources para Testes Completos**
+## **Resources para Testes Completos**
 
-### 📋 **Postman Collection**
+### **Postman Collection**
 **Arquivo**: `TechChallenge.postman_collection.json` 
 
-### 📝 **HTTP Files (VS Code)**
+### **HTTP Files (VS Code)**
 **Arquivo**: `docs/chamadas.http` 
 
-### 🌐 **Swagger UI Interativo**
+### **Swagger UI Interativo**
 **URL**: http://localhost:8080/swagger-ui
 
 # 8. Repositório do Código
 
-## 📂 **Informações do Repositório**
+## **Informações do Repositório**
 
-**🌐 URL**: https://github.com/Equipe-3-FIAP-POS-GRAD-ARC-JAVA/tech-challenge-fase-01
+**URL**: https://github.com/Equipe-3-FIAP-POS-GRAD-ARC-JAVA/tech-challenge-fase-01
 
-### **🌳 Estrutura de Branches**
+### **Estrutura de Branches**
 
-## 🏆 **Conclusão do Projeto**
+## **Conclusão do Projeto**
 
 Este projeto demonstra a implementação **exemplar** de uma arquitetura moderna Java enterprise, integrando:
 
-- **🏛️ Arquitetura Hexagonal** com separação rigorosa de responsabilidades
-- **⚖️ Princípios SOLID** aplicados consistentemente  
-- **🔐 Segurança robusta** com JWT + RBAC + resource ownership
-- **📖 Documentação automática** com OpenAPI 3.0 + Swagger UI
-- **🐳 Containerização** production-ready com Docker
-- **🧹 Clean Code** com nomenclatura consistente e responsabilidades claras
+- **Arquitetura Hexagonal** com separação rigorosa de responsabilidades
+- **Princípios SOLID** aplicados consistentemente  
+- **Segurança robusta** com JWT + RBAC + resource ownership
+- **Documentação automática** com OpenAPI 3.0 + Swagger UI
+- **Containerização** production-ready com Docker
+- **Clean Code** com nomenclatura consistente e responsabilidades claras

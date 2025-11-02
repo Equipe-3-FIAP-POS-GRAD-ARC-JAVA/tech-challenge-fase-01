@@ -35,6 +35,10 @@ public class WebSecurityConfig {
                             "/swagger-ui.html",
                             "/scalar/**"
                     ).permitAll()
+                // Actuator endpoints - health checks públicos, demais requerem ADMIN
+                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                .requestMatchers("/actuator/info").permitAll()
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
