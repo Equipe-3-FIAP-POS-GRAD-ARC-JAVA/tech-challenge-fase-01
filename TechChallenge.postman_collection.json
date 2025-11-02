@@ -8,6 +8,39 @@
 	},
 	"item": [
 		{
+			"name": "address",
+			"item": [
+				{
+					"name": "Criar Endereço",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"street\": \"Rua das Flores\",\r\n  \"number\": \"456\",\r\n  \"complement\": \"Casa 2\",\r\n  \"neighborhood\": \"Vila Madalena\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"05433-000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/address",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"address"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Login",
 			"event": [
 				{
@@ -39,7 +72,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"login\": \"joao.silva7\",\r\n    \"password\": \"senha123\"\r\n}",
+					"raw": "{\r\n    \"login\": \"carlosol\",\r\n    \"password\": \"senha123\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -102,7 +135,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva7@email.com\",\r\n  \"login\": \"joao.silva7\",\r\n  \"password\": \"senha123\"\r\n}",
+					"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -123,13 +156,13 @@
 			},
 			"response": [
 				{
-					"name": "201",
+					"name": "201 Created",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva4@email.com\",\r\n  \"login\": \"joao.silva4\",\r\n  \"password\": \"senha123\"\r\n}",
+							"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -186,7 +219,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Sat, 11 Oct 2025 23:47:15 GMT"
+							"value": "Sat, 01 Nov 2025 23:50:36 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -198,7 +231,85 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"id\": \"bd6bd7e6-6e0e-413b-ad4d-d2e05554b7c4\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva4@email.com\",\n    \"login\": \"joao.silva4\"\n}"
+					"body": "{\n    \"id\": \"87987d22-bca0-4d4c-864e-bba5ff50964a\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva5@email.com\",\n    \"login\": \"joao.silva5\",\n    \"roles\": [\n        \"CLIENT\"\n    ],\n    \"addresses\": [\n        {\n            \"id\": \"ec56d592-4cff-4de8-9d1e-02fed1fa739a\",\n            \"userId\": \"87987d22-bca0-4d4c-864e-bba5ff50964a\",\n            \"street\": \"Rua das Palmeiras\",\n            \"number\": \"123\",\n            \"complement\": \"Apto 45\",\n            \"neighborhood\": \"Jardins\",\n            \"city\": \"São Paulo\",\n            \"zipCode\": \"01414-000\",\n            \"createdAt\": \"2025-11-01T20:50:36.711012\",\n            \"updatedAt\": \"2025-11-01T20:50:36.711042\"\n        }\n    ]\n}"
+				},
+				{
+					"name": "409 Conflict",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "0"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/problem+json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 01 Nov 2025 23:51:24 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"type\": \"/problems/conflict\",\n    \"title\": \"Conflito de Dados\",\n    \"status\": 409,\n    \"detail\": \"Já existe um usuário com o login: joao.silva5\",\n    \"instance\": \"/api/v1/users\",\n    \"timestamp\": \"2025-11-01T20:51:24.080752924-03:00\",\n    \"errorType\": \"DUPLICATE_RESOURCE\"\n}"
 				}
 			]
 		},
@@ -219,7 +330,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Novo Dono\",\r\n    \"email\": \"dono3@exemplo.com\",\r\n    \"login\": \"novo.dono3\",\r\n    \"password\": \"senhaSegura456\"\r\n}",
+					"raw": "{\r\n  \"name\": \"Novo Dono\",\r\n  \"email\": \"dono3@exemplo.com\",\r\n  \"login\": \"novo.dono3\",\r\n  \"password\": \"senhaSegura456\",\r\n  \"street\": \"Av. Faria Lima\",\r\n  \"number\": \"3500\",\r\n  \"complement\": \"Andar 25\",\r\n  \"neighborhood\": \"Itaim Bibi\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"04538-132\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -604,7 +715,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado@exemplo.com\",\r\n    \"login\": \"login.atualizado\"\r\n}",
+					"raw": "{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado1@exemplo.com\",\r\n    \"login\": \"login.atualizado1\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -854,7 +965,7 @@
 			},
 			"response": [
 				{
-					"name": "403",
+					"name": "403 Forbidden",
 					"originalRequest": {
 						"method": "GET",
 						"header": [
@@ -921,7 +1032,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:43:37 GMT"
+							"value": "Sat, 01 Nov 2025 23:59:09 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -933,7 +1044,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/by-name\",\n    \"timestamp\": \"2025-10-16T16:43:37.614852671-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
+					"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/by-name\",\n    \"timestamp\": \"2025-11-01T20:59:09.854363599-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
 				}
 			]
 		},
