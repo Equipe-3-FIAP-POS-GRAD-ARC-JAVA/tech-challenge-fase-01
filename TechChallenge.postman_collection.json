@@ -1,17 +1,919 @@
 {
 	"info": {
-		"_postman_id": "e905c926-1823-4449-a59f-ce690442b46c",
+		"_postman_id": "8a5cf5e8-8bf8-4092-ba14-3964c3d60393",
 		"name": "TechChallenge",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "2416633",
-		"_collection_link": "https://compasso-b2b-camicado.postman.co/workspace/part~689b9350-a217-4dd9-b5e9-e87371921406/collection/2416633-e905c926-1823-4449-a59f-ce690442b46c?action=share&source=collection_link&creator=2416633"
+		"_collection_link": "https://compasso-b2b-camicado.postman.co/workspace/part~689b9350-a217-4dd9-b5e9-e87371921406/collection/2416633-8a5cf5e8-8bf8-4092-ba14-3964c3d60393?action=share&source=collection_link&creator=2416633"
 	},
 	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "Criar Usuário (CLIENT)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Captura o campo 'id' da resposta e armazena na variável de coleção 'user_id'",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.id) {",
+									"        pm.collectionVariables.set('user_id', jsonData.id);",
+									"        pm.test('O campo id foi salvo na variável de coleção user_id', function () {",
+									"            pm.expect(pm.collectionVariables.get('user_id')).to.eql(jsonData.id);",
+									"        });",
+									"    } else {",
+									"        pm.test('Resposta não contém o campo id', function () {",
+									"            pm.expect(jsonData && jsonData.id).to.not.be.undefined;",
+									"        });",
+									"    }",
+									"} else {",
+									"    pm.test('Código de resposta não é 201', function () {",
+									"        pm.expect(pm.response.code).to.eql(201);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva6@email.com\",\r\n  \"login\": \"joao.silva6\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "201 Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/users",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 01 Nov 2025 23:50:36 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"87987d22-bca0-4d4c-864e-bba5ff50964a\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva5@email.com\",\n    \"login\": \"joao.silva5\",\n    \"roles\": [\n        \"CLIENT\"\n    ],\n    \"addresses\": [\n        {\n            \"id\": \"ec56d592-4cff-4de8-9d1e-02fed1fa739a\",\n            \"userId\": \"87987d22-bca0-4d4c-864e-bba5ff50964a\",\n            \"street\": \"Rua das Palmeiras\",\n            \"number\": \"123\",\n            \"complement\": \"Apto 45\",\n            \"neighborhood\": \"Jardins\",\n            \"city\": \"São Paulo\",\n            \"zipCode\": \"01414-000\",\n            \"createdAt\": \"2025-11-01T20:50:36.711012\",\n            \"updatedAt\": \"2025-11-01T20:50:36.711042\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "409 Conflict",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/users",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users"
+									]
+								}
+							},
+							"status": "Conflict",
+							"code": 409,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 01 Nov 2025 23:51:24 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"/problems/conflict\",\n    \"title\": \"Conflito de Dados\",\n    \"status\": 409,\n    \"detail\": \"Já existe um usuário com o login: joao.silva5\",\n    \"instance\": \"/api/v1/users\",\n    \"timestamp\": \"2025-11-01T20:51:24.080752924-03:00\",\n    \"errorType\": \"DUPLICATE_RESOURCE\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Criar Usuário (OWNER) - apenas ADMIN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <YOUR_JWT_TOKEN>",
+								"disabled": true
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Novo Dono\",\r\n  \"email\": \"dono3@exemplo.com\",\r\n  \"login\": \"novo.dono3\",\r\n  \"password\": \"senhaSegura456\",\r\n  \"street\": \"Av. Faria Lima\",\r\n  \"number\": \"3500\",\r\n  \"complement\": \"Andar 25\",\r\n  \"neighborhood\": \"Itaim Bibi\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"04538-132\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users/owner",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"owner"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request POST 'http://localhost:8080/api/v1/users/owner' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>' \\\r\n--header 'Content-Type: application/json' \\\r\n--data '{\r\n    \"name\": \"Novo Dono\",\r\n    \"email\": \"dono@exemplo.com\",\r\n    \"login\": \"novo.dono\",\r\n    \"password\": \"senhaSegura456\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar a Própria Senha",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"currentPassword\": \"senha1234\",\r\n  \"newPassword\": \"senha123\",\r\n  \"confirmPassword\":\"senha123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users/password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"password"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"currentPassword\": \"senha123\",\r\n  \"newPassword\": \"senha1234\",\r\n  \"confirmPassword\":\"senha1234\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/users/password",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"password"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 16 Oct 2025 19:44:26 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"20544473-9bf1-4b56-896d-bf9dd43dbca0\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva7@email.com\",\n    \"login\": \"joao.silva7\"\n}"
+						},
+						{
+							"name": "422",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"currentPassword\": \"senha12345\",\r\n  \"newPassword\": \"senha123\",\r\n  \"confirmPassword\":\"senha123\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/users/password",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"password"
+									]
+								}
+							},
+							"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+							"code": 422,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 16 Oct 2025 19:45:26 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"/problems/business-rule-violation\",\n    \"title\": \"Regra de Negócio Violada\",\n    \"status\": 422,\n    \"detail\": \"A senha atual está incorreta.\",\n    \"instance\": \"/api/v1/users/password\",\n    \"timestamp\": \"2025-10-16T16:45:26.595973215-03:00\",\n    \"errorType\": \"BUSINESS_RULE_VIOLATION\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Atualizar Dados do Usuário",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <YOUR_JWT_TOKEN>"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado1@exemplo.com\",\r\n    \"login\": \"login.atualizado1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}} /api/v1/users/{{id_user}}",
+							"host": [
+								"{{host}} "
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{id_user}}"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request PUT 'http://localhost:8080/api/v1/users/a1b2c3d4-e5f6-7890-1234-567890abcdef' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>' \\\r\n--header 'Content-Type: application/json' \\\r\n--data '{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado@exemplo.com\",\r\n    \"login\": \"login.atualizado\"\r\n}'"
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer <YOUR_JWT_TOKEN>"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado@exemplo.com\",\r\n    \"login\": \"login.atualizado\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}} /api/v1/users/{{id_user}}",
+									"host": [
+										"{{host}} "
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"{{id_user}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 16 Oct 2025 19:43:26 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"name\": \"Nome Atualizado\",\n    \"email\": \"email.atualizado@exemplo.com\",\n    \"login\": \"login.atualizado\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Buscar Usuário por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{id_user}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{id_user}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "403",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "{{host}}/api/v1/users/{{id_user}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"{{id_user}}"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 16 Oct 2025 19:44:05 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"timestamp\": \"2025-10-16T16:44:05.706381781-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Buscar Usuário por Nome",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <YOUR_JWT_TOKEN>",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users/by-name?name=e",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"by-name"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "e"
+								}
+							]
+						},
+						"description": "Generated from cURL: curl --location --request GET 'http://localhost:8080/api/v1/users/by-name?name=Fulano' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>'"
+					},
+					"response": [
+						{
+							"name": "403 Forbidden",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer <YOUR_JWT_TOKEN>",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "{{host}}/api/v1/users/by-name?name=e",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"by-name"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "e"
+										}
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 01 Nov 2025 23:59:09 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/by-name\",\n    \"timestamp\": \"2025-11-01T20:59:09.854363599-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Deletar Usuário",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <YOUR_JWT_TOKEN>"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{id_user}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{id_user}}"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request DELETE 'http://localhost:8080/api/v1/users/a1b2c3d4-e5f6-7890-1234-567890abcdef' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>'"
+					},
+					"response": [
+						{
+							"name": "403",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer <YOUR_JWT_TOKEN>"
+									}
+								],
+								"url": {
+									"raw": "{{host}}/api/v1/users/{{id_user}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"{{id_user}}"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 16 Oct 2025 19:43:42 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"timestamp\": \"2025-10-16T16:43:42.070698135-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
+						}
+					]
+				}
+			]
+		},
 		{
 			"name": "address",
 			"item": [
 				{
-					"name": "Criar Endereço",
+					"name": "Criar Endereço no Usuario Atual",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -37,11 +939,311 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Listar todos os endereços do usuario logado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let data = pm.response.json();",
+									"if (Array.isArray(data) && data.length > 0 && data[0].id) {",
+									"    pm.collectionVariables.set('addressId', data[0].id);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/address",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"address"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Alterar endereço do usuario logado",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"street\": \"Rua das Flores Teste 02222\",\r\n  \"number\": \"456\",\r\n  \"complement\": \"Casa 2\",\r\n  \"neighborhood\": \"Vila Madalena\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"05433-000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/address/{{addressId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"address",
+								"{{addressId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deletar Endereço do Usuario Logado",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/address/{{addressId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"address",
+								"{{addressId}}"
+							]
+						},
+						"description": "Remove um endereço específico do usuário autenticado. Requer autenticação JWT."
+					},
+					"response": [
+						{
+							"name": "204 No Content - Deletado com sucesso",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{host}}/api/v1/address/{{addressId}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"address",
+										"{{addressId}}"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 01 Nov 2025 23:50:36 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "401 Unauthorized - Token inválido",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/address/{{addressId}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"address",
+										"{{addressId}}"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 01 Nov 2025 23:50:36 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 401,\n    \"detail\": \"Token JWT inválido ou expirado.\",\n    \"instance\": \"/api/v1/address\",\n    \"timestamp\": \"2025-11-01T20:50:36.711012-03:00\",\n    \"errorType\": \"AUTHENTICATION_FAILED\"\n}"
+						},
+						{
+							"name": "404 Not Found - Endereço não encontrado",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{host}}/api/v1/address/99999999-9999-9999-9999-999999999999",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"address",
+										"99999999-9999-9999-9999-999999999999"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 01 Nov 2025 23:50:36 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"/problems/not-found\",\n    \"title\": \"Recurso Não Encontrado\",\n    \"status\": 404,\n    \"detail\": \"Endereço não encontrado ou não pertence ao usuário.\",\n    \"instance\": \"/api/v1/address/99999999-9999-9999-9999-999999999999\",\n    \"timestamp\": \"2025-11-01T20:50:36.711012-03:00\",\n    \"errorType\": \"RESOURCE_NOT_FOUND\"\n}"
+						}
+					]
 				}
 			]
 		},
 		{
-			"name": "Login",
+			"name": "Login Admin",
 			"event": [
 				{
 					"listen": "test",
@@ -72,7 +1274,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"login\": \"carlosol\",\r\n    \"password\": \"senha123\"\r\n}",
+					"raw": "{\r\n    \"login\": \"emerson.silva\",\r\n    \"password\": \"senha123\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -94,1061 +1296,6 @@
 				"description": "Generated from cURL: curl -X POST http://localhost:8080/login -H \"Content-Type: application/json\" -d '{\"login\": \"vpadovam\", \"password\": \"senha123\"}' -s"
 			},
 			"response": []
-		},
-		{
-			"name": "Criar Usuário (CLIENT)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"// Captura o campo 'id' da resposta e armazena na variável de coleção 'user_id'",
-							"if (pm.response.code === 201) {",
-							"    var jsonData = pm.response.json();",
-							"    if (jsonData && jsonData.id) {",
-							"        pm.collectionVariables.set('user_id', jsonData.id);",
-							"        pm.test('O campo id foi salvo na variável de coleção user_id', function () {",
-							"            pm.expect(pm.collectionVariables.get('user_id')).to.eql(jsonData.id);",
-							"        });",
-							"    } else {",
-							"        pm.test('Resposta não contém o campo id', function () {",
-							"            pm.expect(jsonData && jsonData.id).to.not.be.undefined;",
-							"        });",
-							"    }",
-							"} else {",
-							"    pm.test('Código de resposta não é 201', function () {",
-							"        pm.expect(pm.response.code).to.eql(201);",
-							"    });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{host}}/api/v1/users",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"users"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "201 Created",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/v1/users",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							]
-						}
-					},
-					"status": "Created",
-					"code": 201,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Sat, 01 Nov 2025 23:50:36 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"id\": \"87987d22-bca0-4d4c-864e-bba5ff50964a\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva5@email.com\",\n    \"login\": \"joao.silva5\",\n    \"roles\": [\n        \"CLIENT\"\n    ],\n    \"addresses\": [\n        {\n            \"id\": \"ec56d592-4cff-4de8-9d1e-02fed1fa739a\",\n            \"userId\": \"87987d22-bca0-4d4c-864e-bba5ff50964a\",\n            \"street\": \"Rua das Palmeiras\",\n            \"number\": \"123\",\n            \"complement\": \"Apto 45\",\n            \"neighborhood\": \"Jardins\",\n            \"city\": \"São Paulo\",\n            \"zipCode\": \"01414-000\",\n            \"createdAt\": \"2025-11-01T20:50:36.711012\",\n            \"updatedAt\": \"2025-11-01T20:50:36.711042\"\n        }\n    ]\n}"
-				},
-				{
-					"name": "409 Conflict",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"João Silva\",\r\n  \"email\": \"joao.silva5@email.com\",\r\n  \"login\": \"joao.silva5\",\r\n  \"password\": \"senha123\",\r\n  \"street\": \"Rua das Palmeiras\",\r\n  \"number\": \"123\",\r\n  \"complement\": \"Apto 45\",\r\n  \"neighborhood\": \"Jardins\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"01414-000\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/v1/users",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							]
-						}
-					},
-					"status": "Conflict",
-					"code": 409,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/problem+json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Sat, 01 Nov 2025 23:51:24 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/conflict\",\n    \"title\": \"Conflito de Dados\",\n    \"status\": 409,\n    \"detail\": \"Já existe um usuário com o login: joao.silva5\",\n    \"instance\": \"/api/v1/users\",\n    \"timestamp\": \"2025-11-01T20:51:24.080752924-03:00\",\n    \"errorType\": \"DUPLICATE_RESOURCE\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Criar Usuário (OWNER) - apenas ADMIN",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer <YOUR_JWT_TOKEN>",
-						"disabled": true
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"name\": \"Novo Dono\",\r\n  \"email\": \"dono3@exemplo.com\",\r\n  \"login\": \"novo.dono3\",\r\n  \"password\": \"senhaSegura456\",\r\n  \"street\": \"Av. Faria Lima\",\r\n  \"number\": \"3500\",\r\n  \"complement\": \"Andar 25\",\r\n  \"neighborhood\": \"Itaim Bibi\",\r\n  \"city\": \"São Paulo\",\r\n  \"zipCode\": \"04538-132\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{host}}/api/v1/users/owner",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"users",
-						"owner"
-					]
-				},
-				"description": "Generated from cURL: curl --location --request POST 'http://localhost:8080/api/v1/users/owner' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>' \\\r\n--header 'Content-Type: application/json' \\\r\n--data '{\r\n    \"name\": \"Novo Dono\",\r\n    \"email\": \"dono@exemplo.com\",\r\n    \"login\": \"novo.dono\",\r\n    \"password\": \"senhaSegura456\"\r\n}'"
-			},
-			"response": []
-		},
-		{
-			"name": "Atualizar a Própria Senha",
-			"request": {
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"currentPassword\": \"senha1234\",\r\n  \"newPassword\": \"senha123\",\r\n  \"confirmPassword\":\"senha123\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{host}}/api/v1/users/password",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"users",
-						"password"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "200",
-					"originalRequest": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"currentPassword\": \"senha123\",\r\n  \"newPassword\": \"senha1234\",\r\n  \"confirmPassword\":\"senha1234\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/v1/users/password",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"password"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:44:26 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"id\": \"20544473-9bf1-4b56-896d-bf9dd43dbca0\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao.silva7@email.com\",\n    \"login\": \"joao.silva7\"\n}"
-				},
-				{
-					"name": "422",
-					"originalRequest": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"currentPassword\": \"senha123\",\r\n  \"newPassword\": \"senha1234\",\r\n  \"confirmPassword\":\"senha1234\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/v1/users/password",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"password"
-							]
-						}
-					},
-					"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
-					"code": 422,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/problem+json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:44:42 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/business-rule-violation\",\n    \"title\": \"Regra de Negócio Violada\",\n    \"status\": 422,\n    \"detail\": \"A senha atual está incorreta.\",\n    \"instance\": \"/api/v1/users/password\",\n    \"timestamp\": \"2025-10-16T16:44:42.38844287-03:00\",\n    \"errorType\": \"BUSINESS_RULE_VIOLATION\"\n}"
-				},
-				{
-					"name": "422",
-					"originalRequest": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"currentPassword\": \"senha1234\",\r\n  \"newPassword\": \"senha123\",\r\n  \"confirmPassword\":\"senha1234\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/v1/users/password",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"password"
-							]
-						}
-					},
-					"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
-					"code": 422,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/problem+json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:45:02 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/business-rule-violation\",\n    \"title\": \"Regra de Negócio Violada\",\n    \"status\": 422,\n    \"detail\": \"A nova senha e a confirmação não conferem.\",\n    \"instance\": \"/api/v1/users/password\",\n    \"timestamp\": \"2025-10-16T16:45:02.199669676-03:00\",\n    \"errorType\": \"BUSINESS_RULE_VIOLATION\"\n}"
-				},
-				{
-					"name": "422",
-					"originalRequest": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"currentPassword\": \"senha12345\",\r\n  \"newPassword\": \"senha123\",\r\n  \"confirmPassword\":\"senha123\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/api/v1/users/password",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"password"
-							]
-						}
-					},
-					"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
-					"code": 422,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/problem+json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:45:26 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/business-rule-violation\",\n    \"title\": \"Regra de Negócio Violada\",\n    \"status\": 422,\n    \"detail\": \"A senha atual está incorreta.\",\n    \"instance\": \"/api/v1/users/password\",\n    \"timestamp\": \"2025-10-16T16:45:26.595973215-03:00\",\n    \"errorType\": \"BUSINESS_RULE_VIOLATION\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Atualizar Dados do Usuário",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer <YOUR_JWT_TOKEN>"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado1@exemplo.com\",\r\n    \"login\": \"login.atualizado1\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{host}} /api/v1/users/{{id_user}}",
-					"host": [
-						"{{host}} "
-					],
-					"path": [
-						"api",
-						"v1",
-						"users",
-						"{{id_user}}"
-					]
-				},
-				"description": "Generated from cURL: curl --location --request PUT 'http://localhost:8080/api/v1/users/a1b2c3d4-e5f6-7890-1234-567890abcdef' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>' \\\r\n--header 'Content-Type: application/json' \\\r\n--data '{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado@exemplo.com\",\r\n    \"login\": \"login.atualizado\"\r\n}'"
-			},
-			"response": [
-				{
-					"name": "200",
-					"originalRequest": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <YOUR_JWT_TOKEN>"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Nome Atualizado\",\r\n    \"email\": \"email.atualizado@exemplo.com\",\r\n    \"login\": \"login.atualizado\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}} /api/v1/users/{{id_user}}",
-							"host": [
-								"{{host}} "
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{id_user}}"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:43:26 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"id\": \"a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"name\": \"Nome Atualizado\",\n    \"email\": \"email.atualizado@exemplo.com\",\n    \"login\": \"login.atualizado\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Buscar Usuário por ID",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{token}}",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/v1/users/{{id_user}}",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"users",
-						"{{id_user}}"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "403",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"url": {
-							"raw": "{{host}}/api/v1/users/{{id_user}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{id_user}}"
-							]
-						}
-					},
-					"status": "Forbidden",
-					"code": 403,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/problem+json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:44:05 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"timestamp\": \"2025-10-16T16:44:05.706381781-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Buscar Usuário por Nome",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer <YOUR_JWT_TOKEN>",
-						"disabled": true
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/v1/users/by-name?name=e",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"users",
-						"by-name"
-					],
-					"query": [
-						{
-							"key": "name",
-							"value": "e"
-						}
-					]
-				},
-				"description": "Generated from cURL: curl --location --request GET 'http://localhost:8080/api/v1/users/by-name?name=Fulano' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>'"
-			},
-			"response": [
-				{
-					"name": "403 Forbidden",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <YOUR_JWT_TOKEN>",
-								"disabled": true
-							}
-						],
-						"url": {
-							"raw": "{{host}}/api/v1/users/by-name?name=e",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"by-name"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": "e"
-								}
-							]
-						}
-					},
-					"status": "Forbidden",
-					"code": 403,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/problem+json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Sat, 01 Nov 2025 23:59:09 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/by-name\",\n    \"timestamp\": \"2025-11-01T20:59:09.854363599-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Deletar Usuário",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer <YOUR_JWT_TOKEN>"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/v1/users/{{id_user}}",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"users",
-						"{{id_user}}"
-					]
-				},
-				"description": "Generated from cURL: curl --location --request DELETE 'http://localhost:8080/api/v1/users/a1b2c3d4-e5f6-7890-1234-567890abcdef' \\\r\n--header 'Authorization: Bearer <YOUR_JWT_TOKEN>'"
-			},
-			"response": [
-				{
-					"name": "403",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <YOUR_JWT_TOKEN>"
-							}
-						],
-						"url": {
-							"raw": "{{host}}/api/v1/users/{{id_user}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{id_user}}"
-							]
-						}
-					},
-					"status": "Forbidden",
-					"code": 403,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "0"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/problem+json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 16 Oct 2025 19:43:42 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"type\": \"/problems/access-denied\",\n    \"title\": \"Acesso Negado\",\n    \"status\": 403,\n    \"detail\": \"Você não tem permissão para acessar este recurso.\",\n    \"instance\": \"/api/v1/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"timestamp\": \"2025-10-16T16:43:42.070698135-03:00\",\n    \"errorType\": \"ACCESS_DENIED\"\n}"
-				}
-			]
 		}
 	],
 	"auth": {
@@ -1201,6 +1348,11 @@
 		{
 			"key": "user_id",
 			"value": "20544473-9bf1-4b56-896d-bf9dd43dbca0"
+		},
+		{
+			"key": "addressId",
+			"value": "",
+			"type": "default"
 		}
 	]
 }
