@@ -38,14 +38,14 @@ public class AuthUseCases implements AuthPort {
         var userByEmail = userRepository.findByEmail(normalizedLogin);
 
         UserDomain user = userByLogin.or(() -> userByEmail)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("Usuário ou senha inválidos"));
 
         if (!user.isActive()) {
-            throw new UserNotFoundException("Usuário inativo");
+            throw new UserNotFoundException("Usuário ou senha inválidos");
         }
 
         if (!passwordEncoder.matches(login.password(), user.getPassword())) {
-            throw new UserNotFoundException("Credenciais inválidas");
+            throw new UserNotFoundException("Usuário ou senha inválidos");
         }
 
         var roles = user.getRole().stream().map(Enum::name).toList();

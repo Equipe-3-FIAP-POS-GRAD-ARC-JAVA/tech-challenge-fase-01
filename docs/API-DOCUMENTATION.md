@@ -148,7 +148,7 @@ Autentica um usuário e retorna um token JWT.
   "type": "https://api.fiap.com.br/problems/unauthorized",
   "title": "Não Autorizado",
   "status": 401,
-  "detail": "Credenciais inválidas",
+  "detail": "Usuário ou senha inválidos",
   "instance": "/login",
   "timestamp": "2025-10-04T10:30:00Z"
 }
