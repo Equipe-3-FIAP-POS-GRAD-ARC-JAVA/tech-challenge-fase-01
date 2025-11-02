@@ -4,16 +4,20 @@ import java.util.UUID;
 
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNotFoundException;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.AddressMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserFindByIdPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 
 public class FindUserByIdUseCase implements UserFindByIdPort {
 
     private final UserRepositoryPort userRepository;
+    private final AddressRepositoryPort addressRepository;
 
-    public FindUserByIdUseCase(UserRepositoryPort userRepository) {
+    public FindUserByIdUseCase(UserRepositoryPort userRepository, AddressRepositoryPort addressRepository) {
         this.userRepository = userRepository;
+        this.addressRepository = addressRepository;
     }
 
     @Override
@@ -22,6 +26,9 @@ public class FindUserByIdUseCase implements UserFindByIdPort {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado com ID: " + id));
 
-        return UserMapper.toResponse(user);
+        var addresses = addressRepository.findByAddressFromUser(user.getId());
+        var addressResponses = AddressMapper.toResponseList(addresses);
+
+        return UserMapper.toResponse(user, addressResponses);
     }
 }

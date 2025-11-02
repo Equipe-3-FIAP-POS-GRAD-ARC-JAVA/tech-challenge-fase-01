@@ -6,5 +6,8 @@ public record AddressCreateRequest(
         UUID userId,
         String street,
         String number,
-        String city) {
+        String complement,
+        String neighborhood,
+        String city,
+        String zipCode) {
 }

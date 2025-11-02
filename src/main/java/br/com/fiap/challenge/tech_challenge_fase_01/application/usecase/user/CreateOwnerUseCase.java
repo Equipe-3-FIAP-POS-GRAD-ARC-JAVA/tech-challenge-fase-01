@@ -6,6 +6,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.User
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject.Email;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UserCreateRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.AddressMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserCreateOwnerPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
@@ -50,11 +51,18 @@ public class CreateOwnerUseCase implements UserCreateOwnerPort {
                 savedUser.getId(),
                 userCreateRequest.street(),
                 userCreateRequest.number(),
-                userCreateRequest.city()
+                userCreateRequest.complement(),
+                userCreateRequest.neighborhood(),
+                userCreateRequest.city(),
+                userCreateRequest.zipCode()
         );
 
-        var savedAdress = addressRepository.save(address);
+        addressRepository.save(address);
 
-        return UserMapper.toResponse(savedUser);
+        // Buscar todos os endereços do usuário para retornar na resposta
+        var addresses = addressRepository.findByAddressFromUser(savedUser.getId());
+        var addressResponses = AddressMapper.toResponseList(addresses);
+
+        return UserMapper.toResponse(savedUser, addressResponses);
     }
 }

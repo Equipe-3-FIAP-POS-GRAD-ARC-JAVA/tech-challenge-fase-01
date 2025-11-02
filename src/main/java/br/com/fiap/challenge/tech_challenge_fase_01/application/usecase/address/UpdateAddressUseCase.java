@@ -1,16 +1,14 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.address;
 
+import java.util.UUID;
+
 import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.service.AddressDomainService;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.AddressUpdateRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.AddressResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.AddressNotFoundException;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNotFoundException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.AddressMapper;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address.AddressUpdatePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
-
-import java.util.UUID;
 
 public class UpdateAddressUseCase implements AddressUpdatePort {
 
@@ -36,7 +34,10 @@ public class UpdateAddressUseCase implements AddressUpdatePort {
         address.updateInfo(
                 addressUpdateRequest.street(),
                 addressUpdateRequest.number(),
-                addressUpdateRequest.city());
+                addressUpdateRequest.complement(),
+                addressUpdateRequest.neighborhood(),
+                addressUpdateRequest.city(),
+                addressUpdateRequest.zipCode());
 
         var updatedUser = addressRepository.save(address);
 
