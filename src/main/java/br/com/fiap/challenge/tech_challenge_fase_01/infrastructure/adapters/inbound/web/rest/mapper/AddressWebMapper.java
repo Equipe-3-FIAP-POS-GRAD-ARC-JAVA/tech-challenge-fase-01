@@ -14,21 +14,19 @@ import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbo
 @Component
 public class AddressWebMapper {
 
-    public AddressResponse toWebResponse(AddressResponse response) {
+    public AddressResponseDTO toWebResponse(AddressResponse response) {
         if (response == null) {
             return null;
         }
-        return new AddressResponse(
-                response.id() != null ? response.id() : null,
-                response.userId() != null ? response.userId() : null,
+        return new AddressResponseDTO(
+                response.id() != null ? response.id().toString() : null,
+                response.userId() != null ? response.userId().toString() : null,
                 response.street(),
                 response.number(),
                 response.complement(),
                 response.neighborhood(),
                 response.city(),
-                response.zipCode(),
-                response.createdAt(),
-                response.updatedAt()
+                response.zipCode()
         );
     }
 
@@ -72,9 +70,7 @@ public class AddressWebMapper {
                 response.complement(),
                 response.neighborhood(),
                 response.city(),
-                response.zipCode(),
-                response.createdAt(),
-                response.updatedAt()
+                response.zipCode()
         );
     }
 

@@ -1,11 +1,10 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.domain.service;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception.BusinessRuleException;
+import java.util.UUID;
+
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.AddresDoesNotBelongToUserException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.AddressNotFoundException;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
-
-import java.util.UUID;
 
 public class AddressDomainService {
 
