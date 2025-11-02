@@ -2,7 +2,7 @@
 
 **Versão da API**: v1  
 **Base URL**: `http://localhost:8080`  
-**Última Atualização**: 15/10/2025
+**Última Atualização**: 01/11/2025
 **Formato**: REST/JSON
 
 ---
@@ -14,9 +14,10 @@
 - [Endpoints](#endpoints)
   - [Authentication](#authentication)
   - [Users](#users)
+  - [Address](#address)
 - [Schemas](#schemas)
 - [Error Handling](#error-handling)
-- [Swagger/OpenAPI](#swaggeropenapi)
+- [Postman Collection](#postman-collection)
 
 ---
 
@@ -27,10 +28,11 @@
 - ✅ **REST** - Arquitetura RESTful
 - ✅ **JSON** - Content-Type: application/json
 - ✅ **JWT** - Autenticação via Bearer Token
-- ✅ **RBAC** - Autorização baseada em roles
+- ✅ **RBAC** - Autorização baseada em roles (CLIENT, OWNER, ADMIN)
 - ✅ **RFC 7807** - Error responses padronizados
 - ✅ **Stateless** - Sem gerenciamento de sessão
 - ✅ **CORS** - Cross-Origin Resource Sharing habilitado
+- ✅ **Address Management** - Gerenciamento de endereços de usuários
 
 ### Versões Suportadas
 
@@ -45,6 +47,7 @@
 - **Database**: PostgreSQL 16
 - **Security**: Spring Security + JWT
 - **Validation**: Jakarta Bean Validation
+- **Architecture**: Hexagonal Architecture
 
 ---
 
@@ -167,7 +170,7 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 
 #### POST /api/v1/users
 
-Cria um novo usuário com role CLIENT (endpoint público).
+Cria um novo usuário com role CLIENT (endpoint público). Os campos de endereço são obrigatórios na criação do usuário.
 
 **Endpoint**: `POST /api/v1/users`  
 **Autenticação**: ❌ Público  
@@ -176,10 +179,16 @@ Cria um novo usuário com role CLIENT (endpoint público).
 **Request Body:**
 ```json
 {
-  "name": "string",       // required, min: 3 chars
-  "email": "string",      // required, valid email format
-  "login": "string",      // required, min: 3 chars, unique
-  "password": "string"    // required, min: 6 chars
+  "name": "string",           // required, min: 3 chars, max: 100 chars
+  "email": "string",          // required, valid email format
+  "login": "string",          // required, min: 3 chars, max: 50 chars, unique
+  "password": "string",       // required, min: 6 chars
+  "street": "string",         // required, min: 3 chars, max: 100 chars
+  "number": "string",         // optional, max: 20 chars
+  "complement": "string",     // optional, max: 50 chars
+  "neighborhood": "string",   // required, min: 2 chars, max: 50 chars
+  "city": "string",           // required, min: 2 chars, max: 50 chars
+  "zipCode": "string"         // required, min: 8 chars, max: 10 chars (formato: 01414-000)
 }
 ```
 
