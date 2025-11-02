@@ -1,5 +1,11 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,11 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "address")
@@ -42,8 +43,17 @@ public class JpaAddressEntity {
     @Column(nullable = false, length = 20)
     private String number;
 
+    @Column(length = 50)
+    private String complement;
+
+    @Column(nullable = false, length = 50)
+    private String neighborhood;
+
     @Column(nullable = false, length = 50)
     private String city;
+
+    @Column(name = "zip_code", nullable = false, length = 10)
+    private String zipCode;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp

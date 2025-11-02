@@ -1,5 +1,10 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.api;
 
+import java.util.List;
+
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.security.SecurityUser;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.UpdatePasswordRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.UserCreateRequestDTO;
@@ -14,10 +19,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
-
-import java.util.List;
 
 @Tag(name = "Usuários")
 @SecurityRequirement(name = "bearerAuth") // JWT aplicado em todos os endpoints deste grupo
@@ -159,10 +160,11 @@ public interface UserApi {
             content = @Content(mediaType = "application/problem+json",
                     schema = @Schema(implementation = ProblemDetail.class)))
     ResponseEntity<UserResponseDTO> updatePassword(
+            @Parameter(hidden = true) SecurityUser principal,
             @RequestBody(description = "Nova senha",
                     required = true,
                     content = @Content(schema = @Schema(implementation = UpdatePasswordRequestDTO.class)))
-            SecurityUser principal, UpdatePasswordRequestDTO body
+            UpdatePasswordRequestDTO body
     );
 
     // DELETE /api/v1/users/{id}
