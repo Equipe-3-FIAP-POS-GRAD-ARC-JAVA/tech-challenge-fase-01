@@ -4,7 +4,7 @@ server:
 spring:
   docker:
     compose:
-      enabled: false
+      enabled: true
   application:
     name: tech-challenge-fase-01
 
