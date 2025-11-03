@@ -1,6 +1,6 @@
 @startuml Database_Schema
 !theme plain
-title Schema do Banco de Dados - Sistema de Gestão de Usuários
+title Tech Challenge - Schema do Banco de Dados PostgreSQL
 
 ' Configuração de estilos
 skinparam entity {
@@ -8,8 +8,6 @@ skinparam entity {
     BorderColor<<main>> #1976D2
     BackgroundColor<<relationship>> #FFF3E0
     BorderColor<<relationship>> #F57C00
-    BackgroundColor<<lookup>> #E8F5E8
-    BorderColor<<lookup>> #388E3C
 }
 
 skinparam note {
@@ -22,14 +20,14 @@ entity USERS <<main>> {
     * **ID** : UUID <<PK>>
     ==
     * **NAME** : VARCHAR(100) <<NOT NULL>>
-    * **EMAIL** : VARCHAR(100) <<NOT NULL, UNIQUE>>
-    * **LOGIN** : VARCHAR(50) <<NOT NULL>>
+    * **EMAIL** : VARCHAR(255) <<NOT NULL, UNIQUE>>
+    * **LOGIN** : VARCHAR(100) <<NOT NULL>>
     * **PASSWORD** : VARCHAR(100) <<NOT NULL>>
     * **ROLES** : VARCHAR(255)[] <<NOT NULL>>
     * **IS_ACTIVE** : BOOLEAN <<NOT NULL, DEFAULT TRUE>>
     ==
-    **CREATED_AT** : TIMESTAMP <<AUTO>>
-    **UPDATED_AT** : TIMESTAMP <<AUTO>>
+    **CREATED_AT** : TIMESTAMP
+    **UPDATED_AT** : TIMESTAMP
 }
 
 ' Tabela de endereços (relacionamento 1:N)
@@ -39,10 +37,13 @@ entity ADDRESS <<relationship>> {
     * **USER_ID** : UUID <<NOT NULL, FK>>
     * **STREET** : VARCHAR(100) <<NOT NULL>>
     * **NUMBER** : VARCHAR(20) <<NOT NULL>>
+    * **COMPLEMENT** : VARCHAR(255)
+    * **NEIGHBORHOOD** : VARCHAR(50) <<NOT NULL>>
     * **CITY** : VARCHAR(50) <<NOT NULL>>
+    * **ZIP_CODE** : VARCHAR(10) <<NOT NULL>>
     ==
-    **CREATED_AT** : TIMESTAMP <<AUTO>>
-    **UPDATED_AT** : TIMESTAMP <<AUTO>>
+    **CREATED_AT** : TIMESTAMP
+    **UPDATED_AT** : TIMESTAMP
 }
 
 ' Relacionamentos
@@ -50,167 +51,56 @@ USERS ||--o{ ADDRESS : "has addresses"
 
 note right of USERS
     **Campos Principais:**
-    • ID: Primary Key UUID
-    • EMAIL: Unique constraint
-    • LOGIN: Username único
+    • ID: Primary Key UUID auto-gerado
+    • EMAIL: Unique constraint (expandido para 255 chars)
+    • LOGIN: Username expandido para 100 chars
     • PASSWORD: BCrypt hash
     • ROLES: Array de roles [ADMIN, OWNER, CLIENT]
-    • IS_ACTIVE: Status ativo/inativo
+    • IS_ACTIVE: Status ativo/inativo (NOT NULL, default TRUE)
     
-    **Auditoria:**
-    • CREATED_AT: Timestamp de criação
-    • UPDATED_AT: Timestamp de última alteração
+    **Auditoria JPA:**
+    • CREATED_AT: @CreationTimestamp automático
+    • UPDATED_AT: @UpdateTimestamp automático
 end note
 
 note right of ADDRESS
     **Endereços do Usuário:**
-    • USER_ID: Foreign Key para USERS
+    • USER_ID: Foreign Key NOT NULL para USERS
     • Suporte a múltiplos endereços por usuário
-    • Campos obrigatórios: STREET, NUMBER, CITY
+    • COMPLEMENT expandido para 255 chars (opcional)
+    • Mapeamento JPA Many-to-One com Lazy Loading
+    
+    **Validações JPA:**
+    • USER_ID: @JoinColumn nullable=false
+    • STREET, NUMBER, NEIGHBORHOOD, CITY, ZIP_CODE: NOT NULL
+    • Timestamps automáticos com Hibernate
     
     **Relacionamento:**
-    • 1 User : N Addresses
+    • @ManyToOne(fetch = LAZY) com JpaUserEntity
+    • Integridade referencial garantida
 end note
 
 note bottom of USERS
     **Roles Disponíveis:**
     • **ADMIN**: Acesso total ao sistema
-    • **OWNER**: Proprietário de restaurante  
+    • **OWNER**: Proprietário de estabelecimento  
     • **CLIENT**: Cliente comum
     
-    **Constraints:**
+    **Constraints Implementadas:**
     • EMAIL deve ser único
-    • LOGIN deve ser único
     • PASSWORD é armazenado com BCrypt
-    • IS_ACTIVE controla se o usuário pode fazer login
+    • IS_ACTIVE controla acesso ao sistema
+    • ROLES é array obrigatório
 end note
 
 note top of ADDRESS
-    **Extensibilidade:**
-    Esta tabela pode ser estendida para incluir:
-    • COMPLEMENT (complemento)
-    • STATE (estado)
-    • ZIP_CODE (CEP)
-    • COUNTRY (país)
-end note
-
-@enduml
-    * **DATA_EXPIRACAO** : TIMESTAMP <<NOT NULL>>
-    * **REVOGADO** : BOOLEAN <<NOT NULL, DEFAULT FALSE>>
-    ==
-    **DATA_CRIACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
-    **IP_ADDRESS** : VARCHAR(45)
-    **USER_AGENT** : VARCHAR(500)
-}
-
-' Tabela de auditoria para mudanças de senha
-entity TB_HISTORICO_SENHA <<audit>> {
-    * **ID** : UUID <<PK>>
-    ==
-    * **USUARIO_ID** : UUID <<NOT NULL, FK>>
-    * **SENHA_HASH_ANTERIOR** : VARCHAR(255) <<NOT NULL>>
-    * **DATA_ALTERACAO** : TIMESTAMP <<NOT NULL, DEFAULT NOW()>>
-    * **IP_ADDRESS** : VARCHAR(45)
-    * **MOTIVO** : VARCHAR(100)
-}
-
-' Tabela lookup para tipos de usuário (opcional, para normalização)
-entity TB_TIPO_USUARIO <<lookup>> {
-    * **ID** : SMALLINT <<PK>>
-    ==
-    * **CODIGO** : VARCHAR(20) <<NOT NULL, UNIQUE>>
-    * **DESCRICAO** : VARCHAR(100) <<NOT NULL>>
-    * **ATIVO** : BOOLEAN <<NOT NULL, DEFAULT TRUE>>
-}
-
-' Relacionamentos
-TB_USUARIO ||--o{ TB_REFRESH_TOKEN : "possui tokens"
-TB_USUARIO ||--o{ TB_HISTORICO_SENHA : "histórico de senhas"
-TB_TIPO_USUARIO ||--o{ TB_USUARIO : "classifica"
-
-' Notas explicativas
-note right of TB_USUARIO
-    **Tipos de Usuário:**
-    • CLIENTE
-    • DONO_RESTAURANTE
-    
-    **Validações:**
-    • Email deve ser único e válido
-    • Login deve ser único (3-50 chars)
-    • CEP formato: 99999-999
-    • CNPJ apenas para DONO_RESTAURANTE
-    • Estados brasileiros (SP, RJ, etc.)
-    
-    **Índices Recomendados:**
-    • idx_usuario_email (UNIQUE)
-    • idx_usuario_login (UNIQUE)
-    • idx_usuario_tipo_ativo
-    • idx_usuario_data_criacao
-end note
-
-note right of TB_REFRESH_TOKEN
-    **Controle de Sessão:**
-    • Tokens de refresh para renovação
-    • Rastreamento de IP e User-Agent
-    • Controle de revogação manual
-    • TTL configurável (ex: 30 dias)
-    
-    **Limpeza Automática:**
-    • Job para remover tokens expirados
-    • Limite de tokens ativos por usuário
-end note
-
-note right of TB_HISTORICO_SENHA
-    **Auditoria de Segurança:**
-    • Histórico de mudanças de senha
-    • Rastreamento de IP
-    • Motivos: 'USUARIO_SOLICITOU', 
-      'RESET_EMAIL', 'ADMIN_RESET'
-    
-    **Políticas:**
-    • Não reutilizar últimas 5 senhas
-    • Retenção de 2 anos
-end note
-
-note right of TB_TIPO_USUARIO
-    **Dados de Referência:**
-    
-    | ID | CODIGO | DESCRICAO |
-    |----|----|-----------|
-    | 1  | CLIENTE | Cliente do Sistema |
-    | 2  | DONO_RESTAURANTE | Proprietário de Restaurante |
-    
-    **Vantagens:**
-    • Facilita adição de novos tipos
-    • Normalização dos dados
-    • Controle de tipos ativos
-end note
-
-' Scripts DDL de apoio
-note bottom
-    **Scripts de Criação:**
-    
-    ```sql
-    -- Índices para performance
-    CREATE INDEX idx_usuario_email ON TB_USUARIO(EMAIL);
-    CREATE INDEX idx_usuario_login ON TB_USUARIO(LOGIN);
-    CREATE INDEX idx_usuario_tipo_ativo ON TB_USUARIO(TIPO_USUARIO, ATIVO);
-    CREATE INDEX idx_refresh_token_usuario ON TB_REFRESH_TOKEN(USUARIO_ID);
-    CREATE INDEX idx_refresh_token_expiracao ON TB_REFRESH_TOKEN(DATA_EXPIRACAO);
-    
-    -- Triggers para auditoria
-    CREATE TRIGGER tr_usuario_update_timestamp 
-        BEFORE UPDATE ON TB_USUARIO
-        FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-    
-    -- Constraints de domínio
-    ALTER TABLE TB_USUARIO ADD CONSTRAINT ck_tipo_usuario 
-        CHECK (TIPO_USUARIO IN ('CLIENTE', 'DONO_RESTAURANTE'));
-    
-    ALTER TABLE TB_USUARIO ADD CONSTRAINT ck_cnpj_dono 
-        CHECK ((TIPO_USUARIO = 'DONO_RESTAURANTE' AND CNPJ IS NOT NULL) 
-               OR (TIPO_USUARIO = 'CLIENTE' AND CNPJ IS NULL));
-    ```
+    **Campos de Endereço:**
+    • STREET: Logradouro (obrigatório)
+    • NUMBER: Número (obrigatório) 
+    • COMPLEMENT: Complemento (opcional)
+    • NEIGHBORHOOD: Bairro (obrigatório)
+    • CITY: Cidade (obrigatório)
+    • ZIP_CODE: CEP (obrigatório)
 end note
 
 @enduml

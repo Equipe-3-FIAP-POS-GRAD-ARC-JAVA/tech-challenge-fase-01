@@ -1,6 +1,6 @@
 @startuml Authentication_Sequence
 !theme plain
-title Fluxo Completo de Autenticação - Arquitetura Hexagonal
+title Tech Challenge - Fluxo Completo de Autenticação JWT
 
 ' Definição de cores para cada camada
 !define DRIVING_ADAPTER_COLOR #E8F5E8
@@ -31,9 +31,10 @@ end box
 ' Camada de Adaptadores de Saída (Driven Adapters)
 box "Driven Adapters" DRIVEN_ADAPTER_COLOR
     participant "UserRepositoryImpl" as RepoAdapter
-    participant "BCryptPasswordEncoderAdapter" as PasswordEncoderImpl
+    participant "BCryptPasswordEncoder" as PasswordEncoderImpl
     participant "JwtUtil" as TokenGeneratorImpl
     participant "JpaUserRepository" as JpaRepo
+    participant "UserEntityMapper" as UserMapper
 end box
 
 ' Infraestrutura de Dados
@@ -67,16 +68,16 @@ end note
 IAuthPort -> AuthUseCase : execute(request)
 activate AuthUseCase
 
-AuthUseCase -> IUserRepo : findByUsername(username)
+AuthUseCase -> IUserRepo : findByLogin(username)
 activate IUserRepo
 
-IUserRepo -> RepoAdapter : findByUsername(username)
+IUserRepo -> RepoAdapter : findByLogin(username)
 activate RepoAdapter
 
 RepoAdapter -> JpaRepo : findByLogin(username)
 activate JpaRepo
 
-JpaRepo -> DB : SELECT * FROM TB_USUARIO WHERE LOGIN = ?
+JpaRepo -> DB : SELECT * FROM users WHERE login = ?
 activate DB
 DB --> JpaRepo : UserEntity data
 deactivate DB
@@ -85,7 +86,11 @@ JpaRepo --> RepoAdapter : Optional<JpaUserEntity>
 deactivate JpaRepo
 
 alt User found
-    RepoAdapter -> RepoAdapter : map(JpaEntity → UserDomain)
+    RepoAdapter -> UserMapper : toDomain(JpaUserEntity)
+    activate UserMapper
+    UserMapper --> RepoAdapter : UserDomain
+    deactivate UserMapper
+    
     RepoAdapter --> IUserRepo : Optional<UserDomain>
     deactivate RepoAdapter
     
@@ -175,18 +180,22 @@ alt Token válido
     TokenGeneratorImpl --> JwtFilter : username
     deactivate TokenGeneratorImpl
     
-    JwtFilter -> IUserRepo : findByUsername(username)
+    JwtFilter -> IUserRepo : findByLogin(username)
     activate IUserRepo
-    IUserRepo -> RepoAdapter : findByUsername(username)
+    IUserRepo -> RepoAdapter : findByLogin(username)
     activate RepoAdapter
     RepoAdapter -> JpaRepo : findByLogin(username)
     activate JpaRepo
-    JpaRepo -> DB : SELECT * FROM TB_USUARIO WHERE LOGIN = ?
+    JpaRepo -> DB : SELECT * FROM users WHERE login = ?
     activate DB
     DB --> JpaRepo : UserEntity data
     deactivate DB
     JpaRepo --> RepoAdapter : Optional<JpaUserEntity>
     deactivate JpaRepo
+    RepoAdapter -> UserMapper : toDomain(JpaUserEntity)
+    activate UserMapper
+    UserMapper --> RepoAdapter : UserDomain
+    deactivate UserMapper
     RepoAdapter --> IUserRepo : Optional<UserDomain>
     deactivate RepoAdapter
     IUserRepo --> JwtFilter : Optional<UserDomain>
@@ -202,18 +211,20 @@ else Token inválido
 end
 
 note over Client, DB
-    **Fluxo Hexagonal Implementado:**
-    1. **Controllers** (Driving Adapters) recebem requisições
-    2. **Mappers** convertem DTOs Web ↔ Application
-    3. **Use Cases** executam lógica via **Ports** (interfaces)
-    4. **Adapters** (Driven) implementam as interfaces
-    5. **Database** persistence é isolada
+    **Arquitetura Hexagonal Implementada:**
+    1. **LoginController** (Driving Adapter) recebe requisições HTTP
+    2. **AuthWebMapper** converte DTOs Web ↔ Application
+    3. **AuthUseCase** executa lógica de negócio via **Ports**
+    4. **Repository/Encoder/Token Adapters** (Driven) implementam interfaces
+    5. **PostgreSQL Database** persistence é completamente isolada
+    6. **JwtAuthenticationFilter** valida tokens em requisições subsequentes
     
-    **Benefícios:**
-    - Testabilidade (mocks dos ports)
-    - Independência de framework
-    - Inversão de dependência (DIP)
-    - Separação de responsabilidades
+    **Benefícios da Arquitetura:**
+    - Testabilidade completa (mocks dos ports)
+    - Independência de frameworks (Spring, JPA)
+    - Inversão de dependências (DIP do SOLID)
+    - Separação clara de responsabilidades
+    - Domain-driven design com entidades ricas
 end note
 
 @enduml

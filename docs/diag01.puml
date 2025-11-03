@@ -1,6 +1,6 @@
 @startuml Hexagonal_Architecture
 !theme plain
-title Sistema de Gestão de Usuários - Arquitetura Hexagonal
+title Tech Challenge - Sistema de Gestão de Usuários e Endereços - Arquitetura Hexagonal
 
 ' Configuração de cores e estilos
 skinparam package {
@@ -29,12 +29,13 @@ database "PostgreSQL\nDatabase" as DB #C8E6C9
 
 ' Camada de Infraestrutura - Adaptadores de Entrada (Driving Adapters)
 package "Driving Adapters" <<adapter>> {
-    component "UserController" as Controller
+    component "UserController" as UserController
+    component "AddressController" as AddressController
     component "LoginController" as LoginController
-    component "JwtAuthFilter" as JwtFilter
+    component "JwtAuthenticationFilter" as JwtFilter
     component "GlobalExceptionHandler" as ExceptionHandler
     
-    note right of Controller
+    note right of UserController
         • POST /api/v1/users (CLIENT)
         • POST /api/v1/users/owner (ADMIN)
         • GET /api/v1/users/{id}
@@ -44,6 +45,14 @@ package "Driving Adapters" <<adapter>> {
         • DELETE /api/v1/users/{id}
     end note
     
+    note right of AddressController
+        • GET /api/v1/address (list user addresses)
+        • POST /api/v1/address (create address)
+        • PUT /api/v1/address/{addressId} (update address)
+        • DELETE /api/v1/address/{addressId} (delete address)
+        • Ownership validation in all operations
+    end note
+    
     note right of LoginController
         • POST /api/v1/auth/login
     end note
@@ -51,14 +60,15 @@ package "Driving Adapters" <<adapter>> {
     note right of JwtFilter
         • JWT Token Validation
         • Security Context Setup
+        • Authentication Principal
     end note
 }
 
 ' Núcleo da Aplicação (Core)
 package "Application Core" <<core>> {
     
-    ' Portas de Entrada (Primary Ports)
-    package "Primary Ports" {
+    ' Portas de Entrada (Primary Ports) - User
+    package "User Primary Ports" {
         interface "UserCreatePort" as IUserCreate
         interface "UserCreateOwnerPort" as IUserCreateOwner
         interface "UserUpdatePort" as IUserUpdate
@@ -69,8 +79,16 @@ package "Application Core" <<core>> {
         interface "AuthPort" as IAuth
     }
     
-    ' Casos de Uso (Use Cases)
-    package "Use Cases" {
+    ' Portas de Entrada (Primary Ports) - Address
+    package "Address Primary Ports" {
+        interface "AddressCreatePort" as IAddressCreate
+        interface "AddressFindByUserPort" as IAddressFindByUser
+        interface "AddressUpdatePort" as IAddressUpdate
+        interface "AddressDeletePort" as IAddressDelete
+    }
+    
+    ' Casos de Uso (Use Cases) - User
+    package "User Use Cases" {
         component "CreateUserUseCase" as CreateUserUC
         component "CreateOwnerUseCase" as CreateOwnerUC
         component "UpdateUserUseCase" as UpdateUserUC
@@ -81,19 +99,30 @@ package "Application Core" <<core>> {
         component "AuthUseCase" as AuthUC
     }
     
+    ' Casos de Uso (Use Cases) - Address
+    package "Address Use Cases" {
+        component "CreateAddressUseCase" as CreateAddressUC
+        component "FindAddressUseCase" as FindAddressUC
+        component "UpdateAddressUseCase" as UpdateAddressUC
+        component "DeleteAddressUseCase" as DeleteAddressUC
+    }
+    
     ' Domínio (Domain Models)
     package "Domain Models" {
         component "UserDomain" as UserEntity
+        component "AddressDomain" as AddressEntity
         component "RolesEnum" as RolesEnum
         component "Email (Value Object)" as EmailVO
         component "Username (Value Object)" as UsernameVO
         component "PersonName (Value Object)" as PersonNameVO
         component "UserDomainService" as UserDomainService
+        component "AddressDomainService" as AddressDomainService
     }
     
     ' Portas de Saída (Secondary Ports)
     package "Secondary Ports" {
         interface "UserRepositoryPort" as IUserRepo
+        interface "AddressRepositoryPort" as IAddressRepo
         interface "PasswordEncoderPort" as IPasswordEncoder
         interface "TokenGeneratorPort" as ITokenGenerator
     }
@@ -101,32 +130,48 @@ package "Application Core" <<core>> {
 
 ' Camada de Infraestrutura - Adaptadores de Saída (Driven Adapters)
 package "Driven Adapters" <<infrastructure>> {
-    component "UserRepositoryImpl" as RepoAdapter
-    component "JpaUserRepository" as JpaRepo
+    component "UserRepositoryImpl" as UserRepoAdapter
+    component "AddressRepositoryImpl" as AddressRepoAdapter
+    component "JpaUserRepository" as JpaUserRepo
+    component "JpaAddressRepository" as JpaAddressRepo
     component "BCryptPasswordEncoderAdapter" as PasswordEncoder
     component "JwtUtil" as TokenGenerator
-    component "UserEntityMapper" as Mapper
-    component "JpaUserEntity" as JpaEntity
+    component "UserEntityMapper" as UserMapper
+    component "AddressEntityMapper" as AddressMapper
+    component "JpaUserEntity" as JpaUserEntity
+    component "JpaAddressEntity" as JpaAddressEntity
     
-    note right of RepoAdapter
+    note right of UserRepoAdapter
         • JPA Repository Implementation
         • Entity Mapping
         • Query Implementation
         • UserDomain ↔ JpaUserEntity
     end note
+    
+    note right of AddressRepoAdapter
+        • Address CRUD operations
+        • AddressDomain ↔ JpaAddressEntity
+        • User relationship handling
+    end note
 }
 
 ' Relacionamentos - Entrada
-Client --> Controller : HTTP Requests\n(JSON)
+Client --> UserController : HTTP Requests\n(JSON)
+Client --> AddressController : Address Requests\n(JSON)
 Client --> LoginController : Authentication\nRequests
 
-Controller --> IUserCreate : Uses
-Controller --> IUserCreateOwner : Uses
-Controller --> IUserUpdate : Uses
-Controller --> IUserUpdatePassword : Uses
-Controller --> IUserFindById : Uses
-Controller --> IUserFindByName : Uses
-Controller --> IUserDelete : Uses
+UserController --> IUserCreate : Uses
+UserController --> IUserCreateOwner : Uses
+UserController --> IUserUpdate : Uses
+UserController --> IUserUpdatePassword : Uses
+UserController --> IUserFindById : Uses
+UserController --> IUserFindByName : Uses
+UserController --> IUserDelete : Uses
+
+AddressController --> IAddressCreate : Uses
+AddressController --> IAddressFindByUser : Uses
+AddressController --> IAddressUpdate : Uses
+AddressController --> IAddressDelete : Uses
 
 LoginController --> IAuth : Uses
 
@@ -140,20 +185,38 @@ IUserFindByName --> FindByNameUC : Implements
 IUserDelete --> DeleteUserUC : Implements
 IAuth --> AuthUC : Implements
 
+IAddressCreate --> CreateAddressUC : Implements
+IAddressFindByUser --> FindAddressUC : Implements
+IAddressUpdate --> UpdateAddressUC : Implements
+IAddressDelete --> DeleteAddressUC : Implements
+
 ' Relacionamentos - Domain
 CreateUserUC --> UserEntity : Creates
+CreateUserUC --> AddressEntity : Creates (with user)
 UpdateUserUC --> UserEntity : Updates
 FindByIdUC --> UserEntity : Returns
 FindByNameUC --> UserEntity : Returns
 AuthUC --> UserEntity : Validates
+
+CreateAddressUC --> AddressEntity : Creates
+UpdateAddressUC --> AddressEntity : Updates
+FindAddressUC --> AddressEntity : Returns
+DeleteAddressUC --> AddressEntity : Deletes
 
 UserEntity --> EmailVO : Contains
 UserEntity --> UsernameVO : Contains
 UserEntity --> PersonNameVO : Contains
 UserEntity --> RolesEnum : Has
 
+AddressEntity --> UserEntity : Belongs to
+
+' Domain Services
+UserDomainService --> UserEntity : Validates
+AddressDomainService --> AddressEntity : Validates
+
 ' Relacionamentos - Use Cases para Ports de Saída
 CreateUserUC --> IUserRepo : Uses
+CreateUserUC --> IAddressRepo : Uses (for address)
 UpdateUserUC --> IUserRepo : Uses
 FindByIdUC --> IUserRepo : Uses
 FindByNameUC --> IUserRepo : Uses
@@ -162,57 +225,32 @@ UpdatePasswordUC --> IPasswordEncoder : Uses
 AuthUC --> IPasswordEncoder : Uses
 AuthUC --> ITokenGenerator : Uses
 
+CreateAddressUC --> IAddressRepo : Uses
+FindAddressUC --> IAddressRepo : Uses
+UpdateAddressUC --> IAddressRepo : Uses
+DeleteAddressUC --> IAddressRepo : Uses
+
 ' Relacionamentos - Saída
-IUserRepo --> RepoAdapter : Implements
+IUserRepo --> UserRepoAdapter : Implements
+IAddressRepo --> AddressRepoAdapter : Implements
 IPasswordEncoder --> PasswordEncoder : Implements
 ITokenGenerator --> TokenGenerator : Implements
 
-RepoAdapter --> JpaRepo : Uses
-RepoAdapter --> Mapper : Uses
-RepoAdapter --> JpaEntity : Maps to/from
-JpaRepo --> DB : Persists
+UserRepoAdapter --> JpaUserRepo : Uses
+UserRepoAdapter --> UserMapper : Uses
+UserRepoAdapter --> JpaUserEntity : Maps to/from
 
-@enduml
-AuthController --> IAuth : Uses
+AddressRepoAdapter --> JpaAddressRepo : Uses
+AddressRepoAdapter --> AddressMapper : Uses
+AddressRepoAdapter --> JpaAddressEntity : Maps to/from
 
-' Implementações dos casos de uso
-IUserMgmt <|.. UserRegService : implements
-IUserMgmt <|.. UserUpdateService : implements
-IAuth <|.. LoginService : implements
-IAuth <|.. PasswordService : implements
-
-' Dependências do domínio
-UserRegService --> UserEntity : creates
-UserUpdateService --> UserEntity : modifies
-LoginService --> UserEntity : validates
-PasswordService --> UserEntity : updates
-
-UserEntity <|-- ClienteEntity : extends
-UserEntity <|-- DonoEntity : extends
-UserEntity *--> EnderecoEntity : contains
-UserEntity --> ValueObjects : uses
-
-' Dependências das portas de saída
-UserRegService --> IUserRepo : depends on
-UserRegService --> IPasswordEncoder : depends on
-UserRegService --> IEmailValidator : depends on
-
-UserUpdateService --> IUserRepo : depends on
-LoginService --> IUserRepo : depends on
-LoginService --> IPasswordEncoder : depends on
-PasswordService --> IUserRepo : depends on
-PasswordService --> IPasswordEncoder : depends on
-
-' Implementações dos adaptadores de saída
-IUserRepo <|.. RepoAdapter : implements
-IPasswordEncoder <|.. PasswordEncoder : implements
-IEmailValidator <|.. EmailValidator : implements
-
-RepoAdapter --> Mapper : uses
-RepoAdapter --> DB : persistence
+JpaUserRepo --> DB : Persists
+JpaAddressRepo --> DB : Persists
+JpaAddressEntity --> JpaUserEntity : References (FK)
 
 ' Tratamento de exceções
-Controller --> ExceptionHandler : handles errors
-AuthController --> ExceptionHandler : handles errors
+UserController --> ExceptionHandler : handles errors
+AddressController --> ExceptionHandler : handles errors
+LoginController --> ExceptionHandler : handles errors
 
 @enduml
