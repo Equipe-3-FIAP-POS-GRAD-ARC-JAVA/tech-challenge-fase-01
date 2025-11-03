@@ -7,7 +7,7 @@
 | Emerson Pereira da Silva | RM367268 |
 | Levi Aparecido do Santos | RM369031 |
 | Luiz Octavio Tassinari Saraiva | RM367408|
-| Rhayana Lacerda Gomes | RM367798 | 
+| Rhayana Lacerda Gomes | RM367798 |
 | Vinicius Padovam Valentim | RM367199|
   
   
@@ -1012,36 +1012,7 @@ target/site/jacoco/index.html
 ## **Documentação Completa do Projeto**
   
 O projeto conta com **documentação técnica abrangente** que cobre todos os aspectos da implementação:
-  
-### **Relatórios de Validação**
-- **PROJECT-VALIDATION-REPORT.md** - Relatório completo de validação arquitetural (9.86/10)
-- **SOLID-HEXAGONAL-ARCHITECTURE-ANALYSIS.md** - Análise detalhada dos princípios SOLID
-- **VALIDATION-SUMMARY.md** - Resumo executivo das validações realizadas
-  
-### **Documentação Arquitetural**  
-- **HEXAGONAL-ARCHITECTURE-OVERVIEW.md** - Visão geral da arquitetura hexagonal
-- **HEXAGONAL-ARCHITECTURE-APPLICATION-LAYER.md** - Detalhamento da camada de aplicação
-- **INFRASTRUCTURE-LAYER.md** - Documentação da camada de infraestrutura
-  
-### **Relatórios de Implementação**
-- **IMPLEMENTATION-COMPLETE.md** - Status completo da implementação
-- **INFRASTRUCTURE-IMPLEMENTATION-SUMMARY.md** - Resumo da implementação de infraestrutura
-  
-### **Documentação de API**
-- **API-DOCUMENTATION.md** - Documentação completa dos endpoints
-- **chamadas.http** - Collection de chamadas para teste em VS Code
-- **TechChallenge.postman_collection.json** - Collection completa para Postman
-  
-### **Diagramas e Especificações**
-- **diag01.puml até diag07.puml** - Diagramas UML da arquitetura
-- **CURRENT-PROJECT-STRUCTURE.md** - Estrutura atual detalhada do projeto
-- **RFC-7807-EXCEPTION-HANDLING.md** - Documentação do tratamento de exceções
-  
-### **Análises e Validações**
-- **REVALIDATION-COMPLETE.md** - Processo completo de revalidação
-- **SYNC-REPORT.md** - Relatório de sincronização da documentação
-- **DATABASE-UPDATE-REPORT.md** - Relatório de atualizações do banco de dados
-  
+   
 ## **Acesso à Documentação**
   
 | Tipo | Localização | Descrição |
