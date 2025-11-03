@@ -23,7 +23,7 @@ Devido a limitações orçamentárias, o projeto será entregue em fases, permit
 Desenvolver um backend completo e robusto utilizando **Java 21**, **Spring Boot 3.5.6** e **PostgreSQL 17**.
 O sistema implementa **Arquitetura Hexagonal** com **Clean Architecture** e princípios **SOLID**, proporcionando:
 
-### **Funcionalidades Core Implementadas**
+### **Funcionalidades**
 - **Gestão completa de usuários**: CRUD com validações robustas e autorização por roles
 - **Gestão de endereços**: CRUD completo de endereços vinculados aos usuários autenticados  
 - **Autenticação JWT**: Sistema seguro stateless com tokens e autorização RBAC (Role-Based Access Control)
@@ -62,7 +62,7 @@ O sistema implementa **Arquitetura Hexagonal** (Ports & Adapters) seguindo rigor
 
 ### **Benefícios Arquiteturais**
 - **Isolamento do domínio**: Lógica de negócio independente de frameworks e tecnologias externas
-- **Testabilidade superior**: Interfaces bem definidas facilitam mocks e testes isolados
+- **Testabilidade**: Interfaces bem definidas facilitam mocks e testes isolados
 - **Flexibilidade tecnológica**: Mudanças de infraestrutura sem impacto no core
 - **Manutenibilidade**: Código organizado com responsabilidades bem definidas
 - **Escalabilidade**: Arquitetura preparada para crescimento e evolução
@@ -80,6 +80,7 @@ domain/
 ├── valueobject/
 │   ├── Email.java                       # Value Object para email
 │   ├── Username.java                    # Value Object para login
+```
 ```
 application/domain/
 ├── address/AddressDomain.java           # Aggregate Root para endereços
@@ -185,10 +186,9 @@ infrastructure/configs/
 ### **Banco de Dados**
 - **PostgreSQL 17**: SGBD principal com recursos modernos
 - **H2 Database**: Banco em memória para testes
-- **Flyway**: Migração de schema (configurado via SQL)
 
 ### **Segurança**
-- **JWT (jjwt 0.12.5)**: Tokens stateless com HMAC512
+- **JWT**: Tokens stateless
 - **BCrypt**: Hash de senhas com salt automático
 - **RBAC**: Autorização baseada em roles (CLIENT, OWNER, ADMIN)
 
@@ -207,61 +207,106 @@ infrastructure/configs/
 
 ### Diagramas de Arquitetura
 Os diagramas PlantUML da arquitetura estão disponíveis nos arquivos:
-- **Visão Geral**: [`docs/diag01.puml`](diag01.puml) - Arquitetura Hexagonal completa
-- **Fluxo de Autenticação**: [`docs/diag03.puml`](diag03.puml) - Sequence diagram de login
-- **Interações de Sistema**: [`docs/diag02.puml`](diag02.puml) - Fluxos de Use Cases
-- **Camadas da Aplicação**: [`docs/diag04.puml`](diag04.puml) - Separação de responsabilidades
+
+#### **Diagramas Principais**
+- **[`diag01.puml`](diag01.puml)** - **Arquitetura Hexagonal Completa**: Visão geral das camadas, componentes e relacionamentos
+- **[`diag02.puml`](diag02.puml)** - **Modelo de Domínio**: Classes de domínio, value objects, ports e domain services
+- **[`diag03.puml`](diag03.puml)** - **Fluxo de Autenticação JWT**: Sequence diagram detalhado do processo de login
+- **[`diag04.puml`](diag04.puml)** - **Schema do Banco de Dados**: Estrutura das tabelas PostgreSQL
+- **[`diag05.puml`](diag05.puml)** - **Visão Geral da Arquitetura**: Overview simplificado dos componentes principais
+
+#### **Diagramas Específicos do Address**
+- **[`diag06.puml`](diag06.puml)** - **Fluxos Completos de Address**: Sequence diagrams para CRUD de endereços
+- **[`diag07.puml`](diag07.puml)** - **Estrutura de Packages**: Organização completa de packages e classes
 
 ### Modelo de Banco de Dados
 
-#### **Esquema Principal** (`schema.sql`)
+#### **  (`schema.sql`) **
 ```sql
 -- Tabela de usuários com autenticação e roles
 CREATE TABLE IF NOT EXISTS "users" (
     id UUID PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    login VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    login VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     roles VARCHAR(255)[] NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- Tabela de endereços vinculados aos usuários
-CREATE TABLE IF NOT EXISTS address (
+-- Tabela de endereços vinculados aos usuários (schema completo JPA)
+CREATE TABLE address (
     id UUID PRIMARY KEY,
-    user_id UUID REFERENCES "users"(id),
+    user_id UUID NOT NULL REFERENCES "users"(id),
     street VARCHAR(100) NOT NULL,
     number VARCHAR(20) NOT NULL,
+    complement VARCHAR(255),
+    neighborhood VARCHAR(50) NOT NULL,
     city VARCHAR(50) NOT NULL,
+    zip_code VARCHAR(10) NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );
 ```
 
-#### **Entidades e Relacionamentos**
-- **`users`**: Aggregate Root para autenticação e perfis de usuário
-- **`address`**: Entity dependente vinculada ao usuário
-- **Relacionamento 1:N**: Um usuário pode ter múltiplos endereços
-- **Integridade Referencial**: Foreign Key com cascade definido
-- **UUIDs**: Identificadores únicos globais para segurança
+#### **Entidades JPA e Mapeamentos**
+
+**JpaUserEntity** (`@Entity @Table(name = "users")`)
+- **Primary Key**: `@Id @GeneratedValue(strategy = UUID)` - UUID auto-gerado
+- **Campos únicos**: `email` com `@Column(unique = true)`
+- **Timestamps**: `@CreationTimestamp` e `@UpdateTimestamp` automáticos
+- **Enum Mapping**: `@Enumerated(EnumType.STRING)` para roles (OWNER, CLIENT, ADMIN)
+- **Validações**: `@Column(nullable = false)` em campos obrigatórios
+
+**JpaAddressEntity** (`@Entity @Table(name = "address")`)
+- **Primary Key**: `@Id @GeneratedValue(strategy = UUID)` - UUID auto-gerado
+- **Foreign Key**: `@ManyToOne(fetch = LAZY) @JoinColumn(name = "user_id", nullable = false)`
+- **Relacionamento**: Many-to-One com JpaUserEntity (lazy loading)
+- **Timestamps**: `@CreationTimestamp` e `@UpdateTimestamp` automáticos
+- **Campos opcionais**: `complement` sem `nullable = false`
+
+#### **Relacionamentos**
+- **`users` ↔ `address`**: Relacionamento 1:N (One-to-Many/Many-to-One)
+- **Integridade referencial**: Foreign key constraint garantindo consistência
+- **Lazy Loading**: Endereços carregados sob demanda para otimização
 
 #### **Dados de Teste Pré-Carregados** (`data.sql`)
-- **7 usuários** pré-cadastrados:
-  - **1 ADMIN**: Emerson Silva (acesso total)  
-  - **2 OWNERS**: Vinicius Padovam, Carlos Oliveira (proprietários)
-  - **4 CLIENTS**: Maria Silva, João Pereira, Ana Souza, João Silva
-- **6 endereços** distribuídos em diferentes cidades (SP, RJ, PR, MG)
-- **Senha padrão**: `senha123` (BCrypt hash) para todos os usuários
+
+**Usuários (7 registros):**
+- **1 ADMIN**: Emerson Silva (acesso total)  
+- **2 OWNERS**: Vinicius Padovam, Carlos Oliveira (proprietários)
+- **4 CLIENTS**: Maria Silva, João Pereira, Ana Souza, João Silva
+- **Senha padrão**: `senha123` (BCrypt hash) para todos
 - **UUIDs fixos**: Para facilitar testes e referências
+
+**Endereços (6 registros completos):**
+- **São Paulo/SP**: Av. Paulista, 1000 - Bela Vista (CEP: 01310-100)
+- **Curitiba/PR**: R. XV de Novembro, 200, Sala 302 - Centro (CEP: 80020-310)  
+- **Rio de Janeiro/RJ**: Av. Atlântica, 500, Cobertura - Copacabana (CEP: 22070-000)
+- **Belo Horizonte/MG**: R. das Flores, 45B - Centro (CEP: 30112-000)
+- **São Paulo/SP**: Av. Paulista, 1000, Bloco B - Bela Vista (CEP: 01310-100)
+
+#### **Tipos de Dados e Enums**
+
+**RolesEnum** (`@Enumerated(EnumType.STRING)`)
+- **OWNER**: Proprietário do restaurante - acesso completo aos recursos próprios
+- **CLIENT**: Cliente final - acesso limitado a consultas e pedidos  
+- **ADMIN**: Administrador do sistema - acesso total a todos os recursos
+- **Persistência**: Array PostgreSQL `VARCHAR(255)[]` para suportar múltiplos roles
+
+**Tipos UUID**: Todas as chaves primárias utilizam UUID v4 auto-geradas
+**Timestamps**: `LocalDateTime` com anotações Hibernate para criação/atualização automática
+**Senha Hash**: BCrypt com salt automático para segurança de autenticação
+
+**Compatibilidade**: O schema está 100% alinhado com as entidades `JpaUserEntity` e `JpaAddressEntity`, garantindo consistência entre o modelo de dados e a estrutura do banco em todos os ambientes (desenvolvimento, teste e produção).
 
 ### Diagramas PlantUML Detalhados
 
 Os diagramas estão implementados em PlantUML e cobrem todos os aspectos arquiteturais:
 
-#### **diag01.puml - Arquitetura Hexagonal Completa**
+#### **diag01.puml - Arquitetura Hexagonal Completa** 
 - Visualização da separação entre Application Core e Infrastructure
 - Representação dos Ports (Inbound e Outbound)
 - Mapeamento dos Adapters (REST Controllers, JPA Repositories, Security)
@@ -440,306 +485,6 @@ protected void configure(HttpSecurity http) throws Exception {
 | `/swagger-ui` | GET | Interface Swagger UI | Não | Público |
 | `/v3/api-docs` | GET | Especificação OpenAPI JSON | Não | Público |
 
-## Exemplos de Requisição e Resposta
-
-### **POST** `/api/v1/auth/login`
-**Descrição**: Autenticar usuário e obter token JWT stateless
-
-**Requisição:**
-```json
-{
-  "login": "emerson.silva",
-  "password": "senha123"
-}
-```
-
-**Resposta (200 OK):**
-```json
-{
-  "token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlbWVyc29uLnNpbHZhIiwicm9sZXMiOlsiQURNSU4iXSwiaWF0IjoxNzMwNDkyNDAwLCJleHAiOjE3MzA1Nzg4MDB9...",
-  "type": "Bearer",
-  "expiresIn": 86400
-}
-```
-
-**Headers de Resposta:**
-```http
-Content-Type: application/json
-X-Content-Type-Options: nosniff
-```
-
-### 👤 **POST** `/api/v1/users`
-**Descrição**: Criar novo usuário com role CLIENT (registro público)
-
-**📤 Requisição:**
-```json
-{
-  "name": "João Silva Santos",
-  "email": "joao.santos@example.com",
-  "login": "joao.santos",
-  "password": "minhasenha123"
-}
-```
-
-**📥 Resposta (201 Created):**
-```json
-{
-  "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  "name": "João Silva Santos",
-  "email": "joao.santos@example.com",
-  "login": "joao.santos",
-  "role": ["CLIENT"],
-  "createdAt": "2025-11-01T15:30:45.123Z",
-  "updatedAt": "2025-11-01T15:30:45.123Z",
-  "isActive": true
-}
-```
-
-**🎯 Validações Aplicadas:**
-- **Name**: 2-100 caracteres, não nulo
-- **Email**: Formato válido e único no sistema
-- **Login**: 3-50 caracteres, único no sistema  
-- **Password**: Mínimo 6 caracteres (será criptografado com BCrypt)
-
-### 🔍 **GET** `/api/v1/users/{id}`
-**Descrição**: Buscar usuário específico por UUID  
-**🔐 Autorização**: ADMIN ou próprio usuário
-
-**📤 Headers:**
-```http
-Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
-```
-
-**📥 Resposta (200 OK):**
-```json
-{
-  "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16",
-  "name": "Emerson Silva",
-  "email": "emerson.silva@example.com", 
-  "login": "emerson.silva",
-  "role": ["ADMIN"],
-  "createdAt": "2025-11-01T10:30:00Z",
-  "updatedAt": "2025-11-01T10:30:00Z",
-  "isActive": true
-}
-```
-
-### 🔍 **GET** `/api/v1/users/by-name?name={nome}`
-**Descrição**: Buscar usuários por nome (busca parcial case-insensitive)  
-**🔐 Autorização**: Apenas ADMIN
-
-**📤 Query Parameters:**
-- `name`: Fragmento do nome a buscar (mínimo 2 caracteres)
-
-**📤 Exemplo de Requisição:**
-```http
-GET /api/v1/users/by-name?name=Silva
-Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
-```
-
-**📥 Resposta (200 OK):**
-```json
-[
-  {
-    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16",
-    "name": "Emerson Silva",
-    "email": "emerson.silva@example.com",
-    "login": "emerson.silva",
-    "role": ["ADMIN"]
-  },
-  {
-    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17",
-    "name": "João Silva",
-    "email": "joao.silva@example.com",
-    "login": "joao.silva", 
-    "role": ["CLIENT"]
-  }
-]
-```
-
-### **PUT** `/api/v1/users/{id}`
-**Descrição**: Atualizar dados gerais do usuário (nome, email, login)  
-**Autorização**: ADMIN ou próprio usuário
-
-**Requisição:**
-```json
-{
-  "name": "João Santos Silva Junior",
-  "email": "joao.santos.junior@example.com",
-  "login": "joao.junior"
-}
-```
-
-**Resposta (200 OK):**
-```json
-{
-  "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  "name": "João Santos Silva Junior",
-  "email": "joao.santos.junior@example.com",
-  "login": "joao.junior",
-  "role": ["CLIENT"],
-  "createdAt": "2025-11-01T15:30:45.123Z",
-  "updatedAt": "2025-11-01T16:45:32.789Z",
-  "isActive": true
-}
-```
-
-### **PUT** `/api/v1/users/{id}/password`  
-**Descrição**: Alterar senha do usuário (endpoint separado por segurança)  
-**Autorização**: ADMIN ou próprio usuário
-
-**Requisição:**
-```json
-{
-  "currentPassword": "minhasenha123",
-  "newPassword": "novaSenhaSegura456!"
-}
-```
-
-**Resposta (200 OK):**
-```json
-{
-  "message": "Password updated successfully"
-}
-```
-
-**⚠️ Validações de Segurança:**
-- Senha atual deve ser válida
-- Nova senha deve ter mínimo 6 caracteres
-- Hash BCrypt aplicado automaticamente
-
-### ❌ **DELETE** `/api/v1/users/{id}`
-**Descrição**: Exclusão definitiva de usuário do sistema  
-**🔐 Autorização**: Apenas ADMIN
-
-**📥 Resposta (204 No Content):**
-```
-(Sem corpo de resposta)
-```
-
-**⚠️ Comportamento:**
-- Exclusão em cascata dos endereços vinculados
-- Operação irreversível
-- Logs de auditoria gerados automaticamente
-
-## 🏠 **Endpoints de Gestão de Endereços**
-
-### 📍 **GET** `/api/v1/address`
-**Descrição**: Listar todos os endereços do usuário autenticado  
-**🔐 Autorização**: Usuário autenticado (qualquer role)
-
-**📥 Resposta (200 OK):**
-```json
-[
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "street": "Rua das Palmeiras",
-    "number": "123",
-    "complement": "Apto 45",
-    "neighborhood": "Jardins", 
-    "city": "São Paulo",
-    "zipCode": "01414-000",
-    "createdAt": "2025-11-01T10:30:00Z",
-    "updatedAt": "2025-11-01T10:30:00Z"
-  },
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440001",
-    "street": "Av. Paulista",
-    "number": "1000",
-    "complement": null,
-    "neighborhood": "Bela Vista",
-    "city": "São Paulo", 
-    "zipCode": "01310-100",
-    "createdAt": "2025-11-01T11:15:00Z",
-    "updatedAt": "2025-11-01T11:15:00Z"
-  }
-]
-```
-
-### 🏠 **POST** `/api/v1/address`
-**Descrição**: Criar novo endereço vinculado ao usuário autenticado  
-**🔐 Autorização**: Usuário autenticado
-
-**📤 Requisição:**
-```json
-{
-  "street": "Rua Oscar Freire",
-  "number": "500",
-  "complement": "Loja 12", 
-  "neighborhood": "Jardins",
-  "city": "São Paulo",
-  "zipCode": "01426-001"
-}
-```
-
-**📥 Resposta (201 Created):**
-```json
-{
-  "id": "f47ac10b-58cc-4372-a567-0e02b2c3d480",
-  "street": "Rua Oscar Freire",
-  "number": "500", 
-  "complement": "Loja 12",
-  "neighborhood": "Jardins",
-  "city": "São Paulo",
-  "zipCode": "01426-001",
-  "createdAt": "2025-11-01T16:30:45.123Z",
-  "updatedAt": "2025-11-01T16:30:45.123Z"
-}
-```
-
-**🎯 Validações de Negócio:**
-- **Street**: 3-100 caracteres obrigatórios
-- **Number**: 0-20 caracteres obrigatórios (aceita vazio "")
-- **Complement**: 0-50 caracteres opcionais
-- **Neighborhood**: 2-50 caracteres obrigatórios  
-- **City**: 2-50 caracteres obrigatórios
-- **ZipCode**: 8-10 caracteres obrigatórios
-
-### ✏️ **PUT** `/api/v1/address/{addressId}`
-**Descrição**: Atualizar endereço existente  
-**Autorização**: Proprietário do endereço
-
-**Requisição:**
-```json
-{
-  "street": "Rua Augusta",
-  "number": "2500",
-  "complement": "Conjunto 1401",
-  "neighborhood": "Consolação", 
-  "city": "São Paulo",
-  "zipCode": "01412-100"
-}
-```
-
-**Resposta (200 OK):**
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "street": "Rua Augusta", 
-  "number": "2500",
-  "complement": "Conjunto 1401",
-  "neighborhood": "Consolação",
-  "city": "São Paulo",
-  "zipCode": "01412-100",
-  "createdAt": "2025-11-01T10:30:00Z",
-  "updatedAt": "2025-11-01T17:22:15.456Z"
-}
-```
-
-### **DELETE** `/api/v1/address/{addressId}`
-**Descrição**: Excluir endereço do usuário  
-**Autorização**: Proprietário do endereço
-
-**Resposta (204 No Content):**
-```
-(Sem corpo de resposta)
-```
-
-**Segurança de Resources:**
-- Usuários só podem acessar/modificar seus próprios endereços
-- Verificação automática de ownership nos Use Cases
-- Exception `AddressDoesNotBelongToUserException` em caso de acesso indevido
-
 ## Códigos de Status HTTP e Tratamento de Erros
 
 ### **Códigos de Sucesso**
@@ -869,7 +614,7 @@ networks:
     driver: bridge
 ```
 
-### **🏗️ Dockerfile Multi-stage** (Otimizado)
+### ** Dockerfile Multi-stage** (Otimizado)
 
 ```dockerfile
 # Build stage - Maven + OpenJDK 21
@@ -909,7 +654,7 @@ ENTRYPOINT ["sh","-c","exec java -jar /app/app.jar"]
 - **Maven 3.9+** (para build local)
 - **Git** para versionamento
 
-### **Opção 1: Docker Compose Completo** (Recomendada)
+### **Opção 1: Docker Compose Completo** 
 ```bash
 # Clone o repositório
 git clone https://github.com/Equipe-3-FIAP-POS-GRAD-ARC-JAVA/tech-challenge-fase-01.git
@@ -954,6 +699,8 @@ docker compose up -d postgres
 | **Swagger UI** | http://localhost:8080/swagger-ui | http://localhost:8080/swagger-ui | Documentação interativa |
 | **OpenAPI JSON** | http://localhost:8080/v3/api-docs | http://localhost:8080/v3/api-docs | Spec OpenAPI |
 | **PostgreSQL** | localhost:5432 | postgres:5432 | Banco de dados |
+| **Actuator** | http://localhost:8080/actuator | http://localhost:8080/actuator | Health checks |
+| **Prometheus** | http://localhost:8080/actuator/prometheus | http://localhost:8080/actuator/prometheus | Métricas Prometheus |
 
 ### **Configuração do Banco**
 
@@ -997,7 +744,7 @@ Login: joao.silva   | Senha: senha123
 - **CQRS Pattern**: Separação clara entre comandos (escrita) e queries (leitura)  
 - **Dependency Injection**: Inversão de controle através de interfaces bem definidas
 - **Factory Methods**: Criação controlada de objetos de domínio com validações
-- **Code Quality**: SonarQube ready
+- **Code Quality**: Plugin Sonar
 
 ### **Princípios SOLID - Implementação Completa**
 
@@ -1080,11 +827,10 @@ Login: joao.silva   | Senha: senha123
 
 **URL**: https://github.com/Equipe-3-FIAP-POS-GRAD-ARC-JAVA/tech-challenge-fase-01
 
-### **Estrutura de Branches**
 
 ## **Conclusão do Projeto**
 
-Este projeto demonstra a implementação **exemplar** de uma arquitetura moderna Java enterprise, integrando:
+Este projeto demonstra a implementação **exemplar** de uma arquitetura moderna Java, integrando:
 
 - **Arquitetura Hexagonal** com separação rigorosa de responsabilidades
 - **Princípios SOLID** aplicados consistentemente  
