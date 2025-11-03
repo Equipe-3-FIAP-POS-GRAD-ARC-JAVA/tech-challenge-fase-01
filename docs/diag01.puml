@@ -1,256 +1,222 @@
 @startuml Hexagonal_Architecture
 !theme plain
-title Tech Challenge - Sistema de Gestão de Usuários e Endereços - Arquitetura Hexagonal
+title Tech Challenge - Arquitetura Hexagonal (Visão Simplificada)
 
-' Configuração de cores e estilos
+' Configuração otimizada para melhor visualização
+skinparam packageStyle rectangle
 skinparam package {
     BackgroundColor<<core>> #E1F5FE
     BorderColor<<core>> #0277BD
-    BackgroundColor<<adapter>> #F3E5F5
-    BorderColor<<adapter>> #7B1FA2
-    BackgroundColor<<infrastructure>> #E8F5E8
-    BorderColor<<infrastructure>> #2E7D32
+    BackgroundColor<<driving>> #F3E5F5
+    BorderColor<<driving>> #7B1FA2
+    BackgroundColor<<driven>> #E8F5E8
+    BorderColor<<driven>> #2E7D32
+    FontSize 11
 }
 
 skinparam component {
     BackgroundColor #FFFFFF
     BorderColor #424242
-    FontSize 12
+    FontSize 10
 }
 
 skinparam interface {
     BackgroundColor #FFF59D
     BorderColor #F57F17
+    FontSize 9
 }
+
+' Layout otimizado: left to right
+left to right direction
 
 ' Atores externos
-actor "Cliente/Postman" as Client #FFE0B2
-database "PostgreSQL\nDatabase" as DB #C8E6C9
+actor "HTTP Client" as Client
+database "PostgreSQL" as DB
 
-' Camada de Infraestrutura - Adaptadores de Entrada (Driving Adapters)
-package "Driving Adapters" <<adapter>> {
-    component "UserController" as UserController
-    component "AddressController" as AddressController
-    component "LoginController" as LoginController
-    component "JwtAuthenticationFilter" as JwtFilter
-    component "GlobalExceptionHandler" as ExceptionHandler
+' ============= DRIVING ADAPTERS (ENTRADA) =============
+package "Driving Adapters\n(Inbound)" <<driving>> {
+    component "REST Controllers" as Controllers {
+        component "UserController" as UserCtrl
+        component "AddressController" as AddressCtrl 
+        component "AuthController" as AuthCtrl
+    }
     
-    note right of UserController
-        • POST /api/v1/users (CLIENT)
-        • POST /api/v1/users/owner (ADMIN)
-        • GET /api/v1/users/{id}
-        • GET /api/v1/users/by-name
-        • PUT /api/v1/users/{id}
-        • PATCH /api/v1/users/password
-        • DELETE /api/v1/users/{id}
-    end note
+    component "Security Layer" as Security {
+        component "JwtAuthFilter" as JwtFilter
+        component "ExceptionHandler" as ExHandler
+    }
     
-    note right of AddressController
-        • GET /api/v1/address (list user addresses)
-        • POST /api/v1/address (create address)
-        • PUT /api/v1/address/{addressId} (update address)
-        • DELETE /api/v1/address/{addressId} (delete address)
-        • Ownership validation in all operations
-    end note
-    
-    note right of LoginController
-        • POST /api/v1/auth/login
-    end note
-    
-    note right of JwtFilter
-        • JWT Token Validation
-        • Security Context Setup
-        • Authentication Principal
+    note bottom of Controllers
+        **REST Endpoints:**
+        • User CRUD (8 endpoints)
+        • Address CRUD (4 endpoints) 
+        • Authentication (login)
+        • Role-based authorization
     end note
 }
 
-' Núcleo da Aplicação (Core)
-package "Application Core" <<core>> {
+' ============= APPLICATION CORE (HEXÁGONO) =============
+package "Application Core\n(Hexagon)" <<core>> {
     
-    ' Portas de Entrada (Primary Ports) - User
-    package "User Primary Ports" {
-        interface "UserCreatePort" as IUserCreate
-        interface "UserCreateOwnerPort" as IUserCreateOwner
-        interface "UserUpdatePort" as IUserUpdate
-        interface "UserUpdatePasswordPort" as IUserUpdatePassword
-        interface "UserFindByIdPort" as IUserFindById
-        interface "UserFindByNamePort" as IUserFindByName
-        interface "UserDeletePort" as IUserDelete
-        interface "AuthPort" as IAuth
+    ' PORTS (INTERFACES)
+    package "Primary Ports\n(Inbound)" {
+        interface "UserPorts" as IUserPorts
+        interface "AddressPorts" as IAddressPorts 
+        interface "AuthPort" as IAuthPort
+        
+        note bottom of IUserPorts : "8 User interfaces"
+        note bottom of IAddressPorts : "4 Address interfaces"
     }
     
-    ' Portas de Entrada (Primary Ports) - Address
-    package "Address Primary Ports" {
-        interface "AddressCreatePort" as IAddressCreate
-        interface "AddressFindByUserPort" as IAddressFindByUser
-        interface "AddressUpdatePort" as IAddressUpdate
-        interface "AddressDeletePort" as IAddressDelete
+    ' USE CASES (APPLICATION SERVICES) 
+    package "Use Cases\n(Application Services)" {
+        component "User Use Cases" as UserUCs {
+            component "CreateUser" as CreateUserUC
+            component "UpdateUser" as UpdateUserUC
+            component "FindUser" as FindUserUC
+            component "AuthUser" as AuthUC
+        }
+        
+        component "Address Use Cases" as AddressUCs {
+            component "CreateAddress" as CreateAddressUC
+            component "UpdateAddress" as UpdateAddressUC
+            component "FindAddress" as FindAddressUC
+            component "DeleteAddress" as DeleteAddressUC
+        }
+        
+        note bottom of UserUCs : "8 User Use Cases\n+ Authentication"
+        note bottom of AddressUCs : "4 Address Use Cases\nwith ownership validation"
     }
     
-    ' Casos de Uso (Use Cases) - User
-    package "User Use Cases" {
-        component "CreateUserUseCase" as CreateUserUC
-        component "CreateOwnerUseCase" as CreateOwnerUC
-        component "UpdateUserUseCase" as UpdateUserUC
-        component "UpdatePasswordUseCase" as UpdatePasswordUC
-        component "FindUserByIdUseCase" as FindByIdUC
-        component "FindUserByNameUseCase" as FindByNameUC
-        component "DeleteUserUseCase" as DeleteUserUC
-        component "AuthUseCase" as AuthUC
+    ' DOMAIN MODEL (BUSINESS LOGIC)
+    package "Domain Model\n(Business Rules)" {
+        component "Domain Entities" as Entities {
+            component "UserDomain" as UserEntity
+            component "AddressDomain" as AddressEntity
+        }
+        
+        component "Value Objects" as VOs {
+            component "Email, Username" as ValueObjects
+            component "PersonName" as PersonName
+        }
+        
+        component "Domain Services" as DomainServices {
+            component "UserDomainService" as UserDS
+            component "AddressDomainService" as AddressDS
+        }
+        
+        note bottom of Entities : "Rich domain models\nwith business behavior"
+        note bottom of VOs : "Type-safe value objects\nwith validation"
     }
     
-    ' Casos de Uso (Use Cases) - Address
-    package "Address Use Cases" {
-        component "CreateAddressUseCase" as CreateAddressUC
-        component "FindAddressUseCase" as FindAddressUC
-        component "UpdateAddressUseCase" as UpdateAddressUC
-        component "DeleteAddressUseCase" as DeleteAddressUC
-    }
-    
-    ' Domínio (Domain Models)
-    package "Domain Models" {
-        component "UserDomain" as UserEntity
-        component "AddressDomain" as AddressEntity
-        component "RolesEnum" as RolesEnum
-        component "Email (Value Object)" as EmailVO
-        component "Username (Value Object)" as UsernameVO
-        component "PersonName (Value Object)" as PersonNameVO
-        component "UserDomainService" as UserDomainService
-        component "AddressDomainService" as AddressDomainService
-    }
-    
-    ' Portas de Saída (Secondary Ports)
-    package "Secondary Ports" {
-        interface "UserRepositoryPort" as IUserRepo
-        interface "AddressRepositoryPort" as IAddressRepo
-        interface "PasswordEncoderPort" as IPasswordEncoder
-        interface "TokenGeneratorPort" as ITokenGenerator
+    ' SECONDARY PORTS
+    package "Secondary Ports\n(Outbound)" {
+        interface "RepositoryPorts" as IRepoPorts
+        interface "SecurityPorts" as ISecurityPorts
+        
+        note bottom of IRepoPorts : "User & Address\nRepository interfaces"
+        note bottom of ISecurityPorts : "Password & Token\nGeneration interfaces"
     }
 }
 
-' Camada de Infraestrutura - Adaptadores de Saída (Driven Adapters)
-package "Driven Adapters" <<infrastructure>> {
-    component "UserRepositoryImpl" as UserRepoAdapter
-    component "AddressRepositoryImpl" as AddressRepoAdapter
-    component "JpaUserRepository" as JpaUserRepo
-    component "JpaAddressRepository" as JpaAddressRepo
-    component "BCryptPasswordEncoderAdapter" as PasswordEncoder
-    component "JwtUtil" as TokenGenerator
-    component "UserEntityMapper" as UserMapper
-    component "AddressEntityMapper" as AddressMapper
-    component "JpaUserEntity" as JpaUserEntity
-    component "JpaAddressEntity" as JpaAddressEntity
+' ============= DRIVEN ADAPTERS (SAÍDA) =============
+package "Driven Adapters\n(Outbound)" <<driven>> {
     
-    note right of UserRepoAdapter
-        • JPA Repository Implementation
-        • Entity Mapping
-        • Query Implementation
-        • UserDomain ↔ JpaUserEntity
+    component "Repository Layer" as RepoLayer {
+        component "JPA Repositories" as JpaRepos
+        component "Entity Mappers" as Mappers
+        component "Repository Impls" as RepoImpls
+    }
+    
+    component "Security Layer" as SecLayer {
+        component "BCrypt Encoder" as BCrypt
+        component "JWT Generator" as JWT
+    }
+    
+    component "JPA Entities" as JPAEntities {
+        component "JpaUserEntity" as JpaUser
+        component "JpaAddressEntity" as JpaAddress
+    }
+    
+    note bottom of RepoLayer
+        **Persistence:**
+        • Spring Data JPA
+        • Domain ↔ JPA mapping
+        • Query implementations
     end note
     
-    note right of AddressRepoAdapter
-        • Address CRUD operations
-        • AddressDomain ↔ JpaAddressEntity
-        • User relationship handling
+    note bottom of SecLayer
+        **Security:**
+        • Password hashing (BCrypt)
+        • JWT token generation
+        • Spring Security integration
     end note
 }
 
-' Relacionamentos - Entrada
-Client --> UserController : HTTP Requests\n(JSON)
-Client --> AddressController : Address Requests\n(JSON)
-Client --> LoginController : Authentication\nRequests
+' ============= RELACIONAMENTOS (ARQUITETURA HEXAGONAL) =============
 
-UserController --> IUserCreate : Uses
-UserController --> IUserCreateOwner : Uses
-UserController --> IUserUpdate : Uses
-UserController --> IUserUpdatePassword : Uses
-UserController --> IUserFindById : Uses
-UserController --> IUserFindByName : Uses
-UserController --> IUserDelete : Uses
+' External interactions
+Client --> Controllers : "HTTP/REST\nRequests"
+DB <-- JPAEntities : "SQL\nPersistence"
 
-AddressController --> IAddressCreate : Uses
-AddressController --> IAddressFindByUser : Uses
-AddressController --> IAddressUpdate : Uses
-AddressController --> IAddressDelete : Uses
+' Driving Adapters → Primary Ports (Inbound)
+Controllers --> IUserPorts : uses
+Controllers --> IAddressPorts : uses  
+Security --> IAuthPort : uses
 
-LoginController --> IAuth : Uses
+' Primary Ports → Use Cases (Application Services)
+IUserPorts <|-- UserUCs : implements
+IAddressPorts <|-- AddressUCs : implements
+IAuthPort <|-- AuthUC : implements
 
-' Relacionamentos - Use Cases implementam Ports
-IUserCreate --> CreateUserUC : Implements
-IUserCreateOwner --> CreateOwnerUC : Implements
-IUserUpdate --> UpdateUserUC : Implements
-IUserUpdatePassword --> UpdatePasswordUC : Implements
-IUserFindById --> FindByIdUC : Implements
-IUserFindByName --> FindByNameUC : Implements
-IUserDelete --> DeleteUserUC : Implements
-IAuth --> AuthUC : Implements
+' Use Cases → Domain Model (Business Logic)
+UserUCs --> Entities : uses/creates
+AddressUCs --> Entities : uses/creates
+UserUCs --> DomainServices : validates with
+AddressUCs --> DomainServices : validates with
 
-IAddressCreate --> CreateAddressUC : Implements
-IAddressFindByUser --> FindAddressUC : Implements
-IAddressUpdate --> UpdateAddressUC : Implements
-IAddressDelete --> DeleteAddressUC : Implements
+' Use Cases → Secondary Ports (Outbound dependencies)
+UserUCs --> IRepoPorts : uses
+AddressUCs --> IRepoPorts : uses
+AuthUC --> ISecurityPorts : uses
 
-' Relacionamentos - Domain
-CreateUserUC --> UserEntity : Creates
-CreateUserUC --> AddressEntity : Creates (with user)
-UpdateUserUC --> UserEntity : Updates
-FindByIdUC --> UserEntity : Returns
-FindByNameUC --> UserEntity : Returns
-AuthUC --> UserEntity : Validates
+' Secondary Ports → Driven Adapters (Outbound)
+IRepoPorts <|-- RepoLayer : implements
+ISecurityPorts <|-- SecLayer : implements
 
-CreateAddressUC --> AddressEntity : Creates
-UpdateAddressUC --> AddressEntity : Updates
-FindAddressUC --> AddressEntity : Returns
-DeleteAddressUC --> AddressEntity : Deletes
+' Driven Adapters → External Resources
+RepoLayer --> JPAEntities : maps to/from
+JPAEntities --> DB : persists to
 
-UserEntity --> EmailVO : Contains
-UserEntity --> UsernameVO : Contains
-UserEntity --> PersonNameVO : Contains
-UserEntity --> RolesEnum : Has
+' Domain relationships
+UserEntity --> ValueObjects : contains
+AddressEntity --> UserEntity : belongs to (userId)
 
-AddressEntity --> UserEntity : Belongs to
+' ============= NOTAS EXPLICATIVAS =============
 
-' Domain Services
-UserDomainService --> UserEntity : Validates
-AddressDomainService --> AddressEntity : Validates
+note as N1
+    **HEXAGONAL ARCHITECTURE FLOW:**
+    
+    **1. Driving Side (Left):**
+    Client → Controllers → Ports → Use Cases
+    
+    **2. Core (Center):**
+    Use Cases ↔ Domain Model ↔ Domain Services
+    
+    **3. Driven Side (Right):**  
+    Use Cases → Ports → Adapters → External Resources
+end note
 
-' Relacionamentos - Use Cases para Ports de Saída
-CreateUserUC --> IUserRepo : Uses
-CreateUserUC --> IAddressRepo : Uses (for address)
-UpdateUserUC --> IUserRepo : Uses
-FindByIdUC --> IUserRepo : Uses
-FindByNameUC --> IUserRepo : Uses
-DeleteUserUC --> IUserRepo : Uses
-UpdatePasswordUC --> IPasswordEncoder : Uses
-AuthUC --> IPasswordEncoder : Uses
-AuthUC --> ITokenGenerator : Uses
+note as N2
+    **KEY PRINCIPLES:**
+    
+    • **Ports & Adapters**: Clear separation of concerns
+    • **Dependency Inversion**: Dependencies point inward
+    • **Testability**: Core isolated from infrastructure  
+    • **Clean Architecture**: Business rules in center
+end note
 
-CreateAddressUC --> IAddressRepo : Uses
-FindAddressUC --> IAddressRepo : Uses
-UpdateAddressUC --> IAddressRepo : Uses
-DeleteAddressUC --> IAddressRepo : Uses
-
-' Relacionamentos - Saída
-IUserRepo --> UserRepoAdapter : Implements
-IAddressRepo --> AddressRepoAdapter : Implements
-IPasswordEncoder --> PasswordEncoder : Implements
-ITokenGenerator --> TokenGenerator : Implements
-
-UserRepoAdapter --> JpaUserRepo : Uses
-UserRepoAdapter --> UserMapper : Uses
-UserRepoAdapter --> JpaUserEntity : Maps to/from
-
-AddressRepoAdapter --> JpaAddressRepo : Uses
-AddressRepoAdapter --> AddressMapper : Uses
-AddressRepoAdapter --> JpaAddressEntity : Maps to/from
-
-JpaUserRepo --> DB : Persists
-JpaAddressRepo --> DB : Persists
-JpaAddressEntity --> JpaUserEntity : References (FK)
-
-' Tratamento de exceções
-UserController --> ExceptionHandler : handles errors
-AddressController --> ExceptionHandler : handles errors
-LoginController --> ExceptionHandler : handles errors
+N1 .up. Controllers
+N2 .down. RepoLayer
 
 @enduml

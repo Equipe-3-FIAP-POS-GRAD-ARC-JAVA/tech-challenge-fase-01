@@ -2,300 +2,252 @@
 !theme plain
 title Tech Challenge - Estrutura Completa de Packages e Classes
 
-' Configuração de estilos
+' Configuração de estilos otimizada
+skinparam packageStyle rectangle
 skinparam package {
-    BackgroundColor<<application>> #E3F2FD
-    BorderColor<<application>> #1976D2
-    BackgroundColor<<infrastructure>> #FFF3E0
-    BorderColor<<infrastructure>> #F57C00
+    BackgroundColor<<core>> #E3F2FD
+    BorderColor<<core>> #1976D2
+    BackgroundColor<<infra>> #FFF3E0
+    BorderColor<<infra>> #F57C00
     BackgroundColor<<web>> #E8F5E8
     BorderColor<<web>> #2E7D32
-    BackgroundColor<<security>> #FCE4EC
-    BorderColor<<security>> #C2185B
+    FontSize 10
 }
 
 skinparam class {
-    BackgroundColor<<entity>> #F3E5F5
-    BorderColor<<entity>> #7B1FA2
-    BackgroundColor<<port>> #FFECB3
-    BorderColor<<port>> #FF8F00
-    BackgroundColor<<usecase>> #E1F5FE
-    BorderColor<<usecase>> #0277BD
-    BackgroundColor<<service>> #E8F5E8
-    BorderColor<<service>> #388E3C
+    FontSize 9
+    BackgroundColor #FFFFFF
+    BorderColor #666666
 }
 
-' Camada de Aplicação (Core)
-package "Application Layer" <<application>> {
-    
-    ' Domain - User
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user" {
-        class UserDomain <<entity>> {
-            + createClient()
-            + createOwner()
-            + updateInfo()
-            + changePassword()
-            + deactivate()
-            + activate()
+' Definindo direção left to right para melhor aproveitamento do espaço
+left to right direction
+
+' Raiz do Projeto
+package "br.com.fiap.challenge.tech_challenge_fase_01" {
+
+    ' =================== APPLICATION CORE ===================
+    package "application" <<core>> {
+        
+        ' DOMAIN LAYER
+        package "domain" {
+            package "user" {
+                class "UserDomain"
+                enum "RolesEnum"
+            }
+            package "address" {
+                class "AddressDomain"
+            }
+            package "valueobject" {
+                class "Email"
+                class "Username" 
+                class "PersonName"
+            }
+            package "service" {
+                class "UserDomainService"
+                class "AddressDomainService"
+            }
+            package "exception" {
+                class "BusinessRuleException"
+                class "InvalidFieldException"
+            }
+        }
+        
+        ' USE CASES
+        package "usecase" {
+            package "user" {
+                class "CreateUserUseCase"
+                class "UpdateUserUseCase"
+                class "FindUserByIdUseCase"
+                class "AuthUseCase"
+                note right : "8 User Use Cases\n+ Authentication"
+            }
+            package "address" {
+                class "CreateAddressUseCase"
+                class "UpdateAddressUseCase"
+                class "FindAddressUseCase"
+                class "DeleteAddressUseCase"
+            }
+        }
+        
+        ' PORTS (INTERFACES)
+        package "ports" {
+            package "inbound" {
+                package "user" {
+                    interface "UserCreatePort"
+                    interface "AuthPort"
+                    note right : "8 Inbound User Ports"
+                }
+                package "address" {
+                    interface "AddressCreatePort"
+                    note right : "4 Inbound Address Ports"
+                }
+            }
+            package "outbound" {
+                package "repository" {
+                    interface "UserRepositoryPort"
+                    interface "AddressRepositoryPort"
+                }
+                package "security" {
+                    interface "PasswordEncoderPort"
+                    interface "TokenGeneratorPort"
+                }
+            }
+        }
+        
+        ' APPLICATION DTOs
+        package "dto" {
+            package "requests" {
+                class "UserCreateRequest"
+                class "AddressCreateRequest"
+                note right : "6 Request DTOs"
+            }
+            package "response" {
+                class "UserResponse"
+                class "AddressResponse"
+                note right : "3 Response DTOs"
+            }
         }
     }
-    
-    ' Domain - Address
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.domain.address" {
-        class AddressDomain <<entity>> {
-            + create()
-            + updateInfo()
-            + validate()
+
+    ' =================== INFRASTRUCTURE LAYER ===================
+    package "infrastructure" <<infra>> {
+        
+        ' INBOUND ADAPTERS (DRIVING)
+        package "adapters.inbound" {
+            
+            ' REST/WEB LAYER
+            package "web.rest" <<web>> {
+                package "controller" {
+                    class "UserController"
+                    class "AddressController"
+                    class "LoginController"
+                }
+                package "api" {
+                    interface "UserApi"
+                    interface "AddressApi"
+                    note right : "OpenAPI Specs"
+                }
+                package "mapper" {
+                    class "UserWebMapper"
+                    class "AddressWebMapper"
+                    note right : "DTO ↔ App Layer"
+                }
+                package "dto" {
+                    class "UserCreateRequestDTO"
+                    class "AddressResponseDTO"
+                    note right : "8 Web DTOs"
+                }
+            }
+            
+            ' SECURITY LAYER
+            package "security" {
+                class "JwtAuthenticationFilter"
+                class "SecurityUser"
+                class "GlobalExceptionHandler"
+                note right : "JWT + Spring Security"
+            }
+        }
+        
+        ' OUTBOUND ADAPTERS (DRIVEN)
+        package "adapters.outbound" {
+            
+            ' REPOSITORY LAYER
+            package "repository" {
+                class "UserRepositoryImpl"
+                class "AddressRepositoryImpl"
+                
+                package "jpa" {
+                    interface "JpaUserRepository"
+                    interface "JpaAddressRepository"
+                }
+                
+                package "jpa.entity" {
+                    class "JpaUserEntity"
+                    class "JpaAddressEntity"
+                    note right : "JPA Persistence"
+                }
+                
+                package "mapper" {
+                    class "UserEntityMapper"
+                    class "AddressEntityMapper"
+                    note right : "Domain ↔ JPA"
+                }
+            }
+            
+            ' SECURITY IMPLEMENTATIONS
+            package "security" {
+                class "BCryptPasswordEncoderAdapter"
+                class "JwtTokenGenerator"
+                note right : "Security Ports Impl"
+            }
+        }
+        
+        ' CONFIGURATION
+        package "configs" {
+            class "UserUseCaseConfig"
+            class "AddressUseCaseConfig"
+            class "SecurityConfig"
+            class "OpenApiConfig"
+            note right : "Spring @Configuration\n@Bean Factories"
         }
     }
-    
-    ' Value Objects
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.domain.valueobject" {
-        class Email <<entity>> {
-            + of()
-            + getValue()
-        }
-        class Username <<entity>> {
-            + of()
-            + getValue()
-        }
-        class PersonName <<entity>> {
-            + of()
-            + getValue()
-        }
-    }
-    
-    ' Domain Services
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.domain.service" {
-        class UserDomainService <<service>> {
-            + ensureUsernameIsUnique()
-            + ensureEmailIsUnique()
-            + ensureUserIsUnique()
-        }
-        class AddressDomainService <<service>> {
-            + ensureAddressBelongsToUser()
-        }
-    }
-    
-    ' Use Cases - User
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.user" {
-        class CreateUserUseCase <<usecase>>
-        class CreateOwnerUseCase <<usecase>>
-        class UpdateUserUseCase <<usecase>>
-        class UpdatePasswordUseCase <<usecase>>
-        class DeleteUserUseCase <<usecase>>
-        class FindUserByIdUseCase <<usecase>>
-        class FindUserByNameUseCase <<usecase>>
-        class AuthUseCase <<usecase>>
-    }
-    
-    ' Use Cases - Address
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.address" {
-        class CreateAddressUseCase <<usecase>>
-        class FindAddressUseCase <<usecase>>
-        class UpdateAddressUseCase <<usecase>>
-        class DeleteAddressUseCase <<usecase>>
-    }
-    
-    ' Ports - Inbound User
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user" {
-        interface UserCreatePort <<port>>
-        interface UserCreateOwnerPort <<port>>
-        interface UserUpdatePort <<port>>
-        interface UserUpdatePasswordPort <<port>>
-        interface UserFindByIdPort <<port>>
-        interface UserFindByNamePort <<port>>
-        interface UserDeletePort <<port>>
-        interface AuthPort <<port>>
-    }
-    
-    ' Ports - Inbound Address
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.address" {
-        interface AddressCreatePort <<port>>
-        interface AddressFindByUserPort <<port>>
-        interface AddressUpdatePort <<port>>
-        interface AddressDeletePort <<port>>
-    }
-    
-    ' Ports - Outbound Repository
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository" {
-        interface UserRepositoryPort <<port>>
-        interface AddressRepositoryPort <<port>>
-    }
-    
-    ' Ports - Outbound Security
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security" {
-        interface PasswordEncoderPort <<port>>
-        interface TokenGeneratorPort <<port>>
-    }
-    
-    ' DTOs - Requests
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests" {
-        class UserCreateRequest
-        class UserUpdateRequest
-        class UpdatePasswordRequest
-        class AddressCreateRequest
-        class AddressUpdateRequest
-        class LoginRequest
-    }
-    
-    ' DTOs - Responses
-    package "br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response" {
-        class UserResponse
-        class AddressResponse
-        class AuthResponse
-    }
+
 }
 
-' Camada de Infraestrutura
-package "Infrastructure Layer" <<infrastructure>> {
-    
-    ' Web Controllers
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.controller" {
-        class UserController <<service>>
-        class AddressController <<service>>
-        class LoginController <<service>>
-    }
-    
-    ' Web APIs (OpenAPI interfaces)
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.api" {
-        interface UserApi <<port>>
-        interface AddressApi <<port>>
-        interface AuthApi <<port>>
-    }
-    
-    ' Web Mappers
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.mapper" {
-        class UserWebMapper <<service>>
-        class AddressWebMapper <<service>>
-        class AuthWebMapper <<service>>
-    }
-    
-    ' Web DTOs
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto" {
-        class UserCreateRequestDTO
-        class UserUpdateRequestDTO
-        class UserResponseDTO
-        class AddressCreateRequestDTO
-        class AddressUpdateRequestDTO
-        class AddressResponseDTO
-        class LoginRequestDTO
-        class LoginResponseDTO
-    }
-    
-    ' Security
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.security" <<security>> {
-        class JwtAuthenticationFilter <<service>>
-        class SecurityUser <<entity>>
-        class SecurityConfig <<service>>
-    }
-    
-    ' Repository Adapters
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repository" {
-        class UserRepositoryImpl <<service>>
-        class AddressRepositoryImpl <<service>>
-    }
-    
-    ' JPA Repositories
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repository.jpa" {
-        interface JpaUserRepository <<port>>
-        interface JpaAddressRepository <<port>>
-    }
-    
-    ' JPA Entities
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repository.jpa.entity" {
-        class JpaUserEntity <<entity>>
-        class JpaAddressEntity <<entity>>
-    }
-    
-    ' Entity Mappers
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repository.mapper" {
-        class UserEntityMapper <<service>>
-        class AddressEntityMapper <<service>>
-    }
-    
-    ' Security Adapters
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.security" {
-        class BCryptPasswordEncoder <<service>>
-        class JwtUtil <<service>>
-    }
-    
-    ' Configuration
-    package "br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.configs" {
-        class UserUseCaseConfig <<service>>
-        class AddressUseCaseConfig <<service>>
-        class SecurityConfig <<service>>
-        class OpenApiConfig <<service>>
-    }
-}
+' =================== RELACIONAMENTOS PRINCIPAIS ===================
 
-' Relacionamentos principais entre packages
+' Core Domain Flow
+"UserDomain" ..> "Email" : uses
+"UserDomain" ..> "Username" : uses
+"AddressDomain" ..> "UserDomain" : belongs to
 
-' Domain Dependencies
-UserDomain --> Email : contains
-UserDomain --> Username : contains
-UserDomain --> PersonName : contains
-AddressDomain ..> UserDomain : belongs to (userId)
+' Use Case to Domain
+"CreateUserUseCase" ..> "UserDomain" : creates
+"CreateAddressUseCase" ..> "AddressDomain" : creates
 
-' Use Case Dependencies
-CreateUserUseCase --> UserDomain : creates
-CreateUserUseCase --> AddressDomain : creates
-CreateAddressUseCase --> AddressDomain : creates
-UpdateAddressUseCase --> AddressDomainService : uses
-DeleteAddressUseCase --> AddressDomainService : uses
+' Ports Implementation (Hexagonal Architecture)
+"UserCreatePort" <|-- "CreateUserUseCase"
+"AddressCreatePort" <|-- "CreateAddressUseCase"
+"UserRepositoryPort" <|-- "UserRepositoryImpl"
 
-' Port Implementations
-UserCreatePort <|.. CreateUserUseCase : implements
-AddressCreatePort <|.. CreateAddressUseCase : implements
-UserRepositoryPort <|.. UserRepositoryImpl : implements
-AddressRepositoryPort <|.. AddressRepositoryImpl : implements
+' Infrastructure Dependencies
+"UserController" ..> "UserApi" : implements
+"UserController" ..> "UserWebMapper" : uses
+"UserRepositoryImpl" ..> "JpaUserRepository" : uses
+"UserEntityMapper" : "Domain ↔ JPA"
 
-' Web Layer Dependencies
-UserController --> UserApi : implements
-AddressController --> AddressApi : implements
-UserController --> UserWebMapper : uses
-AddressController --> AddressWebMapper : uses
+' Configuration Layer
+"UserUseCaseConfig" ..> "CreateUserUseCase" : @Bean
+"AddressUseCaseConfig" ..> "CreateAddressUseCase" : @Bean
 
-' Configuration Dependencies
-UserUseCaseConfig --> UserCreatePort : creates beans
-AddressUseCaseConfig --> AddressCreatePort : creates beans
+' =================== NOTAS EXPLICATIVAS ===================
 
-note bottom of "Infrastructure Layer"
-    **Arquitetura Hexagonal - Separação Clara:**
+note as N1
+    **ARQUITETURA HEXAGONAL**
     
-    **Inbound Adapters (Driving):**
-    • REST Controllers (Web)
-    • Security Filters (JWT)
-    • Web Mappers (DTO conversion)
+    **Core (Application):**
+    • Domain Models (UserDomain, AddressDomain)
+    • Use Cases (Business Logic)  
+    • Ports (Interfaces)
     
-    **Outbound Adapters (Driven):**
-    • Repository Implementations (JPA)
-    • Security Implementations (BCrypt, JWT)
-    • Entity Mappers (Domain ↔ JPA)
-    
-    **Configuration:**
-    • Use Case Beans (@Bean factories)
-    • Security Configuration
-    • OpenAPI Documentation
+    **Infrastructure:**
+    • Inbound: Controllers, Security
+    • Outbound: Repositories, External Services
+    • Configuration: Spring Beans
 end note
 
-note top of "Application Layer"
-    **Application Core - Domain-Driven Design:**
+note as N2
+    **PRINCIPAIS PACKAGES:**
     
-    **Domain Entities:**
-    • Rich domain models with behavior
-    • Value Objects for type safety
-    • Domain Services for complex validations
-    
-    **Use Cases:**
-    • Single responsibility principle
-    • Pure business logic
-    • Port-based dependencies
-    
-    **Ports:**
-    • Inbound: Primary ports (driving)
-    • Outbound: Secondary ports (driven)
-    • Interface segregation principle
+    **Domain**: Entidades + Value Objects + Services
+    **UseCase**: Casos de uso da aplicação
+    **Ports**: Interfaces (Inbound + Outbound)
+    **Adapters**: Implementações (Web + JPA + Security)
+    **Config**: Configuração Spring Boot
 end note
+
+N1 .up. "application"
+N2 .up. "infrastructure"
 
 @enduml
