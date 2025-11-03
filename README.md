@@ -213,15 +213,15 @@ infrastructure/configs/
 Os diagramas PlantUML da arquitetura estão disponíveis nos arquivos:
   
 #### **Diagramas Principais**
-- **[`diag01.puml`](diag01.puml )** - **Arquitetura Hexagonal Completa**: Visão geral das camadas, componentes e relacionamentos
-- **[`diag02.puml`](diag02.puml )** - **Modelo de Domínio**: Classes de domínio, value objects, ports e domain services
-- **[`diag03.puml`](diag03.puml )** - **Fluxo de Autenticação JWT**: Sequence diagram detalhado do processo de login
-- **[`diag04.puml`](diag04.puml )** - **Schema do Banco de Dados**: Estrutura das tabelas PostgreSQL
-- **[`diag05.puml`](diag05.puml )** - **Visão Geral da Arquitetura**: Overview simplificado dos componentes principais
+- **docs/diag01.puml** - **Arquitetura Hexagonal Completa**: Visão geral das camadas, componentes e relacionamentos
+- **docs/diag02.puml** - **Modelo de Domínio**: Classes de domínio, value objects, ports e domain services
+- **docs/diag03.puml** - **Fluxo de Autenticação JWT**: Sequence diagram detalhado do processo de login
+- **docs/diag04.puml** - **Schema do Banco de Dados**: Estrutura das tabelas PostgreSQL
+- **docs/diag05.puml** - **Visão Geral da Arquitetura**: Overview simplificado dos componentes principais
   
 #### **Diagramas Específicos do Address**
-- **[`diag06.puml`](diag06.puml )** - **Fluxos Completos de Address**: Sequence diagrams para CRUD de endereços
-- **[`diag07.puml`](diag07.puml )** - **Estrutura de Packages**: Organização completa de packages e classes
+- **docs/diag06.puml** - **Fluxos Completos de Address**: Sequence diagrams para CRUD de endereços
+- **docs/diag07.puml** - **Estrutura de Packages**: Organização completa de packages e classes
   
 ### Modelo de Banco de Dados
   
