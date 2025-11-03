@@ -1,29 +1,32 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.mapper;
 
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.AddressCreateRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.AddressUpdateRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.AddressResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.AddressCreateRequestDTO;
 import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.AddressUpdateRequestDTO;
-import org.springframework.stereotype.Component;
-
-import java.util.UUID;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.response.AddressResponseDTO;
 
 @Component
 public class AddressWebMapper {
 
-    public AddressResponse toWebResponse(AddressResponse response) {
+    public AddressResponseDTO toWebResponse(AddressResponse response) {
         if (response == null) {
             return null;
         }
-        return new AddressResponse(
-                response.id() != null ? response.id() : null,
-                response.userId() != null ? response.userId() : null,
+        return new AddressResponseDTO(
+                response.id() != null ? response.id().toString() : null,
+                response.userId() != null ? response.userId().toString() : null,
                 response.street(),
                 response.number(),
+                response.complement(),
+                response.neighborhood(),
                 response.city(),
-                response.createdAt(),
-                response.updatedAt()
+                response.zipCode()
         );
     }
 
@@ -35,7 +38,10 @@ public class AddressWebMapper {
                 userId,
                 dto.street(),
                 dto.number(),
-                dto.city()
+                dto.complement(),
+                dto.neighborhood(),
+                dto.city(),
+                dto.zipCode()
         );
     }
 
@@ -46,7 +52,26 @@ public class AddressWebMapper {
         return new AddressUpdateRequest(
                 dto.street(),
                 dto.number(),
-                dto.city());
+                dto.complement(),
+                dto.neighborhood(),
+                dto.city(),
+                dto.zipCode());
+    }
+
+    public AddressResponseDTO toResponseDTO(AddressResponse response) {
+        if (response == null) {
+            return null;
+        }
+        return new AddressResponseDTO(
+                response.id() != null ? response.id().toString() : null,
+                response.userId() != null ? response.userId().toString() : null,
+                response.street(),
+                response.number(),
+                response.complement(),
+                response.neighborhood(),
+                response.city(),
+                response.zipCode()
+        );
     }
 
 }

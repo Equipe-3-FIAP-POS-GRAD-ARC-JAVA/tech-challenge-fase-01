@@ -8,7 +8,10 @@ public record AddressResponse(
         UUID userId,
         String street,
         String number,
+        String complement,
+        String neighborhood,
         String city,
+        String zipCode,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

@@ -1,0 +1,253 @@
+@startuml Package_Structure_Complete
+!theme plain
+title Tech Challenge - Estrutura Completa de Packages e Classes
+
+' Configuração de estilos otimizada
+skinparam packageStyle rectangle
+skinparam package {
+    BackgroundColor<<core>> #E3F2FD
+    BorderColor<<core>> #1976D2
+    BackgroundColor<<infra>> #FFF3E0
+    BorderColor<<infra>> #F57C00
+    BackgroundColor<<web>> #E8F5E8
+    BorderColor<<web>> #2E7D32
+    FontSize 10
+}
+
+skinparam class {
+    FontSize 9
+    BackgroundColor #FFFFFF
+    BorderColor #666666
+}
+
+' Definindo direção left to right para melhor aproveitamento do espaço
+left to right direction
+
+' Raiz do Projeto
+package "br.com.fiap.challenge.tech_challenge_fase_01" {
+
+    ' =================== APPLICATION CORE ===================
+    package "application" <<core>> {
+        
+        ' DOMAIN LAYER
+        package "domain" {
+            package "user" {
+                class "UserDomain"
+                enum "RolesEnum"
+            }
+            package "address" {
+                class "AddressDomain"
+            }
+            package "valueobject" {
+                class "Email"
+                class "Username" 
+                class "PersonName"
+            }
+            package "service" {
+                class "UserDomainService"
+                class "AddressDomainService"
+            }
+            package "exception" {
+                class "BusinessRuleException"
+                class "InvalidFieldException"
+            }
+        }
+        
+        ' USE CASES
+        package "usecase" {
+            package "user" {
+                class "CreateUserUseCase"
+                class "UpdateUserUseCase"
+                class "FindUserByIdUseCase"
+                class "AuthUseCase"
+                note right : "8 User Use Cases\n+ Authentication"
+            }
+            package "address" {
+                class "CreateAddressUseCase"
+                class "UpdateAddressUseCase"
+                class "FindAddressUseCase"
+                class "DeleteAddressUseCase"
+            }
+        }
+        
+        ' PORTS (INTERFACES)
+        package "ports" {
+            package "inbound" {
+                package "user" {
+                    interface "UserCreatePort"
+                    interface "AuthPort"
+                    note right : "8 Inbound User Ports"
+                }
+                package "address" {
+                    interface "AddressCreatePort"
+                    note right : "4 Inbound Address Ports"
+                }
+            }
+            package "outbound" {
+                package "repository" {
+                    interface "UserRepositoryPort"
+                    interface "AddressRepositoryPort"
+                }
+                package "security" {
+                    interface "PasswordEncoderPort"
+                    interface "TokenGeneratorPort"
+                }
+            }
+        }
+        
+        ' APPLICATION DTOs
+        package "dto" {
+            package "requests" {
+                class "UserCreateRequest"
+                class "AddressCreateRequest"
+                note right : "6 Request DTOs"
+            }
+            package "response" {
+                class "UserResponse"
+                class "AddressResponse"
+                note right : "3 Response DTOs"
+            }
+        }
+    }
+
+    ' =================== INFRASTRUCTURE LAYER ===================
+    package "infrastructure" <<infra>> {
+        
+        ' INBOUND ADAPTERS (DRIVING)
+        package "adapters.inbound" {
+            
+            ' REST/WEB LAYER
+            package "web.rest" <<web>> {
+                package "controller" {
+                    class "UserController"
+                    class "AddressController"
+                    class "LoginController"
+                }
+                package "api" {
+                    interface "UserApi"
+                    interface "AddressApi"
+                    note right : "OpenAPI Specs"
+                }
+                package "mapper" {
+                    class "UserWebMapper"
+                    class "AddressWebMapper"
+                    note right : "DTO ↔ App Layer"
+                }
+                package "dto" {
+                    class "UserCreateRequestDTO"
+                    class "AddressResponseDTO"
+                    note right : "8 Web DTOs"
+                }
+            }
+            
+            ' SECURITY LAYER
+            package "security" {
+                class "JwtAuthenticationFilter"
+                class "SecurityUser"
+                class "GlobalExceptionHandler"
+                note right : "JWT + Spring Security"
+            }
+        }
+        
+        ' OUTBOUND ADAPTERS (DRIVEN)
+        package "adapters.outbound" {
+            
+            ' REPOSITORY LAYER
+            package "repository" {
+                class "UserRepositoryImpl"
+                class "AddressRepositoryImpl"
+                
+                package "jpa" {
+                    interface "JpaUserRepository"
+                    interface "JpaAddressRepository"
+                }
+                
+                package "jpa.entity" {
+                    class "JpaUserEntity"
+                    class "JpaAddressEntity"
+                    note right : "JPA Persistence"
+                }
+                
+                package "mapper" {
+                    class "UserEntityMapper"
+                    class "AddressEntityMapper"
+                    note right : "Domain ↔ JPA"
+                }
+            }
+            
+            ' SECURITY IMPLEMENTATIONS
+            package "security" {
+                class "BCryptPasswordEncoderAdapter"
+                class "JwtTokenGenerator"
+                note right : "Security Ports Impl"
+            }
+        }
+        
+        ' CONFIGURATION
+        package "configs" {
+            class "UserUseCaseConfig"
+            class "AddressUseCaseConfig"
+            class "SecurityConfig"
+            class "OpenApiConfig"
+            note right : "Spring @Configuration\n@Bean Factories"
+        }
+    }
+
+}
+
+' =================== RELACIONAMENTOS PRINCIPAIS ===================
+
+' Core Domain Flow
+"UserDomain" ..> "Email" : uses
+"UserDomain" ..> "Username" : uses
+"AddressDomain" ..> "UserDomain" : belongs to
+
+' Use Case to Domain
+"CreateUserUseCase" ..> "UserDomain" : creates
+"CreateAddressUseCase" ..> "AddressDomain" : creates
+
+' Ports Implementation (Hexagonal Architecture)
+"UserCreatePort" <|-- "CreateUserUseCase"
+"AddressCreatePort" <|-- "CreateAddressUseCase"
+"UserRepositoryPort" <|-- "UserRepositoryImpl"
+
+' Infrastructure Dependencies
+"UserController" ..> "UserApi" : implements
+"UserController" ..> "UserWebMapper" : uses
+"UserRepositoryImpl" ..> "JpaUserRepository" : uses
+"UserEntityMapper" : "Domain ↔ JPA"
+
+' Configuration Layer
+"UserUseCaseConfig" ..> "CreateUserUseCase" : @Bean
+"AddressUseCaseConfig" ..> "CreateAddressUseCase" : @Bean
+
+' =================== NOTAS EXPLICATIVAS ===================
+
+note as N1
+    **ARQUITETURA HEXAGONAL**
+    
+    **Core (Application):**
+    • Domain Models (UserDomain, AddressDomain)
+    • Use Cases (Business Logic)  
+    • Ports (Interfaces)
+    
+    **Infrastructure:**
+    • Inbound: Controllers, Security
+    • Outbound: Repositories, External Services
+    • Configuration: Spring Beans
+end note
+
+note as N2
+    **PRINCIPAIS PACKAGES:**
+    
+    **Domain**: Entidades + Value Objects + Services
+    **UseCase**: Casos de uso da aplicação
+    **Ports**: Interfaces (Inbound + Outbound)
+    **Adapters**: Implementações (Web + JPA + Security)
+    **Config**: Configuração Spring Boot
+end note
+
+N1 .up. "application"
+N2 .up. "infrastructure"
+
+@enduml

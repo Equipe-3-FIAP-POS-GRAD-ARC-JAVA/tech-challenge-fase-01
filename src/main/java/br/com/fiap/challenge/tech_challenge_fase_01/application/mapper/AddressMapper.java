@@ -1,10 +1,10 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.application.mapper;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.address.AddressDomain;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.AddressResponse;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.address.AddressDomain;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.AddressResponse;
 
 public final class AddressMapper {
 
@@ -22,7 +22,10 @@ public final class AddressMapper {
                 addressDomain.getUserId(),
                 addressDomain.getStreet(),
                 addressDomain.getNumber(),
+                addressDomain.getComplement(),
+                addressDomain.getNeighborhood(),
                 addressDomain.getCity(),
+                addressDomain.getZipCode(),
                 addressDomain.getCreatedAt(),
                 addressDomain.getUpdatedAt()
         );

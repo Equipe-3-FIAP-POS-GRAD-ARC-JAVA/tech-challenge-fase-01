@@ -1,18 +1,19 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaAddressEntity;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaUserEntity;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.address.JpaAddressRepository;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.user.JpaUserRepository;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.RolesEnum;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.RolesEnum;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaAddressEntity;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.entities.JpaUserEntity;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.address.JpaAddressRepository;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.outbound.repositories.user.JpaUserRepository;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -38,21 +39,27 @@ class JpaAddressRepositoryTest {
         JpaAddressEntity older = new JpaAddressEntity();
         older.setStreet("A");
         older.setNumber("1");
+        older.setComplement("Casa");
+        older.setNeighborhood("Centro");
         older.setCity("SP");
+        older.setZipCode("01234-567");
         older.setUser(user);
 
         JpaAddressEntity newer = new JpaAddressEntity();
         newer.setStreet("B");
         newer.setNumber("2");
+        newer.setComplement("Apt 2");
+        newer.setNeighborhood("Vila Nova");
         newer.setCity("SP");
+        newer.setZipCode("05678-901");
         newer.setUser(user);
 
         addressRepository.saveAll(List.of(older, newer));
 
-        var last = addressRepository.findTopByUserIdOrderByCreatedAtDesc(user.getId()).orElseThrow();
+        var last = addressRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId()).orElseThrow();
         assertEquals("B", last.getStreet());
 
-        var all = addressRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId());
+        var all = addressRepository.findAllByUser_IdOrderByCreatedAtDesc(user.getId());
         assertEquals(2, all.size());
         assertEquals("B", all.get(0).getStreet());
     }

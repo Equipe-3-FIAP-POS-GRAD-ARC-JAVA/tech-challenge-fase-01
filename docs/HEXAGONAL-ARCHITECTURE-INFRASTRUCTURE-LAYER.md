@@ -1,7 +1,7 @@
 # 🏗️ Infrastructure Layer - Arquitetura Hexagonal
 
 **Data**: 15 de Outubro 2025  
-**Versão**: 2.1  
+**Versão**: 2.2  
 **Status**: ✅ Implementado e Validado
 
 ## 📋 Visão Geral
@@ -22,27 +22,47 @@ A **Infrastructure Layer** implementa os **Adapters** da Arquitetura Hexagonal, 
 ```
 infrastructure/
 ├── adapters/
-│   ├── inbound/           # Driving Adapters (quem CHAMA a aplicação)
-│   │   ├── web/
-│   │   │   ├── rest/
-│   │   │   │   ├── controller/      # Controllers REST
-│   │   │   │   ├── dto/             # DTOs da camada web
-│   │   │   │   └── mapper/          # Mappers web ↔ application
-│   │   │   └── handler/             # Exception handlers globais
-│   │   └── security/                # Filtros de segurança
-│   │       ├── jwt/                 # Implementação JWT
-│   │       └── dto/                 # DTOs de segurança
-│   └── outbound/          # Driven Adapters (CHAMADOS pela aplicação)
-│       ├── repositories/            # Implementação JPA
-│       │   ├── entities/            # Entidades JPA
-│       │   ├── impl/                # Implementações dos Repository Ports
-│       │   └── mappers/             # Mappers domain ↔ entity
-│       └── security/                # Adapters de segurança
-├── configs/               # Configurações Spring
-│   ├── SecurityBeansConfig.java    # Beans de use cases
-│   └── WebSecurityConfig.java      # Configuração Spring Security
-└── exceptions/            # Exceções de infraestrutura
-    └── handler/           # Exception handlers
+│   ├── inbound/
+│   │   ├── security/
+│   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   ├── JwtUtil.java
+│   │   │   └── SecurityUser.java
+│   │   └── web/
+│   │       └── rest/
+│   │           ├── controller/
+│   │           │   ├── LoginController.java
+│   │           │   └── UserController.java
+│   │           ├── dto/
+│   │           │   ├── requests/
+│   │           │   │   ├── LoginRequest.java
+│   │           │   │   ├── UpdatePasswordRequestDTO.java
+│   │           │   │   ├── UserCreateRequestDTO.java
+│   │           │   │   └── UserUpdateRequestDTO.java
+│   │           │   └── response/
+│   │           │       ├── LoginResponse.java
+│   │           │       └── UserResponseDTO.java
+│   │           └── mapper/
+│   │               ├── AuthWebMapper.java
+│   │               └── UserWebMapper.java
+│   └── outbound/
+│       ├── entities/
+│       │   └── JpaUserEntity.java
+│       ├── mappers/
+│       │   └── UserEntityMapper.java
+│       ├── repositories/
+│       │   ├── JpaUserRepository.java
+│       │   └── UserRepositoryImpl.java
+│       └── security/
+│           └── BCryptPasswordEncoderAdapter.java
+├── configs/
+│   ├── AuthUseCaseConfig.java
+│   ├── SecurityConfig.java
+│   ├── UserUseCaseConfig.java
+│   └── WebSecurityConfig.java
+└── exceptions/
+    ├── GlobalExceptionHandler.java
+    ├── NotFoundException.java
+    └── UnauthorizedException.java
 ```
 
 ---
@@ -58,52 +78,80 @@ Os **Inbound Adapters** são **dirigidos por agentes externos** (usuários, sist
 ```java
 @RestController
 @RequestMapping("/api/v1/users")
-@Validated
-@Tag(name = "User Management", description = "Operações de gerenciamento de usuários")
+@RequiredArgsConstructor
 public class UserController {
-    
-    private final UserService userService;  // Facade da Application Layer
-    private final UserWebMapper webMapper;  // Conversão Web ↔ Application DTOs
-    
+
+    private final UserCreatePort userCreatePort;
+    private final UserCreateOwnerPort userCreateOwnerPort;
+    private final UserUpdatePort userUpdatePort;
+    private final UserUpdatePasswordPort userUpdatePasswordPort;
+    private final UserDeletePort userDeletePort;
+    private final UserFindByNamePort userFindByNamePort;
+    private final UserFindByIdPort userFindByIdPort;
+    private final UserWebMapper webMapper;
+
     @PostMapping
-    @Operation(summary = "Criar usuário CLIENT")
-    public ResponseEntity<UserResponseDTO> createUser(
-            @Valid @RequestBody UserCreateRequestDTO request) {
-        
-        // 1. Converte Web DTO → Application DTO
-        UserCreateRequest appRequest = webMapper.toApplicationRequest(request);
-        
-        // 2. Chama Application Layer através do Port
-        UserResponse appResponse = userService.createUser(appRequest);
-        
-        // 3. Converte Application DTO → Web DTO
-        UserResponseDTO webResponse = webMapper.toWebResponse(appResponse);
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(webResponse);
+    public ResponseEntity<UserResponseDTO> createClient(@Valid @RequestBody UserCreateRequestDTO dto) {
+        UserCreateRequest request = webMapper.toApplicationRequest(dto);
+        UserResponse response = userCreatePort.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
-    
+
     @PostMapping("/owner")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Criar usuário OWNER (apenas ADMIN)")
-    public ResponseEntity<UserResponseDTO> createOwner(
-            @Valid @RequestBody UserCreateOwnerRequestDTO request) {
-        
-        UserCreateOwnerRequest appRequest = webMapper.toApplicationOwnerRequest(request);
-        UserResponse appResponse = userService.createOwner(appRequest);
-        UserResponseDTO webResponse = webMapper.toWebResponse(appResponse);
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(webResponse);
+    public ResponseEntity<UserResponseDTO> createOwner(@Valid @RequestBody UserCreateRequestDTO dto) {
+        UserCreateRequest request = webMapper.toApplicationRequest(dto);
+        UserResponse response = userCreateOwnerPort.createOwner(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(webMapper.toWebResponse(response));
     }
-    
+
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar usuário por ID")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
-        UserResponse appResponse = userService.findById(id);
-        UserResponseDTO webResponse = webMapper.toWebResponse(appResponse);
-        return ResponseEntity.ok(webResponse);
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
+        UUID userId = UUID.fromString(id);
+        UserResponse response = userFindByIdPort.findById(userId);
+        return ResponseEntity.ok(webMapper.toWebResponse(response));
     }
-    
-    // ... outros endpoints
+
+    @GetMapping("/by-name")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<List<UserResponseDTO>> getUserByName(@RequestParam String name) {
+        List<UserResponse> responses = userFindByNamePort.findByName(name);
+        return ResponseEntity.ok(responses.stream()
+                .map(webMapper::toWebResponse)
+                .toList());
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'CLIENT')")
+    public ResponseEntity<UserResponseDTO> update(
+            @PathVariable String id,
+            @Valid @RequestBody UserUpdateRequestDTO dto) {
+        UUID userId = UUID.fromString(id);
+        UserUpdateRequest request = webMapper.toApplicationUpdateRequest(dto);
+        UserResponse response = userUpdatePort.update(userId, request);
+        return ResponseEntity.ok(webMapper.toWebResponse(response));
+    }
+
+    @PatchMapping("/password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserResponseDTO> updatePassword(
+            @AuthenticationPrincipal SecurityUser principal,
+            @Valid @RequestBody UpdatePasswordRequestDTO dto) {
+        UUID userId = principal.getId();
+        UpdatePasswordRequest request = webMapper.toApplicationPasswordRequest(dto);
+        UserResponse response = userUpdatePasswordPort.updatePassword(userId, request);
+        return ResponseEntity.ok(webMapper.toWebResponse(response));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+        UUID userId = UUID.fromString(id);
+        userDeletePort.delete(userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 ```
 
@@ -118,28 +166,23 @@ public class UserController {
 
 ```java
 @RestController
-@RequestMapping("/login")
-@Tag(name = "Authentication", description = "Operações de autenticação")
+@RequiredArgsConstructor 
+@RequestMapping("/api/v1/auth")
 public class LoginController {
     
-    private final AuthService authService;
+    private final AuthPort authPort;
     private final AuthWebMapper authWebMapper;
-    
-    @PostMapping
-    @Operation(summary = "Autenticar usuário e obter JWT token")
-    public ResponseEntity<LoginResponseDTO> login(
-            @Valid @RequestBody LoginRequestDTO request) {
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        // 1. Converte DTO Web → DTO Application
+        var appRequest = authWebMapper.toApplicationLoginRequest(loginRequest);
         
-        // 1. Converte Web DTO → Application DTO
-        LoginRequest appRequest = authWebMapper.toApplicationRequest(request);
+        // 2. Chama Use Case através do Port
+        var appResponse = authPort.login(appRequest);
         
-        // 2. Chama Application Layer
-        LoginResponse appResponse = authService.login(appRequest);
-        
-        // 3. Converte Application DTO → Web DTO
-        LoginResponseDTO webResponse = authWebMapper.toWebResponse(appResponse);
-        
-        return ResponseEntity.ok(webResponse);
+        // 3. Converte DTO Application → DTO Web  
+        return ResponseEntity.ok(authWebMapper.toWebLoginResponse(appResponse));
     }
 }
 ```
@@ -149,42 +192,22 @@ public class LoginController {
 #### Request DTOs
 ```java
 // UserCreateRequestDTO.java
-public class UserCreateRequestDTO {
-    
-    @NotBlank(message = "Nome é obrigatório")
-    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
-    private String name;
-    
-    @NotBlank(message = "Email é obrigatório")
-    @Email(message = "Email deve ter formato válido")
-    private String email;
-    
-    @NotBlank(message = "Username é obrigatório")
-    @Pattern(regexp = "^[a-zA-Z0-9._]{3,20}$", 
-             message = "Username deve ter 3-20 caracteres (letras, números, . e _)")
-    private String username;
-    
-    @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 6, max = 50, message = "Senha deve ter entre 6 e 50 caracteres")
-    private String password;
-    
-    // getters e setters
+public record UserCreateRequestDTO(
+        @NotBlank(message = "Nome é obrigatório") @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres") String name,
+
+        @NotBlank(message = "Email é obrigatório") @Email(message = "Email inválido") String email,
+
+        @NotBlank(message = "Login é obrigatório") @Size(min = 3, max = 50, message = "Login deve ter entre 3 e 50 caracteres") String login,
+
+        @NotBlank(message = "Senha é obrigatória") @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres") String password) {
 }
 ```
 
 #### Response DTOs
 ```java
 // UserResponseDTO.java
-public class UserResponseDTO {
-    private Long id;
-    private String name;
-    private String email;
-    private String username;
-    private String role;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    
-    // getters e setters
+public record UserResponseDTO(String id, String name, String email, String login) {
+
 }
 ```
 
@@ -199,28 +222,47 @@ public class UserResponseDTO {
 ```java
 @Component
 public class UserWebMapper {
-    
-    // Web DTO → Application DTO
-    public UserCreateRequest toApplicationRequest(UserCreateRequestDTO webDto) {
-        return UserCreateRequest.builder()
-            .name(webDto.getName())
-            .email(webDto.getEmail())
-            .username(webDto.getUsername())
-            .password(webDto.getPassword())
-            .build();
+
+    public UserCreateRequest toApplicationRequest(UserCreateRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new UserCreateRequest(
+                dto.name(),
+                dto.email(),
+                dto.login(),
+                dto.password());
     }
-    
-    // Application DTO → Web DTO
-    public UserResponseDTO toWebResponse(UserResponse appDto) {
-        return UserResponseDTO.builder()
-            .id(appDto.getId())
-            .name(appDto.getName())
-            .email(appDto.getEmail())
-            .username(appDto.getUsername())
-            .role(appDto.getRole())
-            .createdAt(appDto.getCreatedAt())
-            .updatedAt(appDto.getUpdatedAt())
-            .build();
+
+    public UserUpdateRequest toApplicationUpdateRequest(UserUpdateRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new UserUpdateRequest(
+                dto.name(),
+                dto.email(),
+                dto.login());
+    }
+
+    public UpdatePasswordRequest toApplicationPasswordRequest(UpdatePasswordRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new UpdatePasswordRequest(
+                dto.currentPassword(),
+                dto.newPassword(),
+                dto.confirmPassword());
+    }
+
+    public UserResponseDTO toWebResponse(UserResponse response) {
+        if (response == null) {
+            return null;
+        }
+        return new UserResponseDTO(
+                response.id().toString(),
+                response.name(),
+                response.email(),
+                response.login());
     }
 }
 ```
@@ -232,45 +274,50 @@ public class UserWebMapper {
 ```java
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
-    private final JwtTokenManager jwtTokenManager;
-    private final UserDetailsService userDetailsService;
-    
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                   HttpServletResponse response, 
-                                   FilterChain filterChain) {
-        try {
-            // 1. Extrair token do header Authorization
-            String token = extractTokenFromRequest(request);
-            
-            if (token != null && jwtTokenManager.validateToken(token)) {
-                // 2. Extrair username do token
-                String username = jwtTokenManager.getUsernameFromToken(token);
-                
-                // 3. Carregar usuário via UserDetailsService
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                
-                // 4. Configurar Authentication no SecurityContext
-                UsernamePasswordAuthenticationToken auth = 
-                    new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-        } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e.getMessage());
-        }
-        
-        filterChain.doFilter(request, response);
+    private final JwtUtil jwtUtil;
+    private final JpaUserRepository userRepository;
+
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, JpaUserRepository userRepository) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
-    
-    private String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+
+    @SuppressWarnings("null")
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
+        String username = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            username = jwtUtil.getUsernameFromToken(token);
         }
-        return null;
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            Optional<JpaUserEntity> userOpt = userRepository.findByLogin(username);
+            if (userOpt.isPresent() && jwtUtil.validateToken(token)) {
+                UserDetails userDetails = new SecurityUser(userOpt.get());
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                if (userDetails instanceof SecurityUser) {
+                    SecurityUser securityUser = (SecurityUser) userDetails;
+                    logger.info(
+                        String.format("User Authenticated: Username=%s, ID=%s, Roles=%s",
+                                securityUser.getUsername(),
+                                securityUser.getId(),
+                                securityUser.getAuthorities()
+                        )
+                    );
+                }
+            }
+        }
+        filterChain.doFilter(request, response);
     }
 }
 ```
@@ -281,42 +328,193 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 ```java
 @ControllerAdvice
-@Slf4j
 public class GlobalExceptionHandler {
-    
+
+    private static final String BASE_PROBLEM_TYPE = "/problems";
+
+    @ExceptionHandler(InvalidFieldException.class)
+    public ProblemDetail handleInvalidFieldException(InvalidFieldException ex, WebRequest request) {
+        ProblemDetail problemDetail = createBaseProblemDetail(
+                HttpStatus.BAD_REQUEST, 
+                ex.getMessage(), 
+                "/invalid-field", 
+                "Campo Inválido", 
+                "VALIDATION_ERROR", 
+                request
+        );
+        
+        problemDetail.setProperty("fieldName", ex.getFieldName());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ProblemDetail handleBusinessRuleException(BusinessRuleException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.UNPROCESSABLE_ENTITY, 
+                ex.getMessage(), 
+                "/business-rule-violation", 
+                "Regra de Negócio Violada", 
+                "BUSINESS_RULE_VIOLATION", 
+                request
+        );
+    }
+
+    @ExceptionHandler(DomainValidationException.class)
+    public ProblemDetail handleDomainValidationException(DomainValidationException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.BAD_REQUEST, 
+                ex.getMessage(), 
+                "/domain-validation", 
+                "Validação de Domínio", 
+                "DOMAIN_VALIDATION_ERROR", 
+                request
+        );
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ProblemDetail> handleUserNotFound(UserNotFoundException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("User Not Found");
-        problem.setType(URI.create("/errors/user-not-found"));
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
+    public ProblemDetail handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                "/not-found",
+                "Usuário Não Encontrado",
+                "RESOURCE_NOT_FOUND",
+                request
+        );
     }
-    
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ResponseEntity<ProblemDetail> handleUsernameExists(UsernameAlreadyExistsException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.CONFLICT, ex.getMessage());
-        problem.setTitle("Username Already Exists");
-        problem.setType(URI.create("/errors/username-conflict"));
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ProblemDetail handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/conflict"));
+        problemDetail.setTitle("Conflito de Dados");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "DUPLICATE_RESOURCE");
+
+        return problemDetail;
     }
-    
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ProblemDetail> handleValidationErrors(
-            MethodArgumentNotValidException ex) {
-        
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error -> 
-            errors.put(error.getField(), error.getDefaultMessage()));
-        
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.BAD_REQUEST, "Validation failed");
-        problem.setTitle("Validation Error");
-        problem.setProperty("validationErrors", errors);
-        
-        return ResponseEntity.badRequest().body(problem);
+
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFoundException(NotFoundException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/not-found"));
+        problemDetail.setTitle("Recurso Não Encontrado");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "NOT_FOUND");
+
+        return problemDetail;
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ProblemDetail handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/unauthorized"));
+        problemDetail.setTitle("Não Autorizado");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "UNAUTHORIZED");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(org.springframework.security.authorization.AuthorizationDeniedException ex, WebRequest request) {
+        return createBaseProblemDetail(
+                HttpStatus.FORBIDDEN,
+                "Você não tem permissão para acessar este recurso.",
+                "/access-denied",
+                "Acesso Negado",
+                "ACCESS_DENIED",
+                request
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/invalid-argument"));
+        problemDetail.setTitle("Argumento Inválido");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "INVALID_ARGUMENT");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(JpaSystemException.class)
+    public ProblemDetail handleJpaSystemException(JpaSystemException ex, WebRequest request) {
+        // Log do erro real para debug
+        System.err.println("JpaSystemException caught: " + ex.getMessage());
+        System.err.println("Cause: " + ex.getCause());
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocorreu um erro interno. Por favor, tente novamente mais tarde.");
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/internal-server-error"));
+        problemDetail.setTitle("Erro Interno do Servidor");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "JPA_SYSTEM_ERROR");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGenericException(Exception ex, WebRequest request) {
+        // Em produção, logar a exceção e retornar mensagem genérica
+        // logger.error("Erro inesperado", ex);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocorreu um erro interno. Por favor, tente novamente mais tarde.");
+
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + "/internal-server-error"));
+        problemDetail.setTitle("Erro Interno do Servidor");
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty("timestamp", getTimestamp());
+        problemDetail.setProperty("errorType", "INTERNAL_SERVER_ERROR");
+
+        return problemDetail;
+    }
+
+    private ProblemDetail createBaseProblemDetail(
+            HttpStatus status,
+            String detail,
+            String typeSubpath,
+            String title,
+            String errorType,
+            WebRequest request) {
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, detail);
+        
+        problemDetail.setType(URI.create(BASE_PROBLEM_TYPE + typeSubpath));
+        problemDetail.setTitle(title);
+        problemDetail.setInstance(getRequestUri(request));
+        problemDetail.setProperty(TIMESTAMP_PROPERTY, getTimestamp());
+        problemDetail.setProperty(ERROR_TYPE_PROPERTY, errorType);
+        
+        return problemDetail;
+    }
+
+    private URI getRequestUri(WebRequest request) {
+        String path = request.getDescription(false).replace("uri=", "");
+        return URI.create(path);
+    }
+
+    private String getTimestamp() {
+        return ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    private static final String TIMESTAMP_PROPERTY = "timestamp";
+    private static final String ERROR_TYPE_PROPERTY = "errorType";
 }
 ```
 
@@ -333,35 +531,36 @@ Os **Outbound Adapters** são **chamados pela aplicação** e implementam os **O
 ```java
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class JpaUserEntity {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(name = "name", nullable = false, length = 100)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(nullable = false)
+    private UUID id;
+    @Column(nullable = false, length = 100)
     private String name;
-    
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(unique = true, nullable = false)
     private String email;
-    
-    @Column(name = "username", nullable = false, unique = true, length = 50)
-    private String username;
-    
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false, length = 100)
+    private String login;
+    @Column(nullable = false, length = 100)
     private String password;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role;
-    
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
-    
     @Column(name = "updated_at")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
-    
-    // getters, setters, construtores
+    @Enumerated(EnumType.STRING)
+    @Column(name = "roles", nullable = false)
+    private List<RolesEnum> role;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
 }
 ```
 
@@ -369,17 +568,17 @@ public class JpaUserEntity {
 
 ```java
 @Repository
-public interface JpaUserRepository extends JpaRepository<JpaUserEntity, Long> {
-    
-    Optional<JpaUserEntity> findByUsername(String username);
-    
-    Optional<JpaUserEntity> findByEmail(String email);
-    
-    List<JpaUserEntity> findByNameContainingIgnoreCase(String name);
-    
-    boolean existsByUsername(String username);
-    
-    boolean existsByEmail(String email);
+public interface JpaUserRepository extends JpaRepository<JpaUserEntity, UUID> {
+
+    @Query("SELECT u FROM JpaUserEntity u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%',:name,'%')) AND u.isActive = true")
+    public List<JpaUserEntity> findByName(@Param("name") String name);
+
+    Optional<JpaUserEntity> findByLogin(String login);
+
+    Optional<JpaUserEntity> findByLoginIgnoreCase(String login);
+
+    Optional<JpaUserEntity> findByEmailIgnoreCase(String email);
+
 }
 ```
 
@@ -387,49 +586,116 @@ public interface JpaUserRepository extends JpaRepository<JpaUserEntity, Long> {
 
 ```java
 @Repository
+@RequiredArgsConstructor
+@Slf4j
 public class UserRepositoryImpl implements UserRepositoryPort {
+
+    private static final String USER_NOT_FOUND_MESSAGE = "User not found";
     
-    private final JpaUserRepository jpaRepository;
-    private final UserDomainMapper domainMapper;
-    
+    private final JpaUserRepository jpaUserRepository;
+    private final UserEntityMapper userMapper;
+
     @Override
     public UserDomain save(UserDomain user) {
-        // 1. Domain → JPA Entity
-        JpaUserEntity entity = domainMapper.toJpaEntity(user);
-        
-        // 2. Persistir via JPA
-        JpaUserEntity savedEntity = jpaRepository.save(entity);
-        
-        // 3. JPA Entity → Domain
-        return domainMapper.toDomain(savedEntity);
+        return userMapper.toDomain(jpaUserRepository.save(userMapper.toEntity(user)));
     }
-    
+
     @Override
-    public Optional<UserDomain> findById(Long id) {
-        return jpaRepository.findById(id)
-            .map(domainMapper::toDomain);
+    public Optional<UserDomain> findById(UUID id) {
+        return jpaUserRepository.findById(id).map(userMapper::toDomain);
     }
-    
-    @Override
-    public Optional<UserDomain> findByUsername(String username) {
-        return jpaRepository.findByUsername(username)
-            .map(domainMapper::toDomain);
-    }
-    
-    @Override
-    public List<UserDomain> findByNameContainingIgnoreCase(String name) {
-        return jpaRepository.findByNameContainingIgnoreCase(name)
-            .stream()
-            .map(domainMapper::toDomain)
-            .collect(Collectors.toList());
-    }
-    
+
     @Override
     public boolean existsByUsername(String username) {
-        return jpaRepository.existsByUsername(username);
+        return executeWithExceptionHandling(
+            () -> jpaUserRepository.findByLoginIgnoreCase(username).isPresent(),
+            false,
+            "checking if username exists: " + username
+        );
     }
-    
-    // ... outras implementações
+
+    @Override
+    public List<UserDomain> findByName(String name) {
+        List<JpaUserEntity> entities = this.jpaUserRepository.findByName(name);
+        if (entities == null || entities.isEmpty()) {
+            throw new UserNotFoundException("User not found by name: " + name);
+        }
+        return entities.stream()
+                .map(userMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void delete(UUID id) {
+        JpaUserEntity entity = this.jpaUserRepository.findById(id)
+                .orElseThrow(createUserNotFoundExceptionSupplier(id));
+
+        entity.setActive(false);
+        this.jpaUserRepository.save(entity);
+    }
+
+    public UserDomain createOwner(UserDomain request) {
+        JpaUserEntity entity = createEntityFromDomain(request, RolesEnum.OWNER);
+        JpaUserEntity saved = this.jpaUserRepository.save(entity);
+        return userMapper.toDomain(saved);
+    }
+
+    @Override
+    public Optional<UserDomain> findByLogin(String login) {
+        log.info("🔍 UserRepositoryImpl.findByLogin() called with login: {}", login);
+
+        Optional<UserDomain> result = executeWithExceptionHandling(
+            () -> {
+                log.info("📦 Searching in JpaUserRepository for login: {}", login);
+                Optional<JpaUserEntity> entity = jpaUserRepository.findByLoginIgnoreCase(login);
+                log.info("🔍 JPA query result present: {}", entity.isPresent());
+                return entity.map(userMapper::toDomain);
+            },
+            Optional.empty(),
+            "finding user by username: " + login
+        );
+        
+        log.info("✅ UserRepositoryImpl.findByUsername() returning: {}", result.isPresent() ? "User found" : USER_NOT_FOUND_MESSAGE);
+        return result;
+    }
+
+    @Override
+    public Optional<UserDomain> findByEmail(String email) {
+        return executeWithExceptionHandling(
+            () -> jpaUserRepository.findByEmailIgnoreCase(email).map(userMapper::toDomain),
+            Optional.empty(),
+            "finding user by email: " + email
+        );
+    }
+
+    private <T> T executeWithExceptionHandling(Supplier<T> operation, T defaultValue, String operationDescription) {
+        try {
+            return operation.get();
+        } catch (Exception ex) {
+            log.debug("Exception during {}: {}", operationDescription, ex.getMessage());
+            return defaultValue;
+        }
+    }
+
+    private Supplier<UserNotFoundException> createUserNotFoundExceptionSupplier(UUID id) {
+        return () -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE + " with id: " + id);
+    }
+
+    private JpaUserEntity createEntityFromDomain(UserDomain domain, RolesEnum role) {
+        LocalDateTime now = LocalDateTime.now();
+        
+        JpaUserEntity entity = new JpaUserEntity();
+        entity.setId(null);
+        entity.setName(domain.getName());
+        entity.setEmail(domain.getEmail());
+        entity.setLogin(domain.getLogin());
+        entity.setPassword(domain.getPassword());
+        entity.setCreatedAt(now);
+        entity.setActive(true);
+        entity.setRole(List.of(role));
+        
+        return entity;
+    }
 }
 ```
 
@@ -437,61 +703,86 @@ public class UserRepositoryImpl implements UserRepositoryPort {
 
 ```java
 @Component
-public class UserDomainMapper {
-    
-    // Domain → JPA Entity
-    public JpaUserEntity toJpaEntity(UserDomain domain) {
+public class UserEntityMapper {
+
+    public JpaUserEntity toEntity(UserDomain domain) {
+        if (domain == null) {
+            return null;
+        }
+
         JpaUserEntity entity = new JpaUserEntity();
         entity.setId(domain.getId());
-        entity.setName(domain.getName().getValue());
-        entity.setEmail(domain.getEmail().getValue());
-        entity.setUsername(domain.getUsername().getValue());
+        entity.setName(domain.getName());
+        entity.setEmail(domain.getEmail());
+        entity.setLogin(domain.getLogin());
         entity.setPassword(domain.getPassword());
-        entity.setRole(domain.getRole());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
+        entity.setActive(domain.isActive());
+
+        if (domain.getRole() != null) {
+            List<RolesEnum> entityRoles = domain
+                    .getRole().stream()
+                    .map(this::toEntityRole)
+                    .collect(Collectors.toList());
+            entity.setRole(entityRoles);
+        }
+
         return entity;
     }
-    
-    // JPA Entity → Domain
+
     public UserDomain toDomain(JpaUserEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        List<RolesEnum> domainRoles = null;
+        if (entity.getRole() != null) {
+            domainRoles = entity.getRole().stream()
+                    .map(this::toDomainRole)
+                    .collect(Collectors.toList());
+        }
+
         return UserDomain.builder()
-            .id(entity.getId())
-            .name(PersonName.of(entity.getName()))
-            .email(Email.of(entity.getEmail()))
-            .username(Username.of(entity.getUsername()))
-            .password(entity.getPassword())
-            .role(entity.getRole())
-            .createdAt(entity.getCreatedAt())
-            .updatedAt(entity.getUpdatedAt())
-            .build();
+                .id(entity.getId())
+                .name(entity.getName() != null ? PersonName.of(entity.getName()) : null)
+                .email(entity.getEmail() != null ? Email.of(entity.getEmail()) : null)
+                .login(entity.getLogin() != null ? Username.of(entity.getLogin()) : null)
+                .password(entity.getPassword())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .role(domainRoles)
+                .isActive(entity.isActive())
+                .build();
+    }
+
+    private RolesEnum toEntityRole(
+            RolesEnum domainRole) {
+        if (domainRole == null) {
+            return null;
+        }
+        return RolesEnum
+                .valueOf(domainRole.name());
+    }
+
+    private RolesEnum toDomainRole(
+            RolesEnum entityRole) {
+        if (entityRole == null) {
+            return null;
+        }
+        return RolesEnum.valueOf(entityRole.name());
     }
 }
 ```
 
 ### Security Adapters
 
-#### JWT Token Adapter
+#### JWT Token Management
 
 ```java
-@Component
-public class JwtTokenAdapter implements JwtTokenPort {
-    
-    private final JwtTokenManager jwtTokenManager;
-    
-    @Override
-    public String generateToken(String username, Set<String> roles) {
-        return jwtTokenManager.generateToken(username, roles);
-    }
-    
-    @Override
-    public boolean validateToken(String token) {
-        return jwtTokenManager.validateToken(token);
-    }
-    
-    @Override
-    public String getUsernameFromToken(String token) {
-        return jwtTokenManager.getUsernameFromToken(token);
+// Note: JWT Token functionality is now integrated directly into Security layer
+// through JwtUtil and JwtAuthenticationFilter classes
+// No separate adapter needed as JWT handling is infrastructure-specific
     }
     
     @Override

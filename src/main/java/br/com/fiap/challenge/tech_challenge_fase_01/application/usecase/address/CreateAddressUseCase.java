@@ -23,7 +23,10 @@ public class CreateAddressUseCase implements AddressCreatePort {
                 addressCreateRequest.userId(),
                 addressCreateRequest.street(),
                 addressCreateRequest.number(),
-                addressCreateRequest.city()
+                addressCreateRequest.complement(),
+                addressCreateRequest.neighborhood(),
+                addressCreateRequest.city(),
+                addressCreateRequest.zipCode()
         );
 
         var savedAdress = addressRepository.save(address);

@@ -2,7 +2,7 @@
 
 **Data de Atualização**: 04/10/2025  
 **Status**: ✅ **VALIDADO E ATUALIZADO**  
-**Total de Arquivos Java**: 73 arquivos
+**Total de Arquivos Java**: 63 arquivos
 
 ## 🏗️ Visão Geral da Arquitetura
 

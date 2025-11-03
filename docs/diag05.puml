@@ -1,0 +1,161 @@
+@startuml Complete_Architecture_Overview
+!theme plain
+title Tech Challenge - Visão Geral Completa da Arquitetura
+
+' Configuração de estilos
+skinparam package {
+    BackgroundColor<<web>> #E8F5E8
+    BorderColor<<web>> #2E7D32
+    BackgroundColor<<application>> #E1F5FE
+    BorderColor<<application>> #0277BD
+    BackgroundColor<<infrastructure>> #FFF3E0
+    BorderColor<<infrastructure>> #F57C00
+}
+
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #424242
+    FontSize 10
+}
+
+' Camada Web (Controllers)
+package "Web Layer" <<web>> {
+    [UserController] as UC
+    [AddressController] as AC
+    [LoginController] as LC
+    [GlobalExceptionHandler] as EH
+    [JwtAuthenticationFilter] as JF
+}
+
+' Camada de Aplicação
+package "Application Layer" <<application>> {
+    package "Use Cases" {
+        [CreateUserUseCase] as CUU
+        [AuthUseCase] as AU
+        [CreateAddressUseCase] as CAU
+        [FindAddressUseCase] as FAU
+        [UpdateAddressUseCase] as UAU
+        [DeleteAddressUseCase] as DAU
+        [UpdateUserUseCase] as UUU
+        [DeleteUserUseCase] as DUU
+    }
+    
+    package "Domain" {
+        [UserDomain] as UD
+        [AddressDomain] as AD
+        [Email] as E
+        [Username] as U
+        [PersonName] as PN
+        [UserDomainService] as UDS
+        [AddressDomainService] as ADS
+    }
+    
+    package "Ports" {
+        [UserRepositoryPort] as URP
+        [AddressRepositoryPort] as ARP
+        [PasswordEncoderPort] as PEP
+        [TokenGeneratorPort] as TGP
+    }
+}
+
+' Camada de Infraestrutura
+package "Infrastructure Layer" <<infrastructure>> {
+    package "Repositories" {
+        [UserRepositoryImpl] as URI
+        [AddressRepositoryImpl] as ARI
+        [JpaUserRepository] as JUR
+        [JpaAddressRepository] as JAR
+    }
+    
+    package "Security" {
+        [BCryptPasswordEncoder] as BCE
+        [JwtUtil] as JWT
+    }
+    
+    package "Database" {
+        database "PostgreSQL" as DB {
+            [users] as UT
+            [address] as AT
+        }
+    }
+}
+
+' Relacionamentos principais
+UC --> CUU : calls
+UC --> UUU : calls
+UC --> DUU : calls
+AC --> CAU : calls
+AC --> FAU : calls
+AC --> UAU : calls
+AC --> DAU : calls
+LC --> AU : calls
+
+CUU --> UD : creates
+CUU --> AD : creates (with user)
+AU --> UD : validates
+CAU --> AD : creates
+FAU --> AD : finds
+UAU --> AD : updates
+DAU --> AD : deletes
+
+UD --> E : contains
+UD --> U : contains
+UD --> PN : contains
+
+CUU --> URP : uses
+CUU --> ARP : uses
+CAU --> ARP : uses
+FAU --> ARP : uses
+UAU --> ARP : uses
+UAU --> ADS : uses
+DAU --> ARP : uses
+DAU --> ADS : uses
+AU --> PEP : uses
+AU --> TGP : uses
+
+URP --> URI : implements
+ARP --> ARI : implements
+PEP --> BCE : implements
+TGP --> JWT : implements
+
+URI --> JUR : uses
+ARI --> JAR : uses
+JUR --> DB : persists
+JAR --> DB : persists
+
+UT --> AT : "1:N relationship"
+
+note top of AC
+    **Address REST Endpoints**
+    • GET /api/v1/address (list user addresses)
+    • POST /api/v1/address (create address)
+    • PUT /api/v1/address/{id} (update address)
+    • DELETE /api/v1/address/{id} (delete address)
+    + Ownership validation in all operations
+end note
+
+note top of UD
+    **Rich Domain Model**
+    • Factory methods
+    • Business validations
+    • Value objects
+    • Immutable where possible
+end note
+
+note bottom of DB
+    **PostgreSQL Database**
+    • UUID primary keys
+    • JSONB for roles array
+    • Foreign key constraints
+    • Audit timestamps
+end note
+
+note right of JWT
+    **JWT Security**
+    • Token generation
+    • Token validation
+    • User authentication
+    • Role-based authorization
+end note
+
+@enduml

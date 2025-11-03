@@ -25,9 +25,9 @@ Este relatório apresenta a validação completa do projeto **tech-challenge-fas
 
 | Métrica | Valor | Status |
 |---------|-------|--------|
-| **Total de Arquivos Java** | 73 | ✅ |
-| **Camada de Aplicação** | 24 arquivos | ✅ |
-| **Camada de Infraestrutura** | 49 arquivos | ✅ |
+| **Total de Arquivos Java** | 63 | ✅ |
+| **Camada de Aplicação** | 37 arquivos | ✅ |
+| **Camada de Infraestrutura** | 25 arquivos | ✅ |
 | **Dependências de Frameworks no Core** | 0 | ✅ |
 | **Cobertura de Testes** | A implementar | ⚠️ |
 | **Documentação** | 8 arquivos | ✅ |
@@ -35,9 +35,9 @@ Este relatório apresenta a validação completa do projeto **tech-challenge-fas
 ### Distribuição de Arquivos
 
 ```
-📦 tech-challenge-fase-01 (73 arquivos Java)
+📦 tech-challenge-fase-01 (63 arquivos Java)
 │
-├── 📂 application/ (24 arquivos) - CORE BUSINESS
+├── 📂 application/ (37 arquivos) - CORE BUSINESS
 │   ├── domain/ (10 arquivos)
 │   │   ├── exception/ (3) - DomainValidationException, InvalidFieldException, BusinessRuleException
 │   │   ├── service/ (1) - UserDomainService
@@ -69,7 +69,7 @@ Este relatório apresenta a validação completa do projeto **tech-challenge-fas
 │       ├── FindUserByIdUseCase
 │       └── FindUserByNameUseCase
 │
-└── 📂 infrastructure/ (49 arquivos) - FRAMEWORKS & ADAPTERS
+└── 📂 infrastructure/ (25 arquivos) - FRAMEWORKS & ADAPTERS
     ├── adapters/
     │   ├── inbound/ (20 arquivos)
     │   │   ├── security/ (6)

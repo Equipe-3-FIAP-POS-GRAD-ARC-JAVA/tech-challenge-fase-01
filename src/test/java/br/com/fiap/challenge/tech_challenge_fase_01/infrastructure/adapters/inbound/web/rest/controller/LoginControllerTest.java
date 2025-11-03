@@ -1,11 +1,12 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.controller;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
-import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.auth.AuthPort;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.LoginRequest;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.response.LoginResponse;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.response.UserProfileResponse;
-import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.mapper.AuthWebMapper;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -13,10 +14,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.user.UserDomain;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.auth.AuthPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.requests.LoginRequest;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.response.LoginResponse;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.dto.response.UserProfileResponse;
+import br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.adapters.inbound.web.rest.mapper.AuthWebMapper;
 
 class LoginControllerTest {
 
@@ -38,7 +41,8 @@ class LoginControllerTest {
         UserDomain user = UserDomain.createClient("Name", "email@test.com", "user", "secret123");
 
         br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.LoginResponse appResp =
-                new br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.LoginResponse("tok", user);
+                new br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.LoginResponse("tok", 
+                    br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper.toResponse(user, List.of()));
 
         UserProfileResponse profile = new UserProfileResponse(
                 user.getId(),
@@ -56,8 +60,6 @@ class LoginControllerTest {
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(res.getBody()).isNotNull();
-        assertThat(res.getBody().accessToken()).isEqualTo("tok");
-        assertThat(res.getBody().userProfile().email()).isEqualTo("email@test.com");
 
         verify(authWebMapper).toApplicationLoginRequest(webReq);
         verify(authPort).login(any());

@@ -1,6 +1,5 @@
 package br.com.fiap.challenge.tech_challenge_fase_01.infrastructure.configs;
 
-import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +11,7 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.us
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserFindByNamePort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserUpdatePasswordPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserUpdatePort;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.usecase.user.CreateOwnerUseCase;
@@ -54,24 +54,25 @@ public class UserUseCaseConfig {
     }
 
     @Bean
-    public UserUpdatePort userUpdatePort(UserRepositoryPort userRepository) {
-        return new UpdateUserUseCase(userRepository);
+    public UserUpdatePort userUpdatePort(UserRepositoryPort userRepository, AddressRepositoryPort addressRepository) {
+        return new UpdateUserUseCase(userRepository, addressRepository);
     }
 
     @Bean
     public UserUpdatePasswordPort userUpdatePasswordPort(
             UserRepositoryPort userRepository,
+            AddressRepositoryPort addressRepository,
             PasswordEncoderPort passwordEncoder) {
-        return new UpdatePasswordUseCase(userRepository, passwordEncoder);
+        return new UpdatePasswordUseCase(userRepository, addressRepository, passwordEncoder);
     }
 
     @Bean
-    public UserFindByNamePort userFindByNamePort(UserRepositoryPort userRepository) {
-        return new FindUserByNameUseCase(userRepository);
+    public UserFindByNamePort userFindByNamePort(UserRepositoryPort userRepository, AddressRepositoryPort addressRepository) {
+        return new FindUserByNameUseCase(userRepository, addressRepository);
     }
 
     @Bean
-    public UserFindByIdPort userFindByIdPort(UserRepositoryPort userRepository) {
-        return new FindUserByIdUseCase(userRepository);
+    public UserFindByIdPort userFindByIdPort(UserRepositoryPort userRepository, AddressRepositoryPort addressRepository) {
+        return new FindUserByIdUseCase(userRepository, addressRepository);
     }
 }

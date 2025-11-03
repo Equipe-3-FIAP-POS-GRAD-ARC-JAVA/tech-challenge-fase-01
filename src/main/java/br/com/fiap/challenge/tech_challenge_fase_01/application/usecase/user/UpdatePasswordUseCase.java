@@ -6,18 +6,22 @@ import br.com.fiap.challenge.tech_challenge_fase_01.application.domain.exception
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.requests.UpdatePasswordRequest;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.dto.response.UserResponse;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.exception.UserNotFoundException;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.AddressMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.mapper.UserMapper;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.inbound.user.UserUpdatePasswordPort;
+import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.AddressRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.repository.UserRepositoryPort;
 import br.com.fiap.challenge.tech_challenge_fase_01.application.ports.outbound.security.PasswordEncoderPort;
 
 public class UpdatePasswordUseCase implements UserUpdatePasswordPort {
 
     private final UserRepositoryPort userRepository;
+    private final AddressRepositoryPort addressRepository;
     private final PasswordEncoderPort passwordEncoder;
 
-    public UpdatePasswordUseCase(UserRepositoryPort userRepository, PasswordEncoderPort passwordEncoder) {
+    public UpdatePasswordUseCase(UserRepositoryPort userRepository, AddressRepositoryPort addressRepository, PasswordEncoderPort passwordEncoder) {
         this.userRepository = userRepository;
+        this.addressRepository = addressRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -45,6 +49,10 @@ public class UpdatePasswordUseCase implements UserUpdatePasswordPort {
 
         var updatedUser = userRepository.save(user);
 
-        return UserMapper.toResponse(updatedUser);
+        // Buscar endereços do usuário
+        var addresses = addressRepository.findByAddressFromUser(updatedUser.getId());
+        var addressResponses = AddressMapper.toResponseList(addresses);
+
+        return UserMapper.toResponse(updatedUser, addressResponses);
     }
 }
