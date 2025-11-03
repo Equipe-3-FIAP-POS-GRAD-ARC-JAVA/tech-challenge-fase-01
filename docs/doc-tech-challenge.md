@@ -54,7 +54,7 @@ O sistema implementa **Arquitetura Hexagonal** com **Clean Architecture** e prin
 - **Containerização**: Docker multi-stage build + Docker Compose
 - **Build**: Maven 3.9 com profiles de desenvolvimento e teste
 - **Monitoramento**: Spring Boot Actuator com health checks e métricas
-- **Testes**: JUnit 5, Spring Boot Test, H2 Database, JaCoCo para cobertura (309 testes com 67% de coverage)
+- **Testes**: JUnit 5, Spring Boot Test, H2 Database, JaCoCo para cobertura
   
 A aplicação é completamente dockerizada, utilizando Docker Compose para orquestração junto com PostgreSQL em containers isolados.
   
@@ -304,7 +304,7 @@ CREATE TABLE address (
 **Timestamps**: `LocalDateTime` com anotações Hibernate para criação/atualização automática
 **Senha Hash**: BCrypt com salt automático para segurança de autenticação
   
-**Compatibilidade**: O schema está 100% alinhado com as entidades `JpaUserEntity` e `JpaAddressEntity`, garantindo consistência entre o modelo de dados e a estrutura do banco em todos os ambientes (desenvolvimento, teste e produção).
+**Compatibilidade**: O schema está alinhado com as entidades `JpaUserEntity` e `JpaAddressEntity`, garantindo consistência entre o modelo de dados e a estrutura do banco em todos os ambientes (desenvolvimento, teste e produção).
   
 ### Diagramas PlantUML Detalhados
   
@@ -858,7 +858,7 @@ O projeto implementa uma **estratégia abrangente de testes** seguindo boas prá
   
 ### **Estrutura dos Testes por Camada**
   
-#### **Domain Layer - 100% Coverage Critical**
+#### **Domain Layer**
 ```
 application/domain/
 ├── UserDomainTest.java                  # 32 testes - Validação completa de entidades
@@ -872,7 +872,7 @@ application/domain/
     └── PersonNameTest.java              # 42 testes - Validação de nomes
 ```
   
-#### **Application Layer - 97% Coverage**
+#### **Application Layer**
 ```
 application/usecase/
 ├── user/                                # 20 testes - Use Cases de usuários
@@ -884,7 +884,7 @@ application/usecase/
 └── mapper/                              # 6 testes - Mapeamentos entre camadas
 ```
   
-#### **Infrastructure Layer - Cobertura Estratégica**
+#### **Infrastructure Layer**
 ```
 infrastructure/
 ├── security/                            # 39 testes - 98% coverage
@@ -902,7 +902,7 @@ infrastructure/
   
 ### **Tipos de Testes Implementados**
   
-#### **1. Testes Unitários (95% dos testes)**
+#### **1. Testes Unitários**
 **Domain Services**
 - Validação de regras de negócio isoladas
 - Lógica de uniqueness e constraints
@@ -918,7 +918,7 @@ infrastructure/
 - Integration entre domain e infrastructure
 - Error handling e exception propagation
   
-#### **2. Testes de Integração (5% dos testes)**
+#### **2. Testes de Integração**
 **Repository Layer**
 - Persistência JPA com H2 in-memory
 - Queries customizadas e relacionamentos
