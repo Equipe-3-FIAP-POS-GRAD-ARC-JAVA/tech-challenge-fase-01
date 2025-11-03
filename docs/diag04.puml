@@ -1,0 +1,106 @@
+@startuml Database_Schema
+!theme plain
+title Tech Challenge - Schema do Banco de Dados PostgreSQL
+
+' Configuração de estilos
+skinparam entity {
+    BackgroundColor<<main>> #E3F2FD
+    BorderColor<<main>> #1976D2
+    BackgroundColor<<relationship>> #FFF3E0
+    BorderColor<<relationship>> #F57C00
+}
+
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+}
+
+' Tabela principal de usuários
+entity USERS <<main>> {
+    * **ID** : UUID <<PK>>
+    ==
+    * **NAME** : VARCHAR(100) <<NOT NULL>>
+    * **EMAIL** : VARCHAR(255) <<NOT NULL, UNIQUE>>
+    * **LOGIN** : VARCHAR(100) <<NOT NULL>>
+    * **PASSWORD** : VARCHAR(100) <<NOT NULL>>
+    * **ROLES** : VARCHAR(255)[] <<NOT NULL>>
+    * **IS_ACTIVE** : BOOLEAN <<NOT NULL, DEFAULT TRUE>>
+    ==
+    **CREATED_AT** : TIMESTAMP
+    **UPDATED_AT** : TIMESTAMP
+}
+
+' Tabela de endereços (relacionamento 1:N)
+entity ADDRESS <<relationship>> {
+    * **ID** : UUID <<PK>>
+    ==
+    * **USER_ID** : UUID <<NOT NULL, FK>>
+    * **STREET** : VARCHAR(100) <<NOT NULL>>
+    * **NUMBER** : VARCHAR(20) <<NOT NULL>>
+    * **COMPLEMENT** : VARCHAR(255)
+    * **NEIGHBORHOOD** : VARCHAR(50) <<NOT NULL>>
+    * **CITY** : VARCHAR(50) <<NOT NULL>>
+    * **ZIP_CODE** : VARCHAR(10) <<NOT NULL>>
+    ==
+    **CREATED_AT** : TIMESTAMP
+    **UPDATED_AT** : TIMESTAMP
+}
+
+' Relacionamentos
+USERS ||--o{ ADDRESS : "has addresses"
+
+note right of USERS
+    **Campos Principais:**
+    • ID: Primary Key UUID auto-gerado
+    • EMAIL: Unique constraint (expandido para 255 chars)
+    • LOGIN: Username expandido para 100 chars
+    • PASSWORD: BCrypt hash
+    • ROLES: Array de roles [ADMIN, OWNER, CLIENT]
+    • IS_ACTIVE: Status ativo/inativo (NOT NULL, default TRUE)
+    
+    **Auditoria JPA:**
+    • CREATED_AT: @CreationTimestamp automático
+    • UPDATED_AT: @UpdateTimestamp automático
+end note
+
+note right of ADDRESS
+    **Endereços do Usuário:**
+    • USER_ID: Foreign Key NOT NULL para USERS
+    • Suporte a múltiplos endereços por usuário
+    • COMPLEMENT expandido para 255 chars (opcional)
+    • Mapeamento JPA Many-to-One com Lazy Loading
+    
+    **Validações JPA:**
+    • USER_ID: @JoinColumn nullable=false
+    • STREET, NUMBER, NEIGHBORHOOD, CITY, ZIP_CODE: NOT NULL
+    • Timestamps automáticos com Hibernate
+    
+    **Relacionamento:**
+    • @ManyToOne(fetch = LAZY) com JpaUserEntity
+    • Integridade referencial garantida
+end note
+
+note bottom of USERS
+    **Roles Disponíveis:**
+    • **ADMIN**: Acesso total ao sistema
+    • **OWNER**: Proprietário de estabelecimento  
+    • **CLIENT**: Cliente comum
+    
+    **Constraints Implementadas:**
+    • EMAIL deve ser único
+    • PASSWORD é armazenado com BCrypt
+    • IS_ACTIVE controla acesso ao sistema
+    • ROLES é array obrigatório
+end note
+
+note top of ADDRESS
+    **Campos de Endereço:**
+    • STREET: Logradouro (obrigatório)
+    • NUMBER: Número (obrigatório) 
+    • COMPLEMENT: Complemento (opcional)
+    • NEIGHBORHOOD: Bairro (obrigatório)
+    • CITY: Cidade (obrigatório)
+    • ZIP_CODE: CEP (obrigatório)
+end note
+
+@enduml

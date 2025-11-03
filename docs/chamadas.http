@@ -1,0 +1,266 @@
+### =================================================================
+### TECH CHALLENGE FASE 01 - CHAMADAS REST API
+### Base URL: http://localhost:8080
+### Atualizado: 02/11/2025
+### =================================================================
+
+### VARIÁVEIS GLOBAIS
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### TOKEN JWT (obter através do login) - Será preenchido automaticamente após login
+@token = 
+
+### ID do usuário criado - Para reutilização em outros endpoints
+@user_id = 
+
+### ID do endereço criado - Para reutilização em outros endpoints
+@address_id = 
+
+### =================================================================
+### AUTENTICAÇÃO - Rotas PÚBLICAS (sem token necessário)
+### =================================================================
+
+### 1. LOGIN ADMIN - Gerar token JWT para ADMIN
+### Rota: POST /api/v1/auth/login
+### Segurança: PÚBLICA
+### Resposta: { "accessToken": "jwt_token_here" }
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "admin",
+  "password": "senha123"
+}
+
+### 2. LOGIN OWNER - Teste com usuário vpadovam (OWNER)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "vpadovam",
+  "password": "senha123"
+}
+
+### 3. LOGIN OWNER - Teste com usuário carlosol (OWNER)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "carlosol",
+  "password": "senha123"
+}
+
+### 4. LOGIN CLIENT - Teste com usuário mariasilva (CLIENT)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "mariasilva",
+  "password": "senha123"
+}
+
+### 5. LOGIN CLIENT - Teste com usuário joaop (CLIENT)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "joaop",
+  "password": "senha123"
+}
+
+### =================================================================
+### USUÁRIOS - CRIAÇÃO DE CLIENTE (PÚBLICO)
+### =================================================================
+
+### 6. CRIAR USUÁRIO CLIENTE - Rota pública
+### Rota: POST /api/v1/users
+### Segurança: PÚBLICA (permitAll)
+### Resposta: { "id": "uuid", "name": "...", "email": "...", "login": "..." }
+POST {{baseUrl}}/api/v1/users
+Content-Type: {{contentType}}
+
+{
+  "name": "João Silva",
+  "email": "joao.silva6@email.com",
+  "login": "joao.silva6",
+  "password": "senha123"
+}
+
+### =================================================================
+### USUÁRIOS - OPERAÇÕES AUTENTICADAS (Requer Token)
+### =================================================================
+
+### 7. BUSCAR USUÁRIO POR ID
+### Rota: GET /api/v1/users/{id}
+### Segurança: ADMIN ou OWNER
+### Usar {{user_id}} da criação do usuário ou UUID específico
+GET {{baseUrl}}/api/v1/users/{{user_id}}
+Authorization: Bearer {{token}}
+
+### 8. BUSCAR USUÁRIOS POR NOME
+### Rota: GET /api/v1/users/by-name?name={nome}
+### Segurança: ADMIN ou OWNER
+GET {{baseUrl}}/api/v1/users/by-name?name=Fulano
+Authorization: Bearer {{token}}
+
+### 9. ATUALIZAR USUÁRIO
+### Rota: PUT /api/v1/users/{id}
+### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário)
+PUT {{baseUrl}}/api/v1/users/{{user_id}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Nome Atualizado",
+  "email": "email.atualizado@exemplo.com",
+  "login": "login.atualizado"
+}
+
+### 10. ATUALIZAR A PRÓPRIA SENHA
+### Rota: PATCH /api/v1/users/password
+### Segurança: ADMIN, OWNER ou CLIENT (próprio usuário autenticado)
+PATCH {{baseUrl}}/api/v1/users/password
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "senhaSegura456",
+  "newPassword": "senha123",
+  "confirmPassword": "senha123"
+}
+
+### 11. CRIAR USUÁRIO OWNER (Apenas ADMIN)
+### Rota: POST /api/v1/users/owner
+### Segurança: Apenas ADMIN
+POST {{baseUrl}}/api/v1/users/owner
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Novo Dono",
+  "email": "dono@exemplo.com",
+  "login": "novo.dono",
+  "password": "senhaSegura456"
+}
+
+### 12. DELETAR USUÁRIO (Apenas ADMIN)
+### Rota: DELETE /api/v1/users/{id}
+### Segurança: Apenas ADMIN
+DELETE {{baseUrl}}/api/v1/users/{{user_id}}
+Authorization: Bearer {{token}}
+
+### =================================================================
+### ENDEREÇOS - OPERAÇÕES AUTENTICADAS (Requer Token)
+### =================================================================
+
+### 13. CRIAR ENDEREÇO - Usuário autenticado
+### Rota: POST /api/v1/address
+### Segurança: Usuário autenticado
+### Resposta: { "id": "uuid", "street": "...", "number": "...", ... }
+POST {{baseUrl}}/api/v1/address
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "street": "Rua das Flores",
+  "number": "456",
+  "complement": "Casa 2",
+  "neighborhood": "Vila Madalena",
+  "city": "São Paulo",
+  "zipCode": "05433-000"
+}
+
+### 14. LISTAR ENDEREÇOS - Usuário autenticado (próprios endereços)
+### Rota: GET /api/v1/address
+### Segurança: Usuário autenticado
+### Resposta: Array de endereços do usuário logado
+GET {{baseUrl}}/api/v1/address
+Authorization: Bearer {{token}}
+
+### 15. ATUALIZAR ENDEREÇO - Proprietário do endereço
+### Rota: PUT /api/v1/address/{addressId}
+### Segurança: Proprietário do endereço
+### Use {{address_id}} ou substitua por UUID específico
+PUT {{baseUrl}}/api/v1/address/{{address_id}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "street": "Rua das Flores Atualizada",
+  "number": "456",
+  "complement": "Casa 2",
+  "neighborhood": "Vila Madalena",
+  "city": "São Paulo",
+  "zipCode": "05433-000"
+}
+
+### 16. DELETAR ENDEREÇO - Proprietário do endereço
+### Rota: DELETE /api/v1/address/{addressId}
+### Segurança: Proprietário do endereço
+### Use {{address_id}} ou substitua por UUID específico
+DELETE {{baseUrl}}/api/v1/address/{{address_id}}
+Authorization: Bearer {{token}}
+
+### =================================================================
+### INSTRUÇÕES DE USO
+### =================================================================
+
+### FLUXO DE TESTE RECOMENDADO:
+### 1. Execute "CRIAR USUÁRIO CLIENTE" (item 6) para criar um novo usuário
+### 2. Execute um dos "LOGIN" (itens 1-5) com as credenciais do usuário criado
+### 3. Copie o accessToken retornado e cole na variável @token no topo do arquivo
+### 4. Copie o ID do usuário criado e cole na variável @user_id
+### 5. Execute as demais chamadas que precisam de autenticação
+### 6. Para testar endereços: Crie um endereço (item 13), copie o ID retornado para @address_id
+### 7. Execute as operações de endereço (listar, atualizar, deletar)
+
+### EXEMPLOS DE FLUXO COMPLETO:
+### A) Criar usuário → Login → Buscar por ID → Atualizar dados → Atualizar senha
+### B) Login (usuário existente) → Buscar por nome → Criar Owner (se ADMIN) → Deletar (se ADMIN)
+### C) Login → Criar endereço → Listar endereços → Atualizar endereço → Deletar endereço
+
+### USUÁRIOS DISPONÍVEIS NO BANCO:
+### - Login: vpadovam     | Role: OWNER  | Password: senha123
+### - Login: mariasilva   | Role: CLIENT | Password: senha123  
+### - Login: joaop        | Role: CLIENT | Password: senha123
+### - Login: anasouza     | Role: CLIENT | Password: senha123
+### - Login: carlosol     | Role: OWNER  | Password: senha123
+### - Login: joao.silva   | Role: CLIENT | Password: senha123
+
+### ROTAS PÚBLICAS (não precisam de token):
+### - POST /api/v1/auth/login
+### - POST /api/v1/users (criar cliente)
+
+### ROTAS AUTENTICADAS - USUÁRIOS (precisam de token no header Authorization):
+### - GET /api/v1/users/{id} - ADMIN ou OWNER
+### - GET /api/v1/users/by-name - ADMIN ou OWNER  
+### - PUT /api/v1/users/{id} - ADMIN, OWNER ou CLIENT (próprio usuário)
+### - PATCH /api/v1/users/password - ADMIN, OWNER ou CLIENT (próprio usuário)
+### - POST /api/v1/users/owner - Apenas ADMIN
+### - DELETE /api/v1/users/{id} - Apenas ADMIN
+
+### ROTAS AUTENTICADAS - ENDEREÇOS (precisam de token no header Authorization):
+### - GET /api/v1/address - Usuário autenticado (próprios endereços)
+### - POST /api/v1/address - Usuário autenticado
+### - PUT /api/v1/address/{addressId} - Proprietário do endereço
+### - DELETE /api/v1/address/{addressId} - Proprietário do endereço
+
+### OBSERVAÇÕES:
+### - Todos os hashes de senha no banco correspondem à senha: "senha123"
+### - Os UUIDs dos usuários estão fixos conforme data.sql
+### - Para testes com ADMIN, será necessário criar um usuário com role ADMIN no banco
+### - Use {{user_id}} para referenciar o ID do usuário criado nas chamadas subsequentes
+### - O token JWT é válido por um período limitado e deve ser renovado quando expirar
+
+### VARIÁVEIS DISPONÍVEIS:
+### - {{baseUrl}} = http://localhost:8080
+### - {{contentType}} = application/json  
+### - {{token}} = Token JWT obtido no login (campo 'accessToken' da resposta)
+### - {{user_id}} = ID do usuário criado (para reutilização)
+### - {{address_id}} = ID do endereço criado (para reutilização)
+
+### COLLECTION POSTMAN:
+### Este arquivo HTTP é baseado na collection "TechChallenge" do Postman
+### Todas as funcionalidades foram adaptadas para formato HTTP nativo do VS Code
+### Para usar no Postman, importe o JSON fornecido separadamente

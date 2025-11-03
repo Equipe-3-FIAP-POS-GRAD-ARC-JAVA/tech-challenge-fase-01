@@ -1,0 +1,230 @@
+@startuml Authentication_Sequence
+!theme plain
+title Tech Challenge - Fluxo Completo de Autenticação JWT
+
+' Definição de cores para cada camada
+!define DRIVING_ADAPTER_COLOR #E8F5E8
+!define APPLICATION_CORE_COLOR #E3F2FD  
+!define DRIVEN_ADAPTER_COLOR #FFF3E0
+!define DATABASE_COLOR #F3E5F5
+
+actor "Cliente/Postman" as Client #FFE0B2
+
+' Camada de Adaptadores de Entrada (Driving Adapters)
+box "Driving Adapters" DRIVING_ADAPTER_COLOR
+    participant "LoginController" as Controller
+    participant "GlobalExceptionHandler" as ExceptionHandler
+    participant "JwtAuthenticationFilter" as JwtFilter
+    participant "AuthWebMapper" as WebMapper
+end box
+
+' Núcleo da Aplicação (Application Core)
+box "Application Core" APPLICATION_CORE_COLOR
+    participant "AuthPort" as IAuthPort
+    participant "AuthUseCase" as AuthUseCase
+    participant "UserRepositoryPort" as IUserRepo
+    participant "PasswordEncoderPort" as IPasswordEncoder
+    participant "TokenGeneratorPort" as ITokenGenerator
+    participant "UserDomain" as UserEntity
+end box
+
+' Camada de Adaptadores de Saída (Driven Adapters)
+box "Driven Adapters" DRIVEN_ADAPTER_COLOR
+    participant "UserRepositoryImpl" as RepoAdapter
+    participant "BCryptPasswordEncoder" as PasswordEncoderImpl
+    participant "JwtUtil" as TokenGeneratorImpl
+    participant "JpaUserRepository" as JpaRepo
+    participant "UserEntityMapper" as UserMapper
+end box
+
+' Infraestrutura de Dados
+box "Database" DATABASE_COLOR
+    database "PostgreSQL" as DB
+end box
+
+== Cenário 1: Login Bem-Sucedido ==
+
+Client -> Controller : POST /api/v1/auth/login\n{ "login": "user123", "password": "senha123" }
+activate Controller
+
+note right of Controller
+    LoginRequest DTO:
+    - login: String
+    - password: String
+end note
+
+Controller -> WebMapper : toApplicationLoginRequest(loginRequest)
+activate WebMapper
+WebMapper --> Controller : AppLoginRequest
+deactivate WebMapper
+
+Controller -> IAuthPort : login(appRequest)
+activate IAuthPort
+note right of IAuthPort
+    AuthPort interface
+    (Inbound Port)
+end note
+
+IAuthPort -> AuthUseCase : execute(request)
+activate AuthUseCase
+
+AuthUseCase -> IUserRepo : findByLogin(username)
+activate IUserRepo
+
+IUserRepo -> RepoAdapter : findByLogin(username)
+activate RepoAdapter
+
+RepoAdapter -> JpaRepo : findByLogin(username)
+activate JpaRepo
+
+JpaRepo -> DB : SELECT * FROM users WHERE login = ?
+activate DB
+DB --> JpaRepo : UserEntity data
+deactivate DB
+
+JpaRepo --> RepoAdapter : Optional<JpaUserEntity>
+deactivate JpaRepo
+
+alt User found
+    RepoAdapter -> UserMapper : toDomain(JpaUserEntity)
+    activate UserMapper
+    UserMapper --> RepoAdapter : UserDomain
+    deactivate UserMapper
+    
+    RepoAdapter --> IUserRepo : Optional<UserDomain>
+    deactivate RepoAdapter
+    
+    IUserRepo --> AuthUseCase : Optional<UserDomain>
+    deactivate IUserRepo
+    
+    AuthUseCase -> AuthUseCase : validateUser(userDomain)
+    
+    AuthUseCase -> IPasswordEncoder : matches(rawPassword, encodedPassword)
+    activate IPasswordEncoder
+    
+    IPasswordEncoder -> PasswordEncoderImpl : matches(raw, encoded)
+    activate PasswordEncoderImpl
+    PasswordEncoderImpl --> IPasswordEncoder : boolean
+    deactivate PasswordEncoderImpl
+    
+    IPasswordEncoder --> AuthUseCase : true
+    deactivate IPasswordEncoder
+    
+    AuthUseCase -> ITokenGenerator : generateToken(userDomain)
+    activate ITokenGenerator
+    
+    ITokenGenerator -> TokenGeneratorImpl : generateToken(userDomain)
+    activate TokenGeneratorImpl
+    note right of TokenGeneratorImpl
+        JWT Token generation:
+        - User ID, roles, expiration
+        - Signed with secret key
+    end note
+    TokenGeneratorImpl --> ITokenGenerator : String token
+    deactivate TokenGeneratorImpl
+    
+    ITokenGenerator --> AuthUseCase : String token
+    deactivate ITokenGenerator
+    
+    AuthUseCase -> AuthUseCase : createAuthResponse(token, userDomain)
+    AuthUseCase --> IAuthPort : AuthResponse
+    deactivate AuthUseCase
+    
+    IAuthPort --> Controller : AuthResponse
+    deactivate IAuthPort
+    
+    Controller -> WebMapper : toWebLoginResponse(authResponse)
+    activate WebMapper
+    WebMapper --> Controller : LoginResponse
+    deactivate WebMapper
+    
+    Controller --> Client : 200 OK\n{ "token": "jwt_token", "login": "user123" }
+    deactivate Controller
+    
+else User not found
+    RepoAdapter --> IUserRepo : Optional.empty()
+    deactivate RepoAdapter
+    
+    IUserRepo --> AuthUseCase : Optional.empty()
+    deactivate IUserRepo
+    
+    AuthUseCase -> AuthUseCase : throw UnauthorizedException("Invalid credentials")
+    AuthUseCase --> IAuthPort : UnauthorizedException
+    deactivate AuthUseCase
+    
+    IAuthPort --> Controller : UnauthorizedException
+    deactivate IAuthPort
+    
+    Controller -> ExceptionHandler : handle(UnauthorizedException)
+    activate ExceptionHandler
+    ExceptionHandler --> Controller : 401 Unauthorized
+    deactivate ExceptionHandler
+    
+    Controller --> Client : 401 Unauthorized\n{ "error": "Invalid credentials" }
+    deactivate Controller
+end
+
+== Cenário 2: Validação de Token JWT (Requisições Posteriores) ==
+
+Client -> JwtFilter : GET /api/v1/users/{id}\nAuthorization: Bearer {token}
+activate JwtFilter
+
+JwtFilter -> TokenGeneratorImpl : validateToken(token)
+activate TokenGeneratorImpl
+TokenGeneratorImpl --> JwtFilter : boolean (valid)
+deactivate TokenGeneratorImpl
+
+alt Token válido
+    JwtFilter -> TokenGeneratorImpl : getUsernameFromToken(token)
+    activate TokenGeneratorImpl
+    TokenGeneratorImpl --> JwtFilter : username
+    deactivate TokenGeneratorImpl
+    
+    JwtFilter -> IUserRepo : findByLogin(username)
+    activate IUserRepo
+    IUserRepo -> RepoAdapter : findByLogin(username)
+    activate RepoAdapter
+    RepoAdapter -> JpaRepo : findByLogin(username)
+    activate JpaRepo
+    JpaRepo -> DB : SELECT * FROM users WHERE login = ?
+    activate DB
+    DB --> JpaRepo : UserEntity data
+    deactivate DB
+    JpaRepo --> RepoAdapter : Optional<JpaUserEntity>
+    deactivate JpaRepo
+    RepoAdapter -> UserMapper : toDomain(JpaUserEntity)
+    activate UserMapper
+    UserMapper --> RepoAdapter : UserDomain
+    deactivate UserMapper
+    RepoAdapter --> IUserRepo : Optional<UserDomain>
+    deactivate RepoAdapter
+    IUserRepo --> JwtFilter : Optional<UserDomain>
+    deactivate IUserRepo
+    
+    JwtFilter -> JwtFilter : setSecurityContext(userDetails)
+    JwtFilter --> Client : Continue to Controller
+    deactivate JwtFilter
+    
+else Token inválido
+    JwtFilter --> Client : 401 Unauthorized\n{ "error": "Invalid token" }
+    deactivate JwtFilter
+end
+
+note over Client, DB
+    **Arquitetura Hexagonal Implementada:**
+    1. **LoginController** (Driving Adapter) recebe requisições HTTP
+    2. **AuthWebMapper** converte DTOs Web ↔ Application
+    3. **AuthUseCase** executa lógica de negócio via **Ports**
+    4. **Repository/Encoder/Token Adapters** (Driven) implementam interfaces
+    5. **PostgreSQL Database** persistence é completamente isolada
+    6. **JwtAuthenticationFilter** valida tokens em requisições subsequentes
+    
+    **Benefícios da Arquitetura:**
+    - Testabilidade completa (mocks dos ports)
+    - Independência de frameworks (Spring, JPA)
+    - Inversão de dependências (DIP do SOLID)
+    - Separação clara de responsabilidades
+    - Domain-driven design com entidades ricas
+end note
+
+@enduml

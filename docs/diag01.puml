@@ -1,0 +1,222 @@
+@startuml Hexagonal_Architecture
+!theme plain
+title Tech Challenge - Arquitetura Hexagonal (Visão Simplificada)
+
+' Configuração otimizada para melhor visualização
+skinparam packageStyle rectangle
+skinparam package {
+    BackgroundColor<<core>> #E1F5FE
+    BorderColor<<core>> #0277BD
+    BackgroundColor<<driving>> #F3E5F5
+    BorderColor<<driving>> #7B1FA2
+    BackgroundColor<<driven>> #E8F5E8
+    BorderColor<<driven>> #2E7D32
+    FontSize 11
+}
+
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #424242
+    FontSize 10
+}
+
+skinparam interface {
+    BackgroundColor #FFF59D
+    BorderColor #F57F17
+    FontSize 9
+}
+
+' Layout otimizado: left to right
+left to right direction
+
+' Atores externos
+actor "HTTP Client" as Client
+database "PostgreSQL" as DB
+
+' ============= DRIVING ADAPTERS (ENTRADA) =============
+package "Driving Adapters\n(Inbound)" <<driving>> {
+    component "REST Controllers" as Controllers {
+        component "UserController" as UserCtrl
+        component "AddressController" as AddressCtrl 
+        component "AuthController" as AuthCtrl
+    }
+    
+    component "Security Layer" as Security {
+        component "JwtAuthFilter" as JwtFilter
+        component "ExceptionHandler" as ExHandler
+    }
+    
+    note bottom of Controllers
+        **REST Endpoints:**
+        • User CRUD (8 endpoints)
+        • Address CRUD (4 endpoints) 
+        • Authentication (login)
+        • Role-based authorization
+    end note
+}
+
+' ============= APPLICATION CORE (HEXÁGONO) =============
+package "Application Core\n(Hexagon)" <<core>> {
+    
+    ' PORTS (INTERFACES)
+    package "Primary Ports\n(Inbound)" {
+        interface "UserPorts" as IUserPorts
+        interface "AddressPorts" as IAddressPorts 
+        interface "AuthPort" as IAuthPort
+        
+        note bottom of IUserPorts : "8 User interfaces"
+        note bottom of IAddressPorts : "4 Address interfaces"
+    }
+    
+    ' USE CASES (APPLICATION SERVICES) 
+    package "Use Cases\n(Application Services)" {
+        component "User Use Cases" as UserUCs {
+            component "CreateUser" as CreateUserUC
+            component "UpdateUser" as UpdateUserUC
+            component "FindUser" as FindUserUC
+            component "AuthUser" as AuthUC
+        }
+        
+        component "Address Use Cases" as AddressUCs {
+            component "CreateAddress" as CreateAddressUC
+            component "UpdateAddress" as UpdateAddressUC
+            component "FindAddress" as FindAddressUC
+            component "DeleteAddress" as DeleteAddressUC
+        }
+        
+        note bottom of UserUCs : "8 User Use Cases\n+ Authentication"
+        note bottom of AddressUCs : "4 Address Use Cases\nwith ownership validation"
+    }
+    
+    ' DOMAIN MODEL (BUSINESS LOGIC)
+    package "Domain Model\n(Business Rules)" {
+        component "Domain Entities" as Entities {
+            component "UserDomain" as UserEntity
+            component "AddressDomain" as AddressEntity
+        }
+        
+        component "Value Objects" as VOs {
+            component "Email, Username" as ValueObjects
+            component "PersonName" as PersonName
+        }
+        
+        component "Domain Services" as DomainServices {
+            component "UserDomainService" as UserDS
+            component "AddressDomainService" as AddressDS
+        }
+        
+        note bottom of Entities : "Rich domain models\nwith business behavior"
+        note bottom of VOs : "Type-safe value objects\nwith validation"
+    }
+    
+    ' SECONDARY PORTS
+    package "Secondary Ports\n(Outbound)" {
+        interface "RepositoryPorts" as IRepoPorts
+        interface "SecurityPorts" as ISecurityPorts
+        
+        note bottom of IRepoPorts : "User & Address\nRepository interfaces"
+        note bottom of ISecurityPorts : "Password & Token\nGeneration interfaces"
+    }
+}
+
+' ============= DRIVEN ADAPTERS (SAÍDA) =============
+package "Driven Adapters\n(Outbound)" <<driven>> {
+    
+    component "Repository Layer" as RepoLayer {
+        component "JPA Repositories" as JpaRepos
+        component "Entity Mappers" as Mappers
+        component "Repository Impls" as RepoImpls
+    }
+    
+    component "Security Layer" as SecLayer {
+        component "BCrypt Encoder" as BCrypt
+        component "JWT Generator" as JWT
+    }
+    
+    component "JPA Entities" as JPAEntities {
+        component "JpaUserEntity" as JpaUser
+        component "JpaAddressEntity" as JpaAddress
+    }
+    
+    note bottom of RepoLayer
+        **Persistence:**
+        • Spring Data JPA
+        • Domain ↔ JPA mapping
+        • Query implementations
+    end note
+    
+    note bottom of SecLayer
+        **Security:**
+        • Password hashing (BCrypt)
+        • JWT token generation
+        • Spring Security integration
+    end note
+}
+
+' ============= RELACIONAMENTOS (ARQUITETURA HEXAGONAL) =============
+
+' External interactions
+Client --> Controllers : "HTTP/REST\nRequests"
+DB <-- JPAEntities : "SQL\nPersistence"
+
+' Driving Adapters → Primary Ports (Inbound)
+Controllers --> IUserPorts : uses
+Controllers --> IAddressPorts : uses  
+Security --> IAuthPort : uses
+
+' Primary Ports → Use Cases (Application Services)
+IUserPorts <|-- UserUCs : implements
+IAddressPorts <|-- AddressUCs : implements
+IAuthPort <|-- AuthUC : implements
+
+' Use Cases → Domain Model (Business Logic)
+UserUCs --> Entities : uses/creates
+AddressUCs --> Entities : uses/creates
+UserUCs --> DomainServices : validates with
+AddressUCs --> DomainServices : validates with
+
+' Use Cases → Secondary Ports (Outbound dependencies)
+UserUCs --> IRepoPorts : uses
+AddressUCs --> IRepoPorts : uses
+AuthUC --> ISecurityPorts : uses
+
+' Secondary Ports → Driven Adapters (Outbound)
+IRepoPorts <|-- RepoLayer : implements
+ISecurityPorts <|-- SecLayer : implements
+
+' Driven Adapters → External Resources
+RepoLayer --> JPAEntities : maps to/from
+JPAEntities --> DB : persists to
+
+' Domain relationships
+UserEntity --> ValueObjects : contains
+AddressEntity --> UserEntity : belongs to (userId)
+
+' ============= NOTAS EXPLICATIVAS =============
+
+note as N1
+    **HEXAGONAL ARCHITECTURE FLOW:**
+    
+    **1. Driving Side (Left):**
+    Client → Controllers → Ports → Use Cases
+    
+    **2. Core (Center):**
+    Use Cases ↔ Domain Model ↔ Domain Services
+    
+    **3. Driven Side (Right):**  
+    Use Cases → Ports → Adapters → External Resources
+end note
+
+note as N2
+    **KEY PRINCIPLES:**
+    
+    • **Ports & Adapters**: Clear separation of concerns
+    • **Dependency Inversion**: Dependencies point inward
+    • **Testability**: Core isolated from infrastructure  
+    • **Clean Architecture**: Business rules in center
+end note
+
+N1 .up. Controllers
+N2 .down. RepoLayer
+
+@enduml

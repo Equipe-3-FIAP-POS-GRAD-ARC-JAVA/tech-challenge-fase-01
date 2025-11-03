@@ -1,0 +1,330 @@
+@startuml Domain_Model_Classes
+!theme plain
+title Modelo de Domínio - Sistema de Gestão de Usuários
+
+' Configuração de estilos
+skinparam class {
+    BackgroundColor<<entity>> #E3F2FD
+    BorderColor<<entity>> #1976D2
+    BackgroundColor<<value_object>> #F3E5F5
+    BorderColor<<value_object>> #7B1FA2
+    BackgroundColor<<enum>> #FFF3E0
+    BorderColor<<enum>> #F57C00
+    BackgroundColor<<service>> #E8F5E8
+    BorderColor<<service>> #388E3C
+    BackgroundColor<<port>> #FFECB3
+    BorderColor<<port>> #FF8F00
+}
+
+skinparam classAttributeIconVisible false
+
+' Entidades de Domínio
+package "Domain Entities" {
+    
+    class UserDomain <<entity>> {
+        - id: UUID
+        - name: PersonName
+        - email: Email
+        - login: Username
+        - password: String
+        - createdAt: LocalDateTime
+        - updatedAt: LocalDateTime
+        - role: List<RolesEnum>
+        - isActive: boolean
+        --
+        ' Factory Methods
+        + createClient(name, email, login, password): UserDomain
+        + createOwner(name, email, login, password): UserDomain
+        --
+        ' Business Methods
+        + updateInfo(name, email, login): void
+        + changePassword(newPassword): void
+        + deactivate(): void
+        + activate(): void
+        + hasRole(role): boolean
+        + isClient(): boolean
+        + isOwner(): boolean
+        + isActive(): boolean
+        + ensureIsActive(): void
+        + ensureIsOwner(): void
+        + ensureHasRole(role): void
+        --
+        ' Convenience getters
+        + getName(): String
+        + getEmail(): String
+        + getLogin(): String
+        + getIdAsString(): String
+        + getId(): UUID
+        --
+        ' Value Object getters
+        + getPersonName(): PersonName
+        + getEmailObject(): Email
+        + getUsernameObject(): Username
+        --
+        # validatePassword(password): void
+    }
+    
+    class AddressDomain <<entity>> {
+        - id: UUID
+        - userId: UUID
+        - street: String
+        - number: String
+        - complement: String
+        - neighborhood: String
+        - city: String
+        - zipCode: String
+        - createdAt: LocalDateTime
+        - updatedAt: LocalDateTime
+        --
+        ' Constants (Validation limits)
+        {static} STREET_MIN: int = 3
+        {static} STREET_MAX: int = 100
+        {static} NUMBER_MIN: int = 0
+        {static} NUMBER_MAX: int = 20
+        {static} COMPLEMENT_MIN: int = 0
+        {static} COMPLEMENT_MAX: int = 50
+        {static} NEIGHBORHOOD_MIN: int = 2
+        {static} NEIGHBORHOOD_MAX: int = 50
+        {static} CITY_MIN: int = 2
+        {static} CITY_MAX: int = 50
+        {static} ZIP_CODE_MIN: int = 8
+        {static} ZIP_CODE_MAX: int = 10
+        --
+        ' Factory Methods
+        + create(userId, street, number, complement, neighborhood, city, zipCode): AddressDomain
+        --
+        ' Business Methods
+        + updateInfo(street, number, complement, neighborhood, city, zipCode): void
+        --
+        ' Getters (Lombok @Getter)
+        + getId(): UUID
+        + getUserId(): UUID
+        + getStreet(): String
+        + getNumber(): String
+        + getComplement(): String
+        + getNeighborhood(): String
+        + getCity(): String
+        + getZipCode(): String
+        + getCreatedAt(): LocalDateTime
+        + getUpdatedAt(): LocalDateTime
+        --
+        ' Private validation methods
+        # validate(userId, street, number, complement, neighborhood, city, zipCode): void
+        # checkLen(field, value, min, max, label): void
+        # checkOptionalLen(field, value, min, max, label): void
+    }
+}
+
+' Enumerações
+package "Domain Enums" {
+    
+    enum RolesEnum <<enum>> {
+        ADMIN
+        OWNER
+        CLIENT
+        --
+        + toString(): String
+    }
+}
+
+' Value Objects
+package "Value Objects" {
+    
+    class Email <<value_object>> {
+        - value: String
+        --
+        + of(email: String): Email
+        + getValue(): String
+        + equals(obj: Object): boolean
+        + hashCode(): int
+        + toString(): String
+        --
+        # validate(email: String): void
+        # normalize(email: String): String
+        --
+        ' Constantes
+        {static} MAX_LENGTH: int = 255
+        {static} EMAIL_PATTERN: String
+    }
+    
+    class Username <<value_object>> {
+        - value: String
+        --
+        + of(username: String): Username
+        + getValue(): String
+        + equals(obj: Object): boolean
+        + hashCode(): int
+        + toString(): String
+        --
+        # validate(username: String): void
+        # normalize(username: String): String
+        --
+        ' Constantes
+        {static} MIN_LENGTH: int = 3
+        {static} MAX_LENGTH: int = 50
+        {static} VALID_PATTERN: String
+    }
+    
+    class PersonName <<value_object>> {
+        - value: String
+        --
+        + of(name: String): PersonName
+        + getValue(): String
+        + getFirstName(): String
+        + getLastName(): String
+        + equals(obj: Object): boolean
+        + hashCode(): int
+        + toString(): String
+        --
+        # validate(name: String): void
+        # normalize(name: String): String
+        --
+        ' Constantes
+        {static} MIN_LENGTH: int = 2
+        {static} MAX_LENGTH: int = 255
+    }
+}
+
+' Domain Services
+package "Domain Services" {
+    
+    class UserDomainService <<service>> {
+        --
+        + ensureUsernameIsUnique(username: Username): void
+        + ensureUsernameIsUnique(username: String): void
+        + ensureEmailIsUnique(email: Email): void
+        + ensureCanBeDeactivated(user: UserDomain): void
+        + ensureCanBeDeleted(user: UserDomain): void
+        + ensureUserIsUnique(username: String, email: String): void
+        + ensureHasPermissionToManage(actor: UserDomain, target: UserDomain): void
+        + ensureCanChangeRoles(actor: UserDomain): void
+        --
+        # validateRole(role: RolesEnum): void
+        # validateUserState(user: UserDomain): void
+    }
+    
+    class AddressDomainService <<service>> {
+        - addressRepository: AddressRepositoryPort
+        --
+        + AddressDomainService(addressRepositoryPort: AddressRepositoryPort)
+        --
+        ' Business validation methods
+        + ensureAddressBelongsToUser(userId: UUID, addressId: UUID): void
+        --
+        ' Exception throwing scenarios:
+        ' - AddressNotFoundException: when address not found
+        ' - AddresDoesNotBelongToUserException: when ownership fails
+    }
+}
+
+' Domain Exceptions
+package "Domain Exceptions" {
+    
+    class BusinessRuleException <<entity>> {
+        - message: String
+        --
+        + BusinessRuleException(message: String)
+        + getMessage(): String
+    }
+    
+    class InvalidFieldException <<entity>> {
+        - fieldName: String
+        - message: String
+        --
+        + InvalidFieldException(fieldName: String, message: String)
+        + getFieldName(): String
+        + getMessage(): String
+    }
+}
+
+' Ports (Interfaces)
+package "Domain Ports" {
+    
+    interface UserRepositoryPort <<port>> {
+        + save(user: UserDomain): UserDomain
+        + findById(id: UUID): Optional<UserDomain>
+        + findByName(name: String): List<UserDomain>
+        + findByLogin(login: String): Optional<UserDomain>
+        + findByEmail(email: String): Optional<UserDomain>
+        + delete(id: UUID): void
+        + existsByUsername(username: String): boolean
+    }
+    
+    interface AddressRepositoryPort <<port>> {
+        + save(address: AddressDomain): AddressDomain
+        + findById(id: UUID): Optional<AddressDomain>
+        + findByAddressFromUser(userId: UUID): List<AddressDomain>
+        + deleteAddress(addressId: UUID): void
+    }
+    
+    interface PasswordEncoderPort <<port>> {
+        + encode(rawPassword: String): String
+        + matches(rawPassword: String, encodedPassword: String): boolean
+    }
+    
+    interface TokenGeneratorPort <<port>> {
+        + generateToken(userDomain: UserDomain): String
+        + validateToken(token: String): boolean
+        + getUsernameFromToken(token: String): String
+    }
+}
+
+' Relacionamentos
+UserDomain --> PersonName : contains
+UserDomain --> Email : contains  
+UserDomain --> Username : contains
+UserDomain --> RolesEnum : has
+
+AddressDomain --> UserDomain : belongs to (userId)
+
+Email ..> InvalidFieldException : throws
+Username ..> InvalidFieldException : throws
+PersonName ..> InvalidFieldException : throws
+UserDomain ..> BusinessRuleException : throws
+AddressDomain ..> InvalidFieldException : throws
+
+UserDomainService --> UserDomain : validates
+UserDomainService --> UserRepositoryPort : uses
+AddressDomainService --> AddressDomain : validates
+AddressDomainService --> AddressRepositoryPort : uses
+
+note top of UserDomain
+    **Entidade Rica de Domínio**
+    - Encapsula regras de negócio
+    - Factory methods para criação
+    - Valida invariantes
+    - Usa Value Objects
+    - Imutabilidade onde possível
+    - Comportamentos específicos do domínio
+end note
+
+note top of AddressDomain
+    **Entidade de Endereço**
+    - Relacionada ao UserDomain (userId)
+    - Validações de campo
+    - Factory method para criação
+    - Métodos de atualização
+end note
+
+note top of Email
+    **Value Object**
+    - Imutável
+    - Auto-validável  
+    - Comparável por valor
+    - Regras de domínio encapsuladas
+end note
+
+note bottom of RolesEnum
+    **ADMIN**: Acesso total ao sistema
+    **OWNER**: Proprietário de estabelecimento
+    **CLIENT**: Cliente comum
+end note
+
+note right of UserDomainService
+    **Serviço de Domínio**
+    - Validações complexas
+    - Regras de negócio compartilhadas
+    - Operações que envolvem múltiplas entidades
+end note
+
+@enduml

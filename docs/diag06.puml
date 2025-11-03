@@ -1,0 +1,394 @@
+@startuml Address_Complete_Flow_Sequence
+!theme plain
+title Tech Challenge - Fluxos Completos de Gestão de Endereços
+
+' Definição de cores para cada camada
+!define DRIVING_ADAPTER_COLOR #E8F5E8
+!define APPLICATION_CORE_COLOR #E3F2FD  
+!define DRIVEN_ADAPTER_COLOR #FFF3E0
+!define DATABASE_COLOR #F3E5F5
+
+actor "Cliente/Postman" as Client #FFE0B2
+
+' Camada de Adaptadores de Entrada (Driving Adapters)
+box "Driving Adapters" DRIVING_ADAPTER_COLOR
+    participant "AddressController" as Controller
+    participant "GlobalExceptionHandler" as ExceptionHandler
+    participant "JwtAuthenticationFilter" as JwtFilter
+    participant "AddressWebMapper" as WebMapper
+end box
+
+' Núcleo da Aplicação (Application Core)
+box "Application Core" APPLICATION_CORE_COLOR
+    participant "AddressCreatePort" as IAddressCreatePort
+    participant "CreateAddressUseCase" as CreateAddressUC
+    participant "AddressFindByUserPort" as IAddressFindPort
+    participant "FindAddressUseCase" as FindAddressUC
+    participant "AddressUpdatePort" as IAddressUpdatePort
+    participant "UpdateAddressUseCase" as UpdateAddressUC
+    participant "AddressDeletePort" as IAddressDeletePort
+    participant "DeleteAddressUseCase" as DeleteAddressUC
+    participant "AddressRepositoryPort" as IAddressRepo
+    participant "AddressDomainService" as AddressDomainService
+    participant "AddressDomain" as AddressEntity
+end box
+
+' Camada de Adaptadores de Saída (Driven Adapters)
+box "Driven Adapters" DRIVEN_ADAPTER_COLOR
+    participant "AddressRepositoryImpl" as RepoAdapter
+    participant "JpaAddressRepository" as JpaRepo
+    participant "AddressEntityMapper" as AddressMapper
+end box
+
+' Infraestrutura de Dados
+box "Database" DATABASE_COLOR
+    database "PostgreSQL" as DB
+end box
+
+== Cenário 1: Criar Endereço ==
+
+Client -> Controller : POST /api/v1/address\n{ "street": "Rua das Flores", "number": "123", ... }
+activate Controller
+
+note right of Controller
+    AddressCreateRequestDTO:
+    - street, number, complement
+    - neighborhood, city, zipCode
+    + Authentication: Bearer token
+end note
+
+Controller -> WebMapper : toApplicationRequest(dto, userId)
+activate WebMapper
+WebMapper --> Controller : AddressCreateRequest
+deactivate WebMapper
+
+Controller -> IAddressCreatePort : createAddress(request)
+activate IAddressCreatePort
+
+IAddressCreatePort -> CreateAddressUC : createAddress(request)
+activate CreateAddressUC
+
+CreateAddressUC -> AddressEntity : create(userId, street, number, ...)
+activate AddressEntity
+note right of AddressEntity
+    Factory Method:
+    - Validates all fields
+    - Creates domain entity
+    - Sets createdAt timestamp
+end note
+AddressEntity --> CreateAddressUC : AddressDomain
+deactivate AddressEntity
+
+CreateAddressUC -> IAddressRepo : save(addressDomain)
+activate IAddressRepo
+
+IAddressRepo -> RepoAdapter : save(addressDomain)
+activate RepoAdapter
+
+RepoAdapter -> AddressMapper : toJpaEntity(addressDomain)
+activate AddressMapper
+AddressMapper --> RepoAdapter : JpaAddressEntity
+deactivate AddressMapper
+
+RepoAdapter -> JpaRepo : save(jpaEntity)
+activate JpaRepo
+JpaRepo -> DB : INSERT INTO address VALUES(...)
+activate DB
+DB --> JpaRepo : address record saved
+deactivate DB
+JpaRepo --> RepoAdapter : JpaAddressEntity (with ID)
+deactivate JpaRepo
+
+RepoAdapter -> AddressMapper : toDomain(jpaEntity)
+activate AddressMapper
+AddressMapper --> RepoAdapter : AddressDomain
+deactivate AddressMapper
+
+RepoAdapter --> IAddressRepo : AddressDomain
+deactivate RepoAdapter
+
+IAddressRepo --> CreateAddressUC : AddressDomain
+deactivate IAddressRepo
+
+CreateAddressUC -> CreateAddressUC : AddressMapper.toResponse(addressDomain)
+CreateAddressUC --> IAddressCreatePort : AddressResponse
+deactivate CreateAddressUC
+
+IAddressCreatePort --> Controller : AddressResponse
+deactivate IAddressCreatePort
+
+Controller -> WebMapper : toResponseDTO(response)
+activate WebMapper
+WebMapper --> Controller : AddressResponseDTO
+deactivate WebMapper
+
+Controller --> Client : 201 Created\n{ "id": "uuid", "street": "Rua das Flores", ... }
+deactivate Controller
+
+== Cenário 2: Listar Endereços do Usuário ==
+
+Client -> Controller : GET /api/v1/address
+activate Controller
+
+Controller -> IAddressFindPort : findAddress(userId)
+activate IAddressFindPort
+
+IAddressFindPort -> FindAddressUC : findAddress(userId)
+activate FindAddressUC
+
+FindAddressUC -> IAddressRepo : findByAddressFromUser(userId)
+activate IAddressRepo
+
+IAddressRepo -> RepoAdapter : findByAddressFromUser(userId)
+activate RepoAdapter
+
+RepoAdapter -> JpaRepo : findByUserId(userId)
+activate JpaRepo
+JpaRepo -> DB : SELECT * FROM address WHERE user_id = ?
+activate DB
+DB --> JpaRepo : List<JpaAddressEntity>
+deactivate DB
+JpaRepo --> RepoAdapter : List<JpaAddressEntity>
+deactivate JpaRepo
+
+RepoAdapter -> AddressMapper : toDomainList(jpaEntities)
+activate AddressMapper
+AddressMapper --> RepoAdapter : List<AddressDomain>
+deactivate AddressMapper
+
+RepoAdapter --> IAddressRepo : List<AddressDomain>
+deactivate RepoAdapter
+
+IAddressRepo --> FindAddressUC : List<AddressDomain>
+deactivate IAddressRepo
+
+FindAddressUC -> FindAddressUC : AddressMapper.toResponseList(domains)
+FindAddressUC --> IAddressFindPort : List<AddressResponse>
+deactivate FindAddressUC
+
+IAddressFindPort --> Controller : List<AddressResponse>
+deactivate IAddressFindPort
+
+Controller -> WebMapper : toResponseDTOList(responses)
+activate WebMapper
+WebMapper --> Controller : List<AddressResponseDTO>
+deactivate WebMapper
+
+Controller --> Client : 200 OK\n[{ "id": "uuid1", ... }, { "id": "uuid2", ... }]
+deactivate Controller
+
+== Cenário 3: Atualizar Endereço ==
+
+Client -> Controller : PUT /api/v1/address/{addressId}\n{ "street": "Rua Nova", ... }
+activate Controller
+
+Controller -> WebMapper : toApplicationUpdateRequest(dto)
+activate WebMapper
+WebMapper --> Controller : AddressUpdateRequest
+deactivate WebMapper
+
+Controller -> IAddressUpdatePort : updateAddress(userId, addressId, request)
+activate IAddressUpdatePort
+
+IAddressUpdatePort -> UpdateAddressUC : updateAddress(userId, addressId, request)
+activate UpdateAddressUC
+
+UpdateAddressUC -> AddressDomainService : ensureAddressBelongsToUser(userId, addressId)
+activate AddressDomainService
+
+AddressDomainService -> IAddressRepo : findById(addressId)
+activate IAddressRepo
+IAddressRepo -> RepoAdapter : findById(addressId)
+activate RepoAdapter
+RepoAdapter -> JpaRepo : findById(addressId)
+activate JpaRepo
+JpaRepo -> DB : SELECT * FROM address WHERE id = ?
+activate DB
+DB --> JpaRepo : JpaAddressEntity
+deactivate DB
+JpaRepo --> RepoAdapter : Optional<JpaAddressEntity>
+deactivate JpaRepo
+RepoAdapter -> AddressMapper : toDomain(jpaEntity)
+activate AddressMapper
+AddressMapper --> RepoAdapter : AddressDomain
+deactivate AddressMapper
+RepoAdapter --> IAddressRepo : Optional<AddressDomain>
+deactivate RepoAdapter
+IAddressRepo --> AddressDomainService : Optional<AddressDomain>
+deactivate IAddressRepo
+
+alt Address belongs to user
+    AddressDomainService --> UpdateAddressUC : validation OK
+    deactivate AddressDomainService
+    
+    UpdateAddressUC -> IAddressRepo : findById(addressId)
+    activate IAddressRepo
+    IAddressRepo --> UpdateAddressUC : AddressDomain
+    deactivate IAddressRepo
+    
+    UpdateAddressUC -> AddressEntity : updateInfo(street, number, ...)
+    activate AddressEntity
+    note right of AddressEntity
+        Business Method:
+        - Validates new data
+        - Updates entity fields  
+        - Sets updatedAt timestamp
+    end note
+    AddressEntity --> UpdateAddressUC : void
+    deactivate AddressEntity
+    
+    UpdateAddressUC -> IAddressRepo : save(updatedAddress)
+    activate IAddressRepo
+    IAddressRepo -> RepoAdapter : save(addressDomain)
+    activate RepoAdapter
+    RepoAdapter -> JpaRepo : save(jpaEntity)
+    activate JpaRepo
+    JpaRepo -> DB : UPDATE address SET ... WHERE id = ?
+    activate DB
+    DB --> JpaRepo : updated record
+    deactivate DB
+    JpaRepo --> RepoAdapter : JpaAddressEntity
+    deactivate JpaRepo
+    RepoAdapter --> IAddressRepo : AddressDomain
+    deactivate RepoAdapter
+    IAddressRepo --> UpdateAddressUC : AddressDomain
+    deactivate IAddressRepo
+    
+    UpdateAddressUC -> UpdateAddressUC : AddressMapper.toResponse(updatedAddress)
+    UpdateAddressUC --> IAddressUpdatePort : AddressResponse
+    deactivate UpdateAddressUC
+    
+    IAddressUpdatePort --> Controller : AddressResponse
+    deactivate IAddressUpdatePort
+    
+    Controller -> WebMapper : toResponseDTO(response)
+    activate WebMapper
+    WebMapper --> Controller : AddressResponseDTO
+    deactivate WebMapper
+    
+    Controller --> Client : 200 OK\n{ "id": "uuid", "street": "Rua Nova", ... }
+    deactivate Controller
+    
+else Address doesn't belong to user
+    AddressDomainService -> AddressDomainService : throw AddresDoesNotBelongToUserException
+    AddressDomainService --> UpdateAddressUC : Exception
+    deactivate AddressDomainService
+    
+    UpdateAddressUC --> IAddressUpdatePort : Exception
+    deactivate UpdateAddressUC
+    
+    IAddressUpdatePort --> Controller : Exception
+    deactivate IAddressUpdatePort
+    
+    Controller -> ExceptionHandler : handle(AddresDoesNotBelongToUserException)
+    activate ExceptionHandler
+    ExceptionHandler --> Controller : 403 Forbidden
+    deactivate ExceptionHandler
+    
+    Controller --> Client : 403 Forbidden\n{ "error": "Address does not belong to user" }
+    deactivate Controller
+end
+
+== Cenário 4: Excluir Endereço ==
+
+Client -> Controller : DELETE /api/v1/address/{addressId}
+activate Controller
+
+Controller -> IAddressDeletePort : deleteAddress(userId, addressId)
+activate IAddressDeletePort
+
+IAddressDeletePort -> DeleteAddressUC : deleteAddress(userId, addressId)
+activate DeleteAddressUC
+
+DeleteAddressUC -> AddressDomainService : ensureAddressBelongsToUser(userId, addressId)
+activate AddressDomainService
+
+AddressDomainService -> IAddressRepo : findById(addressId)
+activate IAddressRepo
+IAddressRepo --> AddressDomainService : Optional<AddressDomain>
+deactivate IAddressRepo
+
+alt Address belongs to user
+    AddressDomainService --> DeleteAddressUC : validation OK
+    deactivate AddressDomainService
+    
+    DeleteAddressUC -> IAddressRepo : deleteAddress(addressId)
+    activate IAddressRepo
+    
+    IAddressRepo -> RepoAdapter : deleteAddress(addressId)
+    activate RepoAdapter
+    
+    RepoAdapter -> JpaRepo : deleteById(addressId)
+    activate JpaRepo
+    JpaRepo -> DB : DELETE FROM address WHERE id = ?
+    activate DB
+    DB --> JpaRepo : record deleted
+    deactivate DB
+    JpaRepo --> RepoAdapter : void
+    deactivate JpaRepo
+    
+    RepoAdapter --> IAddressRepo : void
+    deactivate RepoAdapter
+    
+    IAddressRepo --> DeleteAddressUC : void
+    deactivate IAddressRepo
+    
+    DeleteAddressUC --> IAddressDeletePort : void
+    deactivate DeleteAddressUC
+    
+    IAddressDeletePort --> Controller : void
+    deactivate IAddressDeletePort
+    
+    Controller --> Client : 204 No Content
+    deactivate Controller
+    
+else Address doesn't belong to user
+    AddressDomainService -> AddressDomainService : throw AddresDoesNotBelongToUserException
+    AddressDomainService --> DeleteAddressUC : Exception
+    deactivate AddressDomainService
+    
+    DeleteAddressUC --> IAddressDeletePort : Exception
+    deactivate DeleteAddressUC
+    
+    IAddressDeletePort --> Controller : Exception
+    deactivate IAddressDeletePort
+    
+    Controller -> ExceptionHandler : handle(AddresDoesNotBelongToUserException)
+    activate ExceptionHandler
+    ExceptionHandler --> Controller : 403 Forbidden
+    deactivate ExceptionHandler
+    
+    Controller --> Client : 403 Forbidden\n{ "error": "Address does not belong to user" }
+    deactivate Controller
+end
+
+note over Client, DB
+    **Fluxos de Address na Arquitetura Hexagonal:**
+    
+    **1. Separação de Responsabilidades:**
+    - **AddressController**: Recebe requisições HTTP e delega
+    - **AddressWebMapper**: Converte DTOs Web ↔ Application
+    - **Use Cases**: Executam lógica de negócio específica
+    - **AddressDomainService**: Valida regras de negócio (ownership)
+    - **AddressDomain**: Entidade rica com validações e comportamentos
+    
+    **2. Padrões Implementados:**
+    - **Factory Pattern**: AddressDomain.create() para criação
+    - **Repository Pattern**: AddressRepositoryPort para persistência
+    - **Domain Service**: AddressDomainService para validações complexas
+    - **Mapper Pattern**: Conversões entre camadas
+    
+    **3. Segurança e Validações:**
+    - **Ownership Validation**: Usuário só acessa seus endereços
+    - **Domain Validation**: AddressDomain valida campos obrigatórios
+    - **Exception Handling**: RFC-7807 Problem Details
+    - **Authentication**: JWT token em todos os endpoints
+    
+    **4. Benefícios da Arquitetura:**
+    - **Testabilidade**: Use Cases testáveis independentemente
+    - **Desacoplamento**: Infraestrutura isolada do domínio
+    - **Extensibilidade**: Novos adapters sem afetar core
+    - **Manutenibilidade**: Responsabilidades bem definidas
+end note
+
+@enduml
